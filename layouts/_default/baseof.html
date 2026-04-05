@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+<html lang="{{ .Site.LanguageCode }}">
+    <head>
+        {{- partial "head/head.html" . -}}
+        {{- block "head" . -}}{{ end }}
+    </head>
+    <body class="{{ block `body-class` . }}{{ end }}">
+        {{- partial "head/colorScheme" . -}}
+        {{- partial "topnav.html" . -}}
+        <div class="container main-container flex {{ block `container-class` . }}on-phone--column {{ if .Site.Params.widgets.enabled }}extended{{ else }}compact{{ end }}{{ end }}">
+            <main class="main full-width">
+                {{- block "main" . }}{{- end }}
+            </main>
+            {{- if .Scratch.Get "hasTOC" -}}
+                {{- block "right-sidebar" . -}}{{ end }}
+            {{- end -}}
+        </div>
+        {{ partial "footer/include.html" . }}
+    </body>
+</html>

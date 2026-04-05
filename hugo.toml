@@ -1,0 +1,95 @@
+# 站点基础信息
+baseURL = "http://localhost:1313/"  # 你的站点域名（本地调试可设为 "http://localhost:1313/"）
+languageCode = "zh-cn"               # 站点语言（中文设为 zh-cn）
+title = "我的博客"                   # 站点标题
+theme = "stack1"                      # 指定使用 Stack 主题
+defaultContentLanguage = "zh-cn"
+hasCJKLanguage = true
+enableInlineShortcodes = true
+enableRobotsTXT = true               # 启用 robots.txt
+
+# 分页配置
+paginate = 10                        # 首页/分类页每页显示文章数量
+
+# Stack 主题专属配置 [params]
+[params]
+    # 站点描述（用于 SEO）
+    description = "一个基于 Hugo Stack 主题搭建的个人博客"
+    # 作者信息
+    author = "你的名字"
+    # 站点关键词（逗号分隔）
+    keywords = ["博客", "技术", "Hugo", "Stack"]
+    
+    # 外观配置
+    defaultTheme = "light"            # 默认主题（light/ dark/ auto）
+    displayFullLangName = true        # 显示完整语言名称
+    [params.imageProcessing.cover]
+        enabled = true
+    [params.imageProcessing.content]
+        enabled = true
+    
+    # 页脚配置
+    [params.footer]
+        enable = true
+        text = "© 2026 我的博客 | 基于 Hugo & Stack 构建"
+        # 社交图标（支持 Github、Twitter 等，完整列表参考 Stack 文档）
+        social = [
+            { name = "Github", url = "https://github.com/your-username" },
+            { name = "Email", url = "mailto:your-email@xxx.com" }
+        ]
+
+# 内容类型配置（Stack 主题推荐）
+[taxonomies]
+    category = "categories"
+    tag = "tags"
+    series = "series"
+
+# Markdown 配置
+[markup]
+    defaultMarkdownHandler = "goldmark"
+    [markup.goldmark]
+        [markup.goldmark.extensions]
+            definitionList = true
+            footnote = true
+            linkify = true
+            strikethrough = true
+            table = true
+            taskList = true
+            typographer = true
+    # 启用代码高亮
+    [markup.highlight]
+        codeFences = true
+        lineNos = false
+        lineNumbersInTable = false
+        noClasses = false
+
+# Stack reads navigation from Hugo's top-level menu, not params.menu
+
+[[menu.main]]
+identifier = "blogs"
+name = "文章"
+pageRef = "/post"
+weight = 1
+
+[[menu.main]]
+identifier = "links"
+name = "友链"
+pageRef = "/links"
+weight = 2
+
+[[menu.main]]
+identifier = "about"
+name = "关于"
+pageRef = "/about"
+weight = 3
+
+[params.article]
+toc = true
+
+[params.widgets]
+enabled = ["toc"]
+
+[markup.tableOfContents]
+startLevel = 2
+endLevel = 4
+ordered = true

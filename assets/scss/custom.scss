@@ -1,0 +1,118 @@
+﻿.top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--body-background);
+    border-bottom: 1px solid var(--card-separator-color);
+    backdrop-filter: blur(6px);
+}
+
+.top-nav .nav-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.top-nav .site-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--body-text-color);
+    text-decoration: none;
+}
+
+.top-nav .nav-group {
+    margin-left: auto;
+    margin-right: 6%;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.top-nav .nav-menu ol {
+    list-style: none;
+    display: flex;
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+}
+
+.top-nav .nav-menu a {
+    color: var(--body-text-color);
+    text-decoration: none;
+    padding: 6px 8px;
+    border-radius: 8px;
+}
+
+.top-nav .nav-menu li.current a {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.top-nav .nav-menu a:hover {
+    background: var(--card-background);
+}
+
+.top-nav .nav-search {
+    display: flex;
+    align-items: center;
+}
+
+.top-search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--card-background);
+    border: 1px solid var(--card-separator-color);
+    border-radius: 999px;
+}
+
+.top-search-form input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 160px;
+    color: var(--body-text-color);
+}
+
+.top-search-form button {
+    background: none;
+    border: none;
+    color: var(--body-text-color);
+    display: flex;
+    align-items: center;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 900px) {
+    .top-nav .nav-inner {
+        flex-wrap: wrap;
+        row-gap: 12px;
+    }
+
+    .top-nav .nav-group {
+        margin-right: 0;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .top-search-form input {
+        width: 120px;
+    }
+}
