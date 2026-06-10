@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://localhost:1313/post/article01/'>
 
-<link rel="stylesheet" href="/scss/style.min.2c834210bb91ee02d17d880d1ca68852784e361342fa0a4f2c233d28d4c93ee2.css">
+<link rel="stylesheet" href="/scss/style.min.e27250da5f478a5870e13ea66dae79ce6f57561f7e12fe37ef7ceeb8839e5f1c.css">
 <meta property='og:title' content='Article01'>
 <meta property='og:description' content='记录手机第一次通过WIFI与ESP8266连接(发送新行) 1.发送AT，返回OK 2.AT&#43;CWMODE=1,设置ESP8266 Station模式该模式ESP不生成WIFI信号 3.AT&#43;RST,重启生效 4.AT&#43;CWLAP,查询当前WIFI列表(2.4G) 5.AT&#43;CWJAP=&ldquo;WIFI名&rdquo;,&ldquo;WIFI密码&rdquo; 连接WIFI,成功会显示连接 6.AT&#43;CIFSR 查询ESP的IP 7.AT&#43;CIPMUX=1 建立多连接 8.AT&#43;CIPSERVER=1,8080 建立服务器,端口8080 ESP Station模式配网完成
 '>
@@ -62,14 +62,28 @@
     <div class="nav-inner">
         <a class="site-title" href="/">我的博客</a>
         <div class="nav-group">
-            <nav class="nav-menu" aria-label="Primary">
+            <nav class="nav-menu" aria-label="主导航">
                 <ol>
                     
+                    
+                        
+                        <li >
+                            <a href='/' >
+                                <span>首页</span>
+                            </a>
+                        </li>
                     
                         
                         <li class="current">
                             <a href='/post/' >
                                 <span>文章</span>
+                            </a>
+                        </li>
+                    
+                        
+                        <li >
+                            <a href='/archives/' >
+                                <span>归档</span>
                             </a>
                         </li>
                     
@@ -92,7 +106,7 @@
 
             <div class="nav-search"><form action="/search/" method="get" class="top-search-form" role="search">
                         <label class="visually-hidden">搜索</label>
-                        <input name="keyword" placeholder="输入关键词..." />
+                        <input name="keyword" placeholder="搜索文章..." />
                         <button type="submit" title="搜索">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <path stroke="none" d="M0 0h24v24H0z"/>
@@ -252,6 +266,8 @@ ESP Station模式配网完成</p>
     <footer class="site-footer">
   
 
+
+    
 
     
 

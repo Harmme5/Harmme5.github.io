@@ -2,7 +2,7 @@
     <div class="nav-inner">
         <a class="site-title" href="{{ .Site.BaseURL | relLangURL }}">{{ .Site.Title }}</a>
         <div class="nav-group">
-            <nav class="nav-menu" aria-label="Primary">
+            <nav class="nav-menu" aria-label="主导航">
                 <ol>
                     {{ $currentPage := . }}
                     {{ range .Site.Menus.main }}
@@ -21,7 +21,7 @@
                 {{- if $searchPage -}}
                     <form action="{{ $searchPage.RelPermalink }}" method="get" class="top-search-form" role="search">
                         <label class="visually-hidden">搜索</label>
-                        <input name="keyword" placeholder="输入关键词..." />
+                        <input name="keyword" placeholder="搜索文章..." />
                         <button type="submit" title="搜索">
                             {{ partial "helper/icon" "search" }}
                         </button>

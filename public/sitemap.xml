@@ -111,6 +111,8 @@
   </url><url>
     <loc>http://localhost:1313/tags/testtag/</loc>
   </url><url>
+    <loc>http://localhost:1313/archives/</loc>
+  </url><url>
     <loc>http://localhost:1313/search/</loc>
   </url><url>
     <loc>http://localhost:1313/links/</loc>

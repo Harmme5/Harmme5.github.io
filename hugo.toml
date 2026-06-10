@@ -66,22 +66,34 @@ paginate = 10                        # 首页/分类页每页显示文章数量
 # Stack reads navigation from Hugo's top-level menu, not params.menu
 
 [[menu.main]]
+identifier = "home"
+name = "首页"
+url = "/"
+weight = 1
+
+[[menu.main]]
 identifier = "blogs"
 name = "文章"
 pageRef = "/post"
-weight = 1
+weight = 2
+
+[[menu.main]]
+identifier = "archives"
+name = "归档"
+pageRef = "/archives"
+weight = 3
 
 [[menu.main]]
 identifier = "links"
 name = "友链"
 pageRef = "/links"
-weight = 2
+weight = 4
 
 [[menu.main]]
 identifier = "about"
 name = "关于"
 pageRef = "/about"
-weight = 3
+weight = 5
 
 [params.article]
 toc = true
