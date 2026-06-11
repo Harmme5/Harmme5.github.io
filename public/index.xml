@@ -6,23 +6,2231 @@
         <description>Recent content on 我的博客</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Mon, 09 Mar 2026 21:13:49 +0800</lastBuildDate><atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" /><item>
-        <title>Article02</title>
-        <link>http://localhost:1313/post/article02/</link>
-        <pubDate>Mon, 09 Mar 2026 20:20:26 +0800</pubDate>
+        <lastBuildDate>Thu, 11 Jun 2026 19:32:06 +0800</lastBuildDate><atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>LoRA微调</title>
+        <link>http://localhost:1313/post/lora-finetuning-z1zm5w7.html</link>
+        <pubDate>Thu, 11 Jun 2026 19:32:06 +0800</pubDate>
         
-        <guid>http://localhost:1313/post/article02/</guid>
-        <description>&lt;h1 id=&#34;你好&#34;&gt;你好
-&lt;/h1&gt;&lt;p&gt;欢迎来到我的主页！&lt;/p&gt;
+        <guid>http://localhost:1313/post/lora-finetuning-z1zm5w7.html</guid>
+        <description>&lt;h1 id=&#34;lora微调&#34;&gt;LoRA微调
+&lt;/h1&gt;&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.bilibili.com/video/BV1waZ2YDEcp/?spm_id_from=333.788.recommend_more_video.0&amp;amp;amp;trackid=web_related_0.router-related-2481894-74gx5.1772535756302.1023&amp;amp;amp;vd_source=86ed3e91f3c360c8b63e6013dcb45257&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;【LoRA微调】从原理到调参，7 个问题彻底理解LoRA，不懂线性代数也没问题_大模型微调_低秩适配&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;1什么是lora&#34;&gt;1.什么是LoRA
+&lt;/h1&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213024-tfuhiq3.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213024-tfuhiq3.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213126-fklpuql.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213126-fklpuql.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213150-4h7grt6.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213150-4h7grt6.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;（A）有5*2=10个参数&lt;/li&gt;
+&lt;li&gt;（B）有2*4=8个参数&lt;/li&gt;
+&lt;li&gt;LoRA总参数：10+8 =18 个&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote class=&#34;alert alert-tip&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;💡&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;💡 结论&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+&lt;h1 id=&#34;2为什么需要lora&#34;&gt;2.为什么需要LoRA
+&lt;/h1&gt;&lt;blockquote class=&#34;alert alert-caution&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;🚨&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;🚨 资源消耗太大&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;大型语言模型动几亿甚至几千亿参数，全参数微调需要为每个新任务保存一份完整的模型副本。比如，一个10亿参数的模型，假设每个参数用4字节（float32），光存储就得4GB。多个任务下来，硬盘和显存都吃不消。&lt;/p&gt;
+&lt;p&gt;&lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color9); background-color: var(--b3-card-warning-background);&#34;&gt;LoRA的思路是：与其每次都复制整个模型，不如只调整一小部分参数，把成本降下来。&lt;/span&gt;&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+&lt;blockquote class=&#34;alert alert-caution&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;🚨&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;🚨 训练效率低下&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;全参数微调不仅占空间，还需要大量计算资源和时间。每次训练都得更新所有参数，反向传播的计算量巨大，尤其是在GPU资源有限的情况下，普通研究者或公司根本玩不起。LoRA通过只更新一小块”增量参数”，让微调变得轻量化，普通设备也能跑得动。&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+&lt;h2 id=&#34;核心亮点&#34;&gt;核心亮点
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;参数少：它只微调原始参数的1%甚至更少。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在 GPT-3 上，r = 8 的 LoRA 参数量占全微调的 &lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color8);&#34;&gt;0.01%-0.1%&lt;/span&gt;，性能却达到全微调的 &lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color8);&#34;&gt;95%-99%&lt;/span&gt;。&lt;/li&gt;
+&lt;li&gt;在 GLUE 任务（BERT），r = 16 的 LoRA 用 0.1% 参数，平均得分仅比全微调低 0.5-1 分。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;速度快：训练和部署都比全参数微调省时省力。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;模块化：训练好的LoRA”插件“可以随时加载或卸载，不影响原始模型，特别适合多任务场景。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;span data-type=&#34;text&#34; style=&#34;font-size: 20px;&#34;&gt;模块化设计的优点&lt;/span&gt;&lt;br&gt;
+1.&lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color2);&#34;&gt;避免灾难性遗忘&lt;/span&gt;：直接修改W可能导致模型在新任务上表现良好，但在原始任务上性能下降（即&amp;quot;灾难性遗忘&amp;quot;）。LoRA通过冻结W，保留了原始模型的能力&lt;/p&gt;
+&lt;p&gt;2.&lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color2);&#34;&gt;存储效率高&lt;/span&gt;：一个大模型可以搭配多个LoRA模块，每个模块只占几MB，相比全模型微调动几GB，节省空间。&lt;/p&gt;
+&lt;p&gt;3.&lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color2);&#34;&gt;快速切换&lt;/span&gt;：任务切换只需加载不同LoRA文件，几秒钟搞定，不用重新训练。&lt;/p&gt;
+&lt;p&gt;4.&lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color2);&#34;&gt;兼容性强&lt;/span&gt;：原始模型完全不动，多个团队可以共享同一个基础模型，只开发自己的LoRA模块。&lt;/p&gt;
+&lt;p&gt;‍&lt;/p&gt;
+&lt;h1 id=&#34;3为什么可以对增量权重w低秩分解&#34;&gt;3.为什么可以对增量权重△W低秩分解
+&lt;/h1&gt;&lt;p&gt;低秩分解的核心思想是：&lt;strong&gt;矩阵里的信息往往不是均匀分布的，很多维度是余的，只需要抓住”主要方向”就够了。&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;blockquote&gt;
+        &lt;p&gt;学过机器学习的同学，可以参考PCA主成分分析算法的理念。&lt;/p&gt;
+
+    &lt;/blockquote&gt;
+&lt;h2 id=&#34;1什么是矩阵的秩rank&#34;&gt;1.什么是矩阵的秩（Rank）？
+&lt;/h2&gt;&lt;p&gt;在线性代数中，一个矩阵的秩（rank）是它的&lt;strong&gt;线性独立行或列&lt;/strong&gt;的数量。&lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color2);&#34;&gt;如果一个矩阵是”低秩”的，意味着它的信息可以用少量独立方向表达，而不是需要完整的维度。&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;比如下述矩阵， 第 5 行([1, 2,0, 3, 0] ) 是第 1行( [1, 0, 0, 2, 0] )和第 2 行([0,2,0,1, 0] ) 的线性组合 (&lt;strong&gt;第5行=第1行+第2行&lt;/strong&gt;），第5行没有提供更多的信息，理论上这个矩阵有前4行就能提供所有信息了，因此矩阵的行秩为4（列秩也为4，第5列全为0，没有信息增量）。&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220131-uv6cuc5.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220131-uv6cuc5.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;2从奇异值分解得到的启发-低秩分解的原理&#34;&gt;2.从奇异值分解得到的启发&amp;mdash;-低秩分解的原理
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220217-798kfrg.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220217-798kfrg.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220231-tciprgu.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220231-tciprgu.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220251-lazjnd3.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220251-lazjnd3.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220344-wt7bx9e.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220344-wt7bx9e.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220400-z2evra3.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220400-z2evra3.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220440-bku6jzr.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220440-bku6jzr.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220445-5e046h9.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220445-5e046h9.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;结果对比原始矩阵和重构矩阵，直观地看，基本保持一致。证实上面的结论：&lt;strong&gt;如果只保留最大的几个奇异值（低秩近似），就能用更少的参数近似W。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220507-iazdkqp.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220507-iazdkqp.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;事实上，可以通过保留的奇异值，计算重构后的矩阵，保留了多少信息，如下：&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220540-9ulcmye.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220540-9ulcmye.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;3为什么可以对增量权重w低秩分解-1&#34;&gt;3.为什么可以对增量权重△W低秩分解
+&lt;/h2&gt;&lt;p&gt;研究发现，通过对微调后的权重变化△W的奇异值分解，大部分信息集中在少数几个奇异值上。比如，LoRA论文（Huet al.,2021）在GPT-3上测试时发现，△W的前10-20个奇异值就占据了90%以上的信息。&lt;/p&gt;
+&lt;p&gt;这意味着：当我们从一个预训练模型（比如 LLaMA 或 BERT）微调到某个特定任务时，权重矩阵的变化（即 △W=W&lt;sub&gt;任务&lt;/sub&gt;－W&lt;sub&gt;预训练&lt;/sub&gt;）并不是完全随机的，而是具有某种&amp;quot;结构化&amp;quot;特性。具体来说，这个变化可以用一个低秩矩阵来近似表示，它的有效自由度比原始权重矩阵的维度要少得多。&lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color2);&#34;&gt;由于△W的秩很低，可以用A和B直接构造，不需要完整的SVD计算，更加高效。&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;直观理解&lt;/strong&gt;&lt;br&gt;
+微调是为了强化模型某个特定领域的能力，不对所有方向的参数进行调整。想象预训练模型是一个已经学会“说话”的智能体，微调只是让它学会某种特定”口音”（如法律领域的术语）。这个&amp;quot;口音&amp;quot;调整不需要重新学习所有语言规则，只需在少数关键方面（如词汇选择、语调）做改变。这种改变的”自由度“很有限，因此可以用低秩矩阵近似。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;举个例子&lt;/strong&gt;&lt;br&gt;
+假设一个512× 512的权重矩阵（W）（总共262,144个参数)：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;全微调：可能调整所有262,144个参数。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;LoRA：假设r=8，只用A（512×8）和B（8×512)，总共8,192个参数，就能捕捉任务的主要变化。因为△W的变化集中在少数方向（比如8个，需要调参），而不是需要512个方向。&lt;/p&gt;
+&lt;p&gt;r = 8 和r = 800，因为△W是低秩的，没有太大区别&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;4对原始权重w可以低秩分解吗&#34;&gt;4.对原始权重W可以低秩分解吗？
+&lt;/h2&gt;&lt;blockquote class=&#34;alert alert-caution&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;🚨&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;🚨 不行&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;研究表明，预训练模型（如BERT）的权重矩阵（W）通常具有&lt;strong&gt;较高的秩（接近满秩）&lt;/strong&gt; ，奇异值分布较为平滑。&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+&lt;h1 id=&#34;4lora如何更新参数的&#34;&gt;4.LoRA如何更新参数的
+&lt;/h1&gt;&lt;p&gt;本质上，还是反向传播算法。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在前向过程，，代入A、B的参数算出损失；&lt;/li&gt;
+&lt;li&gt;在反向过程，根据损失求导算出A、B参数的梯度，然后更新参数。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;lora的核心参数&#34;&gt;LoRA的核心参数
+&lt;/h2&gt;&lt;p&gt;LoRA的核心思想是通过一个低秩增量（△W）来调整预训练模型的原始权重（W），而不是直接修改W本身。它的核心公式可以简单写成：&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223816-y20cyqv.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223816-y20cyqv.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223832-wjvapwc.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223832-wjvapwc.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;参数更新过程&#34;&gt;参数更新过程
+&lt;/h2&gt;&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;初始化&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224016-mxd7how.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224016-mxd7how.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;计算损失&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223946-rwwvd49.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223946-rwwvd49.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;反向传播更新&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224044-o29r0gx.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224044-o29r0gx.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;迭代优化&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223957-61ihzxf.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223957-61ihzxf.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;5lora可以用在transformer的哪些层&#34;&gt;5.LoRA可以用在Transformer的哪些层
+&lt;/h1&gt;&lt;p&gt;tips：需对Transformer有一定了解。可参考：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;知乎: &lt;a class=&#34;link&#34; href=&#34;https://zhuanlan.zhihu.com/p/338817680&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://zhuanlan.zhihu.com/p/338817680&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;B站：搜“李宏毅transformer&amp;quot;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;总结：LoRA是好钢，要用在刀刃上。并不是所有参数都要微调，选择部分参数进行微调就可以取得较好效果。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Transformer模型由多层堆叠组成，每层包括自注意力机制（Self-Attention）和前馈网络（Feed-ForwardNetwork,FFN）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Transformer架构图&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;LoRA 的集成主要是将低秩增量△W =A × B 添加到这些层的权重矩阵上，同时保持原始权重（W）冻结，如：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意力层（Self-Attention）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Transformer的核心是多头注意力机制，每个头有查询、键、值、输出（Query、Key、Value、Output），即&lt;em&gt;&lt;strong&gt;Wq&lt;/strong&gt;&lt;/em&gt;、&lt;em&gt;&lt;strong&gt;Wk&lt;/strong&gt;&lt;/em&gt;、&lt;em&gt;&lt;strong&gt;Wv&lt;/strong&gt;&lt;/em&gt;、&lt;em&gt;&lt;strong&gt;Wo&lt;/strong&gt;&lt;/em&gt;四个权重矩阵。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;LoRA通常应用在&lt;/strong&gt;​&lt;em&gt;&lt;strong&gt;Wq&lt;/strong&gt;&lt;/em&gt;​&lt;strong&gt;和&lt;/strong&gt;​&lt;em&gt;&lt;strong&gt;Wv&lt;/strong&gt;&lt;/em&gt;​ &lt;em&gt;&lt;em&gt;，上，&lt;strong&gt;​&lt;/strong&gt;&lt;/em&gt;Wq&lt;/em&gt;&lt;strong&gt;​&lt;/strong&gt;决定关注哪些信息，W&lt;strong&gt;​&lt;/strong&gt;&lt;em&gt;v&lt;/em&gt;&lt;strong&gt;​&lt;/strong&gt;决定输出什么内容。调整它们能直接影响模型对任务的理解和生成能力。LoRA原论文发现，微调&lt;strong&gt;​&lt;/strong&gt;&lt;em&gt;Wq&lt;/em&gt;&lt;strong&gt;​&lt;/strong&gt;和&lt;strong&gt;​&lt;/strong&gt;&lt;em&gt;Wv，&lt;em&gt;&lt;strong&gt;​&lt;/strong&gt;已能接近全参数微调效果，性价比高。&lt;/em&gt;&lt;/em&gt;&lt;br&gt;
+​&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224917-0t181bc.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224917-0t181bc.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;br&gt;
+​&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224928-bcvf2ji.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224928-bcvf2ji.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;前馈层（FFN)&lt;/strong&gt;&lt;br&gt;
+​&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224726-k2icyfj.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224726-k2icyfj.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;br&gt;
+FFN处理注意力输出，负责特征提取和非线性映射，调整它能增强任务特定表达。&lt;br&gt;
+小模型（如BERT）可能只加注意力层，大模型（如GPT-3）或生成任务常扩展到FFN&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;其他层&lt;/strong&gt;&lt;br&gt;
+​&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224953-c3qiubd.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224953-c3qiubd.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;6lora有哪些改进版本&#34;&gt;6.LoRA有哪些改进版本
+&lt;/h1&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225142-n7egsmv.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225142-n7egsmv.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225131-1tipk4j.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225131-1tipk4j.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225311-08no6d0.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225311-08no6d0.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225318-e37odkt.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225318-e37odkt.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225401-x90pxvt.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225401-x90pxvt.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225423-weeymvi.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225423-weeymvi.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;‍&lt;/p&gt;
+&lt;p&gt;以 LLaMA-Factory 为例，说明LoRA相关的参数:&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225510-phiwrtn.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225510-phiwrtn.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225618-1nmii8z.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225618-1nmii8z.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225632-qe1flgm.png&#34; &gt;
+		&lt;img src=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225632-qe1flgm.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>ROS1 noetic学习</title>
+        <link>http://localhost:1313/post/ros-study-1p5djp.html</link>
+        <pubDate>Fri, 06 Mar 2026 20:58:44 +0800</pubDate>
+        
+        <guid>http://localhost:1313/post/ros-study-1p5djp.html</guid>
+        <description>&lt;h1 id=&#34;ros学习&#34;&gt;ROS学习
+&lt;/h1&gt;&lt;h1 id=&#34;1ros是什么&#34;&gt;1.Ros是什么
+&lt;/h1&gt;&lt;p&gt;谷歌在Arm和Linux基础上，做了安卓系统，只需要开发一次，就能在大多数安卓机上运行。&lt;/p&gt;
+&lt;p&gt;以前，机器人没有统一的操作系统，每做一个机器人，都要软件-硬件重新来一遍&lt;/p&gt;
+&lt;p&gt;ROS:An Open-Source Robot Operating System&lt;/p&gt;
+&lt;p&gt;单片机可以控制的东西，Ros都可以控制，Ros和安卓一样，&lt;strong&gt;本质由很多功能不同的APP组成&lt;/strong&gt;，通过不同APP组合，得到不同效果,ROS+GMapping=扫描建图机器人，Ros+Movebase=自主导航机器人&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/2-20260210205844-rosntqy.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/2-20260210205844-rosntqy.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Ros个launch相当于乐高房子，每个Node相当于乐高砖块，比如雷达_node,机械臂-node&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/1-20260210205844-gxwj6e9.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/1-20260210205844-gxwj6e9.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/3-20260210205844-jv4smh0.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/3-20260210205844-jv4smh0.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;2如何学习ros&#34;&gt;2.如何学习Ros
+&lt;/h1&gt;&lt;p&gt;首先，安装Ubuntu和ROS&lt;/p&gt;
+&lt;h2 id=&#34;ros版本选择&#34;&gt;Ros版本选择
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;项目要求&lt;/p&gt;
+&lt;p&gt;尽量选择项目原版本的ROS&lt;/p&gt;
+&lt;p&gt;尽量最新ROS&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;找实验对象（实践），不动手操作听完就忘了&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://github.com/6-robot&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://github.com/6-robot&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;若没有实体机器人，用仿真平台，Ros许多功能是独立分支，前后无继承关系&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;3安装ros软件包&#34;&gt;3.安装Ros软件包
+&lt;/h1&gt;&lt;p&gt;就像是安装安卓APP&lt;/p&gt;
+&lt;p&gt;ros-ROS版本名-Name，Name是ros index的软件包名&lt;/p&gt;
+&lt;p&gt;以rqt_robot_steering为例，&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;sudo apt install ros-noetic-rqt-robot-steering
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&#34;4启动ros&#34;&gt;4.启动ROS
+&lt;/h1&gt;&lt;p&gt;启动安卓APP，需要先启动安卓&lt;/p&gt;
+&lt;p&gt;新建一个终端，先&lt;strong&gt;启动ROS核心&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;roscore
+&lt;/code&gt;&lt;/pre&gt;&lt;blockquote class=&#34;alert alert-note&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;📝&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;Note&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;启动roscore的同时，ros系统里会自带话题rosout和rosout_agg&lt;/p&gt;
+&lt;p&gt;rosout :&lt;span data-type=&#34;text&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;所有话题的日志&lt;/p&gt;
+&lt;p&gt;rosout_agg :  统一的聚合日志&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/image-20260303154534-66wprhf.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/image-20260303154534-66wprhf.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;两个话题的核心区别&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;/rosout：原始实时日志流&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;各个节点直接往这里发 rosgraph_msgs/Log 消息。&lt;/li&gt;
+&lt;li&gt;你订阅 /rosout 时，只能看到从你订阅之后产生的新日志。&lt;/li&gt;
+&lt;li&gt;更“底层”、更接近每个节点原始输出。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;/rosout_agg：聚合后的日志流（带历史）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;由 /rosout 节点发布，也是 rosgraph_msgs/Log 类型，但：&lt;/li&gt;
+&lt;li&gt;会带上已经缓存的一段历史日志（所以你一 rostopic echo /rosout_agg，往往能立刻看到之前的几条/几十条日志）。&lt;/li&gt;
+&lt;li&gt;专门给 rqt_console、rxconsole 这类日志工具用，方便一次性看到“过去 + 现在”的日志。&lt;/li&gt;
+&lt;li&gt;有点像是：系统级“日志汇总出口”。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;启动速度控制程序&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;rosrun rqt_robot_steering rqt_robot_steering 
+        包名称                节点名称
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;安装ROS仿真小乌龟&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;sudo apt install ros-noetic-turtlesim 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;启动ROS仿真小乌龟&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;rosrun turtlesim turtlesim_node
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&#34;5github下载包&#34;&gt;5.Github下载包
+&lt;/h1&gt;&lt;h2 id=&#34;step1-设置工作空间&#34;&gt;&lt;strong&gt;Step1 设置工作空间&lt;/strong&gt;
+&lt;/h2&gt;&lt;p&gt;以软件包wpr_simulation为例&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;mkdir catkin_ws &amp;amp;&amp;amp; cd catkin_Ws
+&lt;/code&gt;&lt;/pre&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;mkdir src &amp;amp;&amp;amp; cd src
+&lt;/code&gt;&lt;/pre&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;git clone https://github.com/6-robot/wpr_simulation.git
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;在scripts文件夹里找到.***.sh，这个是依赖安装脚本文件，运行即可自动安装所需要的依赖&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/4-20260210205844-rbp27s6.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/4-20260210205844-rbp27s6.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;安装完依赖，可以开始编译&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cd ~/catkin_ws/ &amp;amp;&amp;amp; catkin_make //对src目录的所有源代码进行编译
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;用source指令载入工作空间的环境设置，否则运行指令会提示找不到里边的软件包，用roslaunch运行编译好的ros程序&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;source ~/catkin_ws/devel/setup.bash
+&lt;/code&gt;&lt;/pre&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;roslaunch wpr_simulation wpb_simple.launch
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/5-20260210205844-liocbgl.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/5-20260210205844-liocbgl.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;可以用速度控制软件控制其移动&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;启动速度控制程序&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Tips&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;1.source指令添加到.bashrc，每次启动终端就可以直接运动ros程序了&lt;/p&gt;
+&lt;p&gt;2.git clone得来的小乌龟，默认是ros2.0，这样可以切换为ros1.0&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/6-20260210205844-mjx7ktx.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/6-20260210205844-mjx7ktx.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Github搜索引擎的强大，学习如何过滤&lt;/strong&gt;&lt;/p&gt;
+&lt;h1 id=&#34;6terminator超级终端&#34;&gt;6.Terminator超级终端
+&lt;/h1&gt;&lt;h2 id=&#34;快捷键&#34;&gt;快捷键
+&lt;/h2&gt;&lt;p&gt;Ctrl+Shift+E 垂直分屏&lt;/p&gt;
+&lt;p&gt;Ctrl+Shift+O 水平分屏&lt;/p&gt;
+&lt;p&gt;Alt+左箭头，切换到左边的终端&lt;/p&gt;
+&lt;p&gt;Ctrl+Shift+W 刚刚的窗口关闭，回退状态&lt;/p&gt;
+&lt;h1 id=&#34;7node节点和package包&#34;&gt;7.Node节点和Package包
+&lt;/h1&gt;&lt;h2 id=&#34;package包&#34;&gt;Package包
+&lt;/h2&gt;&lt;p&gt;与安卓不同，无法下载单个Node，而是以“包”为单位安装，&lt;strong&gt;可以将包理解为节点的容器&lt;/strong&gt;，节点不能脱离包单独存在&lt;/p&gt;
+&lt;h3 id=&#34;创建package包视频有总结&#34;&gt;创建Package包(视频有总结)
+&lt;/h3&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cd catkin_ws/src/
+catkin_create_pkg ssr_pkg rospy roscpp std_msgs
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;catkin_create_pkg    &amp;lt;包名&amp;gt;    &amp;lt;依赖项列表&amp;gt;&lt;/p&gt;
+&lt;p&gt;当看到package.xml，该文件夹即有可能是一个package包&lt;/p&gt;
+&lt;h3 id=&#34;回访依赖项&#34;&gt;回访依赖项
+&lt;/h3&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;roscd roscpp或rospy
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;ros包存放位置&#34;&gt;ros包存放位置
+&lt;/h3&gt;&lt;p&gt;/opt/ros/&amp;lt;ros版本&amp;gt;/share&lt;/p&gt;
+&lt;p&gt;来源：sudo apt-get install ros-&amp;lt;ros版本&amp;gt;-desktop-full 基础包&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo apt-get install ros-&amp;lt;ros版本&amp;gt;-xxx 独立扩展包
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&#34;与catkin文件夹中包的区别&#34;&gt;与Catkin文件夹中包的区别
+&lt;/h4&gt;&lt;p&gt;ros包里都是可执行程序，而catkin里的是源码文件，需要编译为可执行程序才能运行&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/7-20260210205844-zrgintp.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/7-20260210205844-zrgintp.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;上图是./bashrc文件，第一条指令代表apt下载的软件包地址，第二条指令是catkin工作空间的软件地址&lt;/p&gt;
+&lt;p&gt;安卓手机由许多APP组成，使用ROS实际上使用ROS的一些节点，导航、控制底盘、驱动雷达&lt;/p&gt;
+&lt;h2 id=&#34;节点的基本结构&#34;&gt;节点的基本结构
+&lt;/h2&gt;&lt;h3 id=&#34;创建node节点&#34;&gt;创建Node节点
+&lt;/h3&gt;&lt;p&gt;以超声波节点为例子，在ssr_pkg/ssr中新建chao_node.cpp&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/8-20260210205844-3jraa3m.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/8-20260210205844-3jraa3m.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;8topic话题与message消息&#34;&gt;8.Topic话题与Message消息
+&lt;/h1&gt;&lt;p&gt;节点与节点之间通讯&lt;/p&gt;
+&lt;h2 id=&#34;常用工具&#34;&gt;常用工具
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/13-20260210205844-scqwao7.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/13-20260210205844-scqwao7.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/9-20260210205844-ytxc3zd.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/9-20260210205844-ytxc3zd.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;主动发布话题：Publisher（左边）        被刷屏的右边：订阅者Subscriber&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/10-20260210205844-0otes7u.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/10-20260210205844-0otes7u.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/11-20260210205844-s3d6edc.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/11-20260210205844-s3d6edc.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;std_msgs&#34;&gt;std_msgs
+&lt;/h2&gt;&lt;p&gt;类型：http://docs.ros.org/en/noetic/api/std_msgs/html/index-msg.html&lt;/p&gt;
+&lt;h2 id=&#34;c实现&#34;&gt;C++实现
+&lt;/h2&gt;&lt;h3 id=&#34;publisher和subscriber的c实现结构图&#34;&gt;Publisher和subscriber的C++实现结构图
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/14-20260210205844-yt7wk9a.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/14-20260210205844-yt7wk9a.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;publisher的c实现&#34;&gt;Publisher的C++实现
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/12-20260210205844-j4wuw9w.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/12-20260210205844-j4wuw9w.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/image-20260303145755-sqqqmua.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/image-20260303145755-sqqqmua.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;subscriber的c实现&#34;&gt;Subscriber的C++实现
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/image-20260303155157-2aj13gi.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/image-20260303155157-2aj13gi.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;sub&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;nh&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;subscribe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;话题名称&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;缓存长度&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;回调函数&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;py实现&#34;&gt;PY实现
+&lt;/h2&gt;&lt;h3 id=&#34;publisher的py实现&#34;&gt;Publisher的PY实现
+&lt;/h3&gt;&lt;blockquote class=&#34;alert alert-note&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;📝&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;✏️ 新建软件包后只编译1次&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;编译后，软件包就能进入ros软件包列表&lt;/p&gt;
+&lt;p&gt;后续都无需再编译 &lt;strong&gt;（这是与C++不同的地方）&lt;/strong&gt;&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/image-20260303145832-4e6bp0d.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/image-20260303145832-4e6bp0d.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;‍&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;代码写完后，更改chao_node.py的权限&lt;/p&gt;
+
+    &lt;blockquote&gt;
+        &lt;p&gt;chmod : change mod&lt;/p&gt;
+&lt;p&gt;+x &lt;span data-type=&#34;text&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;  : execute&lt;/p&gt;
+
+    &lt;/blockquote&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-undefined&#34; data-lang=&#34;undefined&#34;&gt;cd ~/.catkin_ws/scripts
+chmod +x chao_node.py
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;subscriber的py实现&#34;&gt;Subscriber的PY实现
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/image-20260303155235-yf505ah.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/image-20260303155235-yf505ah.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;话题不只属于发布者或订阅者&#34;&gt;话题不只属于发布者或订阅者
+&lt;/h2&gt;&lt;p&gt;而由ROS系统创建管理，只要Node向NodeHandle大管家提出的话题发布需求或者话题订阅需求，话题就会被自动创建&lt;/p&gt;
+&lt;h2 id=&#34;话题的订阅步骤查看节点网络&#34;&gt;话题的订阅步骤/查看节点网络
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/15-20260210205844-9oze4um.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/15-20260210205844-9oze4um.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;9launch文件启动节点&#34;&gt;9.launch文件启动节点
+&lt;/h1&gt;&lt;h2 id=&#34;机制&#34;&gt;机制
+&lt;/h2&gt;&lt;p&gt;launch文件是一种遵循XML语法的描述文件&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/16-20260210205844-ykh7ku8.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/16-20260210205844-ykh7ku8.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;如上图，上下分行，是为了方便阅读，但第二个小纸盒是空的，就可以写成&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;&amp;lt;大纸盒&amp;gt;
+&amp;lt;小纸盒 颜色= “黄色” /&amp;gt;
+&amp;lt;/大纸盒&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;如果有两个小纸盒&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;&amp;lt;大纸盒&amp;gt;
+&amp;lt;小纸盒      颜色= “黄色” /&amp;gt;
+&amp;lt;又一个小纸盒 颜色= “黄色” /&amp;gt;
+&amp;lt;/大纸盒&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/17-20260210205844-vhk5cjl.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/17-20260210205844-vhk5cjl.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/18-20260210205844-2wix9wh.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/18-20260210205844-2wix9wh.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/19-20260210205844-95ap5rm.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/19-20260210205844-95ap5rm.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;编写运行launch文件&#34;&gt;编写运行launch文件
+&lt;/h2&gt;&lt;h3 id=&#34;存放位置&#34;&gt;存放位置
+&lt;/h3&gt;&lt;p&gt;某个软件包的文件夹里，哪怕是子目录，为了直观和便于管理，新建launch文件夹&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;launch&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;node&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;pkg=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ssr_pkg&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;type=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;yao_node&amp;#34;&lt;/span&gt;  &lt;span class=&#34;na&#34;&gt;name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;yao_node&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;node&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;pkg=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ssr_pkg&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;type=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;chao_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;chao_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;node&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;pkg=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;atr_pkg&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;type=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ma_node&amp;#34;&lt;/span&gt;   &lt;span class=&#34;na&#34;&gt;name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ma_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;/launch&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;运行结果：只有yao_node的消息&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;launch&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;node&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;pkg=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ssr_pkg&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;type=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;yao_node&amp;#34;&lt;/span&gt;  &lt;span class=&#34;na&#34;&gt;name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;yao_node&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;node&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;pkg=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ssr_pkg&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;type=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;chao_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;chao_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;node&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;pkg=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;atr_pkg&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;type=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ma_node&amp;#34;&lt;/span&gt;   &lt;span class=&#34;na&#34;&gt;name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ma_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;output=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;screen&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;/launch&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;运行结果：既有Publisher的消息，也有Subscriber的消息，即所有节点的消息在一个终端里输出，如果要调试其中某个节点呢？&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;launch&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;node&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;pkg=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ssr_pkg&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;type=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;yao_node&amp;#34;&lt;/span&gt;  &lt;span class=&#34;na&#34;&gt;name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;yao_node&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;node&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;pkg=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ssr_pkg&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;type=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;chao_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;chao_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;launch.prefix =&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;gnome-terminal -e&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;node&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;pkg=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;atr_pkg&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;type=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ma_node&amp;#34;&lt;/span&gt;   &lt;span class=&#34;na&#34;&gt;name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ma_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;output=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;screen&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;/launch&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;node&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;pkg=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ssr_pkg&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;type=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;chao_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;chao_node&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;launch.prefix =&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;gnome-terminal -e&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;gnome-terminal是ubuntu自带的终端程序，&amp;ldquo;gnome-terminal -e&amp;quot;的意思是使用一个新的终端程序去运行这个节点&lt;/p&gt;
+&lt;p&gt;运行结果：yao_node和&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;运行&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;roslaunch atr_pkg kai_hei.launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;小结&#34;&gt;小结
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/20-20260210205844-7kb3djz.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/20-20260210205844-7kb3djz.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;用途：阅读新包时，可以通过launch文件入手，看里面要运行哪些节点&lt;/p&gt;
+&lt;h1 id=&#34;9ros机器人运动控制c实现&#34;&gt;9.ROS机器人运动控制C++实现
+&lt;/h1&gt;&lt;h2 id=&#34;坐标系正方向&#34;&gt;坐标系正方向
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/21-20260210205844-mff95lg.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/21-20260210205844-mff95lg.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/22-20260210205844-rs1npjw.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/22-20260210205844-rs1npjw.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;速度量纲&#34;&gt;速度量纲
+&lt;/h2&gt;&lt;p&gt;矢量运动：m/s&lt;/p&gt;
+&lt;p&gt;旋转运动：rad/s ，弧度每秒&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/23-20260210205844-7c6x9q5.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/23-20260210205844-7c6x9q5.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;软件包示例-geometey_msgs&#34;&gt;软件包示例-geometey_msgs
+&lt;/h2&gt;&lt;p&gt;​    当拿到一个机器人，其配套程序源码中会有一个机器人的核心节点，该核心节点能直接驱动机器人的底层硬件，同时该节点会向上订阅一个&lt;strong&gt;速度话题&lt;/strong&gt;，只需要编写一个新的节点，向速度话题(/cmd_vel)发送消息包，即可实现对机器人的速度控制&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/24-20260210205844-s561aj2.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/24-20260210205844-s561aj2.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;c实现-1&#34;&gt;C++实现
+&lt;/h2&gt;&lt;hr&gt;
+&lt;p&gt;运行及结果&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;roslaunch wpr_simulation wpb_simple.launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rosrun wpr_simulation demo_vel_ctrl
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;借助wpr_simulation来仿真&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/25-20260210205844-qdqrqg6.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/25-20260210205844-qdqrqg6.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;10rviz观测传感器数据&#34;&gt;10.Rviz观测传感器数据
+&lt;/h1&gt;&lt;p&gt;The Robot Visualization Tool，方便对机器人状态实时观测的辅助工具&lt;/p&gt;
+&lt;h2 id=&#34;与gazebo区别&#34;&gt;与gazebo区别
+&lt;/h2&gt;&lt;p&gt;gazebo模拟真实环境，rviz只接收传感器数据，并对其做可视化&lt;/p&gt;
+&lt;h2 id=&#34;使用方法&#34;&gt;使用方法
+&lt;/h2&gt;&lt;p&gt;法一、打开终端，输入以下代码运行rviz&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rviz
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;法二、在launch文件里自动加载rviz配置文件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;roslaunch wpr_simulation wpb_rviz.launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;11激光雷达消息包格式&#34;&gt;11.激光雷达消息包格式
+&lt;/h1&gt;&lt;h2 id=&#34;如何查看&#34;&gt;如何查看
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rostopic &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; /scan --noarr
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;用rostopic echo查看/scan话题的内容，&amp;ndash;noarr：折叠数组&lt;/p&gt;
+&lt;h2 id=&#34;sensor_msgs数据格式说明&#34;&gt;sensor_msgs数据格式说明
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/26-20260210205844-qa3ge0x.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/26-20260210205844-qa3ge0x.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;12获取激光雷达数据的c节点&#34;&gt;12.获取激光雷达数据的C++节点
+&lt;/h1&gt;&lt;h2 id=&#34;例程&#34;&gt;例程
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;roslaunch wpr_simulation wpb_simple.launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rosrun wpr_simulation demo_lidar_data
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;实现&#34;&gt;实现
+&lt;/h2&gt;&lt;h3 id=&#34;思路&#34;&gt;思路
+&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;激光雷达节点（通常由雷达厂商提供），雷达测距数值从电路系统传递到雷达节点，被封装为一个消息包，发布到一个topic话题（/scan）中
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/27-20260210205844-p2teny0.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/27-20260210205844-p2teny0.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;步骤&#34;&gt;步骤
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/28-20260210205844-qtzvqov.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/28-20260210205844-qtzvqov.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;catkin_create_pkg lidar_pkg roscpp rospy sensor_msgs
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/29-20260210205844-75y80d7.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/29-20260210205844-75y80d7.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;13激光雷达避障的c节点&#34;&gt;13.激光雷达避障的C++节点
+&lt;/h1&gt;&lt;div&gt;
+&lt;!--既是发布者，又是订阅者--&gt;
+&lt;/div&gt;
+&lt;h2 id=&#34;目前已经实现的效果&#34;&gt;目前已经实现的效果
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/30-20260210205844-m2nxhof.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/30-20260210205844-m2nxhof.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;实现步骤&#34;&gt;实现步骤
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/31-20260210205844-v7xjfd7.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/31-20260210205844-v7xjfd7.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;运行&#34;&gt;运行
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;roslaunch wpr_simulation wpb_simple.launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rosrun lidar_pkg lidar_node
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;14imu惯性测量单元消息包sensor_msgs&#34;&gt;14.IMU惯性测量单元消息包sensor_msgs
+&lt;/h1&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/32-20260210205844-xeqh1i7.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/32-20260210205844-xeqh1i7.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/33-20260210205844-1dclg76.jpeg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/33-20260210205844-1dclg76.jpeg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;15获取imu数据的c节点&#34;&gt;15.获取IMU数据的C++节点
+&lt;/h1&gt;&lt;h2 id=&#34;imu的三个话题&#34;&gt;IMU的三个话题
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/34-20260210205844-j5r2ct0.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/34-20260210205844-j5r2ct0.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;实现思路&#34;&gt;实现思路
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/35-20260210205844-ql6rov4.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/35-20260210205844-ql6rov4.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;步骤-1&#34;&gt;步骤
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/36-20260210205844-vcvcn6z.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/36-20260210205844-vcvcn6z.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;16imu航向锁定的c节点&#34;&gt;16.IMU航向锁定的C++节点
+&lt;/h1&gt;&lt;p&gt;使一个节点在订阅IMU数据的同时，还能发布运动控制指令，使机器人能够对姿态的变化作出反应，实现航向锁定的效果&lt;/p&gt;
+&lt;p&gt;在IMU数据C++节点基础上更改&lt;/p&gt;
 &lt;hr&gt;
+&lt;h2 id=&#34;思路-1&#34;&gt;思路
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/37-20260210205844-0nxf6k5.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/37-20260210205844-0nxf6k5.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;步骤-2&#34;&gt;步骤
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/38-20260210205844-wnwtd0u.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/38-20260210205844-wnwtd0u.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;17标准消息包std_msgs&#34;&gt;17.标准消息包std_msgs
+&lt;/h1&gt;&lt;h2 id=&#34;标准消息包分类&#34;&gt;标准消息包分类
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/39-20260210205844-4kcz55x.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/39-20260210205844-4kcz55x.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;18geometry_msgs--sensor_msgs&#34;&gt;18.geometry_msgs &amp;amp; sensor_msgs
+&lt;/h1&gt;&lt;h2 id=&#34;常用消息包类型&#34;&gt;常用消息包类型
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/40-20260210205844-8jewwl2.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/40-20260210205844-8jewwl2.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;最常用：geometry_msgs、sensor_msgs&lt;/p&gt;
+&lt;h2 id=&#34;几何消息包&#34;&gt;几何消息包
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/41-20260210205844-vctxnxl.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/41-20260210205844-vctxnxl.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;传感消息包&#34;&gt;传感消息包
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/42-20260210205844-0lu67hc.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/42-20260210205844-0lu67hc.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;19自定义消息类型&#34;&gt;19.自定义消息类型
+&lt;/h1&gt;&lt;h2 id=&#34;步骤-3&#34;&gt;步骤
+&lt;/h2&gt;&lt;h3 id=&#34;创建消息包及依赖&#34;&gt;创建消息包及依赖
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;catkin_create_pkg **_msgs roscpp rospy message_generation message_runtime
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;msg文件内容构建&#34;&gt;.msg文件内容构建
+&lt;/h3&gt;&lt;p&gt;qq_msgs/msg/carry.msg，新建msg文件夹，并新建.msg文件，内容如下图所示&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-.msg文件&#34; data-lang=&#34;.msg文件&#34;&gt;string grade //段位信息
+int64 star     //星数
+string data  //消息
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/43-20260210205844-5091t55.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/43-20260210205844-5091t55.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;编译文件构建&#34;&gt;编译文件构建
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/44-20260210205844-rxjs1tg.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/44-20260210205844-rxjs1tg.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;改为&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/46-20260210205844-lbef1cb.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/46-20260210205844-lbef1cb.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;若有多的消息类型，往下排列即可&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/45-20260210205844-s44x3cg.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/45-20260210205844-s44x3cg.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;改为&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/47-20260210205844-tiym3xd.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/47-20260210205844-tiym3xd.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;表明新的消息类型需要依赖的其他消息包列表，因为只用了std_msgs的string和int类型，所以只写了std_msgs&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/48-20260210205844-mq1jhzb.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/48-20260210205844-mq1jhzb.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;改为&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/49-20260210205844-u5y8ekk.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/49-20260210205844-u5y8ekk.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;确认“message_runtime”的存在，是为了让依赖咱们这个新建消息包的其他软件包，能够在运行时使用新定义的消息类型&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;检验packagexml文件&#34;&gt;检验package.xml文件
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/50-20260210205844-wbifqsa.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/50-20260210205844-wbifqsa.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;确保“build_depend&amp;quot;和”exec_depend“都列出了&amp;rdquo;&lt;strong&gt;message_generation&lt;/strong&gt;&amp;ldquo;和&amp;rdquo;&lt;strong&gt;message_runtime&lt;/strong&gt;&amp;quot;，缺失的话就补全，如图&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/51-20260210205844-v2yuzon.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/51-20260210205844-v2yuzon.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;编译&#34;&gt;编译
+&lt;/h3&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cd catkin_ws
+catkin_make
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;查看消息类型是否进入ros消息列表&#34;&gt;查看消息类型是否进入ROS消息列表
+&lt;/h3&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;rosmsg show qq_msgs/Carry
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/52-20260210205844-rmzu1ul.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/52-20260210205844-rmzu1ul.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;和自定义的一模一样，至此，新的消息类型诞生。&lt;/p&gt;
+&lt;h3 id=&#34;步骤小结&#34;&gt;步骤小结
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/53-20260210205844-x11jqhb.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/53-20260210205844-x11jqhb.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;20在ros中使用自定义消息类型-c实现视频36&#34;&gt;20.在ROS中使用自定义消息类型-C++实现（视频36.）
+&lt;/h1&gt;&lt;p&gt;基于视频13（Publisher发布者的C++实现）和视频14（Subscriber订阅者的C++实现），将原来使用的std_msgs的String消息包替换为Carry消息包&lt;/p&gt;
+&lt;h2 id=&#34;发布者节点修改&#34;&gt;发布者节点修改
+&lt;/h2&gt;&lt;h3 id=&#34;步骤一更改chao_nodecpp&#34;&gt;步骤一：更改chao_node.cpp
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/53-20260210205844-szjayjy.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/53-20260210205844-szjayjy.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;步骤二修改编译规则&#34;&gt;步骤二：修改编译规则
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/54-20260210205844-2nmpwv7.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/54-20260210205844-2nmpwv7.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;表明编译顺序：先编译qq_msgs，再编译ssr_pkg&lt;/p&gt;
+&lt;h3 id=&#34;步骤三添加add_dependencies&#34;&gt;步骤三：添加add_dependencies
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/55-20260210205844-q9b9pje.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/55-20260210205844-q9b9pje.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;解释：先让qq_msgs创建好新的消息类型，再来编译chao_node&lt;/p&gt;
+&lt;h3 id=&#34;步骤四packagexml文件修改&#34;&gt;步骤四：package.xml文件修改
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/56-20260210205844-ndc5wra.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/56-20260210205844-ndc5wra.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;添加两行代码&lt;/p&gt;
+&lt;h3 id=&#34;步骤五编译&#34;&gt;步骤五：编译
+&lt;/h3&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;catkin_make
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;订阅者节点修改&#34;&gt;订阅者节点修改
+&lt;/h2&gt;&lt;h3 id=&#34;步骤一修改ma_nodecpp&#34;&gt;步骤一：修改ma_node.cpp
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/57-20260210205844-kmez3w7.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/57-20260210205844-kmez3w7.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;步骤二修改编译规则-1&#34;&gt;步骤二：修改编译规则
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/58-20260210205844-r7zvxam.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/58-20260210205844-r7zvxam.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;文件末尾添加&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-cmake&#34; data-lang=&#34;cmake&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;add_dependencies&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;ma_node&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;qq_msgs_generate_messages_cpp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;步骤三packagexml文件修改&#34;&gt;步骤三：package.xml文件修改
+&lt;/h3&gt;&lt;p&gt;添加如下两行代码&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;build_depend&amp;gt;&lt;/span&gt;qq_msgs&lt;span class=&#34;nt&#34;&gt;&amp;lt;/build_depend&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;exec_depend&amp;gt;&lt;/span&gt;qq_msgs&lt;span class=&#34;nt&#34;&gt;&amp;lt;/exec_depend&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;步骤四编译&#34;&gt;步骤四：编译
+&lt;/h3&gt;&lt;h2 id=&#34;小结-1&#34;&gt;小结
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/59-20260210205845-rkx2x29.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/59-20260210205845-rkx2x29.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;21ros中的地图数据格式视频38&#34;&gt;21.ROS中的地图数据格式（视频38.）
+&lt;/h1&gt;&lt;p&gt;机器人导航使用的地图数据，是ROS导航软件包里的map_server节点在话题/map中发布的消息数据，消息类型是nav_msgs::OccupancyGrid&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/60-20260210205845-ig3yo45.jpg&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/60-20260210205845-ig3yo45.jpg&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;理解&#34;&gt;理解
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/63-20260210205845-494b51m.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/63-20260210205845-494b51m.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/64-20260210205845-uc7r423.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/64-20260210205845-uc7r423.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;有了该数组，再+上栅格的行列数等信息，就能够通过具体数值，描述清楚这个地图&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id=&#34;ros官网的解释&#34;&gt;ros官网的解释
+&lt;/h2&gt;&lt;h3 id=&#34;nav_msgsoccupancygrid-message&#34;&gt;nav_msgs/OccupancyGrid Message
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/61-20260210205845-gchefhh.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/61-20260210205845-gchefhh.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;nav_msgsmapmetadata-message&#34;&gt;nav_msgs/MapMetaData Message
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/62-20260210205845-i00kxki.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/62-20260210205845-i00kxki.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;22ros发布地图的c实现&#34;&gt;22.ROS发布地图的C++实现
+&lt;/h1&gt;&lt;p&gt;1.发布地图消息包 2.在Rviz中显示是什么效果&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;实现目标&#34;&gt;实现目标
+&lt;/h2&gt;&lt;p&gt;两行四列4*2的地图    ;    只对第一行赋值，第二行空白&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/66-20260210205845-s1mkeku.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/66-20260210205845-s1mkeku.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;实现步骤-1&#34;&gt;实现步骤
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/65-20260210205845-dc57y7v.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/65-20260210205845-dc57y7v.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;1.构建软件包&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; catkin_ws/src
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;catkin_create_pkg map_pub_node roscpp rospy nav_msgs
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;2.创建节点，发布话题&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#头文件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;main&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;ros&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;init&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;ros&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;NodeHandle&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;ros&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Publisher&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pub&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;n&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;advertiser&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;nav_msgs&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;OccupancyGrid&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;map&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;//发布话题
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;7.Rviz中显示地图&lt;/p&gt;
+&lt;p&gt;先添加坐标系&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/67-20260210205845-p7zzdxp.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/67-20260210205845-p7zzdxp.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;添加地图&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/68-20260210205845-m0bum4n.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/68-20260210205845-m0bum4n.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;设置地图 Topic为/map&lt;/p&gt;
+&lt;h1 id=&#34;23什么是slam&#34;&gt;23.什么是SLAM
+&lt;/h1&gt;&lt;p&gt;ROS中，地图是通过SLAM生成的&lt;/p&gt;
+&lt;p&gt;全称：Simultaneous Locallization And Mapping，同时&lt;strong&gt;定位&lt;/strong&gt;与&lt;strong&gt;建图&lt;/strong&gt;，这两个操作同时进行的&lt;/p&gt;
+&lt;p&gt;找参照物-建图&lt;/p&gt;
+&lt;h2 id=&#34;视觉slam&#34;&gt;视觉SLAM
+&lt;/h2&gt;&lt;p&gt;相机的位置、视觉图像中提取的特征点就是地图中参照物&lt;/p&gt;
+&lt;p&gt;实际应用中，参照物还可以是二维码、颜色标记、电子标签&lt;/p&gt;
+&lt;h2 id=&#34;激光雷达slam&#34;&gt;激光雷达SLAM
+&lt;/h2&gt;&lt;p&gt;分为三个状态，建图前、建图中、建完图了&lt;/p&gt;
+&lt;p&gt;建图前：所有栅格值都是-1，不知道哪里有障碍物，就像RTS游戏中的战争迷雾&lt;/p&gt;
+&lt;p&gt;可以合并的参照物特征：不是物体的外观，而是障碍物栅格的排布形状&lt;/p&gt;
+&lt;h1 id=&#34;24hector_mappingros中实现slam&#34;&gt;24.Hector_Mapping，ROS中实现SLAM
+&lt;/h1&gt;&lt;h2 id=&#34;规划需要的节点&#34;&gt;规划需要的节点
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/69-20260210205845-149swm3.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/69-20260210205845-149swm3.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;框选部分，在前面的实验已经实现&lt;/p&gt;
+&lt;h2 id=&#34;rosapi&#34;&gt;ROSAPI
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/70-20260210205845-stbal8t.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/70-20260210205845-stbal8t.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;动手动手&#34;&gt;动手动手
+&lt;/h2&gt;&lt;p&gt;安装Hector_Mapping&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install ros-noetic-hector-mapping
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;运行仿真环境&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;roslaunch wpr_simulation wpb_stage_slam.launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;运行SLAM节点&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rosrun hector_mapping hector_mapping
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;通过Rviz窗口查看输出的地图&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rosrun rviz rviz
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在Rviz中添加&lt;/p&gt;
+&lt;p&gt;机器人模型 Add-RobotModel&lt;/p&gt;
+&lt;p&gt;激光雷达扫描测距点 Add - LaserScan，点太小可以调大&lt;/p&gt;
+&lt;p&gt;添加地图    Add-Map&lt;/p&gt;
+&lt;h1 id=&#34;25通过launch文件启动hector_mapping建图功能&#34;&gt;25.通过launch文件启动Hector_Mapping建图功能
+&lt;/h1&gt;&lt;h2 id=&#34;复习launch文件实验&#34;&gt;复习launch文件实验
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/71-20260210205845-4bqpn4y.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/71-20260210205845-4bqpn4y.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;实操&#34;&gt;实操
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/72-20260210205845-rf89v9s.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/72-20260210205845-rf89v9s.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;新建软件包slam_pkg&#34;&gt;新建软件包slam_pkg
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;catkin_create_pkg slam_pkg roscpp rospy std_msgs
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;打开vscode，在slam_pkg文件夹里新建文件夹launch，&lt;/p&gt;
+&lt;h3 id=&#34;在launch文件夹里新建hectorlaunch文件&#34;&gt;在launch文件夹里新建hector.launch文件
+&lt;/h3&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-launch&#34; data-lang=&#34;launch&#34;&gt;&amp;lt;launch&amp;gt;
+    &amp;lt;include file=&amp;#34;$(find wpr_simulation)/launch/wpb_stage_slam.launch&amp;#34;/&amp;gt;
+    &amp;lt;node pkg=&amp;#34;hector_mapping&amp;#34;     type=&amp;#34;hector_mapping&amp;#34;      name=&amp;#34;hector_mapping&amp;#34;/&amp;gt;
+    &amp;lt;node pkg=&amp;#34;rviz&amp;#34;               type=&amp;#34;rviz&amp;#34;                name=&amp;#34;rviz&amp;#34;/&amp;gt;
+    &amp;lt;node pkg=&amp;#34;rqt_robot_steering&amp;#34; type=&amp;#34;rqt_robot_steering&amp;#34;  name=&amp;#34;rqt_robot_steering&amp;#34;/&amp;gt;
+&amp;lt;/launch&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;运行launch前，需要编译slam_pkg软件包&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;在launch中加载rviz配置文件&#34;&gt;在launch中加载rviz配置文件
+&lt;/h3&gt;&lt;p&gt;先保存rviz配置到catkin_ws/src/slam_pkg/rviz&lt;/p&gt;
+&lt;p&gt;测试运行&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rosrun rviz rviz -d /home/zyl/catkin_ws/src/slam_pkg/rviz/slam.rviz
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;更改launch文件&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/73-20260210205845-at2ad62.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/73-20260210205845-at2ad62.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&#34;26hector_mapping的参数设置&#34;&gt;26.Hector_Mapping的参数设置
+&lt;/h1&gt;&lt;h2 id=&#34;参数说明&#34;&gt;参数说明
+&lt;/h2&gt;&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://wiki.ros.org/hector_mapping#ROS_API&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;参数说明传送门&lt;/a&gt;，本实验挑几个容易看出差别的参数来设置&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/74-20260210205845-tsxcg5i.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/74-20260210205845-tsxcg5i.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;launch文件编写&#34;&gt;launch文件编写
+&lt;/h2&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/75-20260210205845-gpzfuis.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/75-20260210205845-gpzfuis.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;体会各个参数的作用&#34;&gt;体会各个参数的作用
+&lt;/h2&gt;&lt;p&gt;wpr_simulation/launch/wpb_hector_comparison.launch&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/76-20260210205845-qumii2q.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/76-20260210205845-qumii2q.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;更改上述框内参数，并观察rviz内的变化即可&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;roslaunch wpr_simulation wpb_hector_comparison.launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;27ros的tf系统&#34;&gt;27.ROS的TF系统
+&lt;/h1&gt;&lt;p&gt;抛出问题：上一节中，通过ROS的SLAM节点，得到了栅格地图，&lt;strong&gt;那么机器人的定位信息，该如何获得呢？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/77-20260210205845-sj268dg.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/77-20260210205845-sj268dg.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;定位信息的描述方法&#34;&gt;定位信息的描述方法
+&lt;/h2&gt;&lt;p&gt;机器人在地图中的位置-&amp;gt;机器人和坐标系原点间的空间关系，为了便于描述，给机器人和地图各自定义一个坐标系，&lt;strong&gt;地图坐标系作为父坐标系，机器人坐标系作为子坐标系&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;两个坐标系的空间关系&amp;mdash;子坐标系在父坐标系中XYZ三个轴的距离偏移量&lt;/p&gt;
+&lt;h3 id=&#34;地图坐标系map&#34;&gt;地图坐标系：map
+&lt;/h3&gt;&lt;p&gt;原点在机器人建图的初始位置，坐标轴方向遵循ROS的右手法则&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/78-20260210205845-86jhhv2.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/78-20260210205845-86jhhv2.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;机器人坐标系base_footprint&#34;&gt;机器人坐标系：base_footprint
+&lt;/h3&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/79-20260210205845-vc2tlvc.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/79-20260210205845-vc2tlvc.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/80-20260210205845-qdi8ezd.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/80-20260210205845-qdi8ezd.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;如何获取具体的定位数值呢&#34;&gt;如何获取具体的定位数值呢？
+&lt;/h2&gt;&lt;h3 id=&#34;什么是tf&#34;&gt;什么是TF
+&lt;/h3&gt;&lt;p&gt;TF是TransForm的缩写，主要描述的是两个坐标系的空间关系，可以理解为&lt;strong&gt;坐标系变换&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;消息结构&#34;&gt;消息结构
+&lt;/h3&gt;&lt;p&gt;在&lt;a class=&#34;link&#34; href=&#34;https://index.ros.org/p/tf2_msgs/#noetic&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Ros Index&lt;/a&gt;中查询消息结构&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/83-20260210205845-xtm0367.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/83-20260210205845-xtm0367.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/84-20260210205845-2e8rnb9.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/84-20260210205845-2e8rnb9.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&#34;示例&#34;&gt;示例
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;roslaunch wpr_simulation wpb_hector_comparison.launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;移动机器人，在Rviz中Add-TF，修改Marker Scale为5，同时设置Frame，只显示&lt;strong&gt;base_footprint&lt;/strong&gt;和&lt;strong&gt;map&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rostopic list
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/81-20260210205845-tlbuisu.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/81-20260210205845-tlbuisu.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rostopic &lt;span class=&#34;nb&#34;&gt;type&lt;/span&gt; /tf
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/82-20260210205845-6c87hkz.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/82-20260210205845-6c87hkz.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rostopic &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; /tf
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/85-20260210205845-yz7k6rw.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/85-20260210205845-yz7k6rw.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;上图中，除了/base_footprint和/map，还夹杂了很多TF关系，如何理清楚呢？&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rosrun rqt_tf_tree rqt_tf_tree
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;28里程计在激光雷达slam中的作用&#34;&gt;28.里程计在激光雷达SLAM中的作用
+&lt;/h1&gt;&lt;h2 id=&#34;hector-mapping建图&#34;&gt;Hector Mapping建图
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;roslaunch wpr_simulation wpb_corridor_hector.launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;直接将雷达点云贴合障碍物轮廓，所得出的机器人位置，作为最终的定位结果，在TF树中，体现为map到scanmatcher_frame&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/87-20260210205845-ka50fo8.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/87-20260210205845-ka50fo8.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;roslaunch wpr_simulation wpb_corridor_gmapping.launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;gmapping建图&#34;&gt;Gmapping建图
+&lt;/h2&gt;&lt;p&gt;1.里程计推算机器人的位移&lt;/p&gt;
+&lt;p&gt;2.通过雷达点云贴合障碍物轮廓，修正里程计误差&lt;/p&gt;
+&lt;h2 id=&#34;两种算法的区别&#34;&gt;两种算法的区别
+&lt;/h2&gt;&lt;p&gt;Gmapping&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;机器人的位移主要由里程计推算，雷达点云的配准算法是为了修正里程计出现的误差。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Hector_Mapping&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;不考虑里程计的数据，只用雷达点云和障碍物配准的方法定位&lt;/li&gt;
+&lt;li&gt;而为了rviz里能够显示机器人模型，强行输出一段map到odom的TF，来抵消不断增长的里程计TF，使得scanmatcher_frame和base_footprint的位置始终保持一致&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote class=&#34;alert alert-note&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;📝&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;（这是与C++不同的地方）&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;如想在Rviz中显示地图和机器人模型，必须实现map到base_footprint的TF，这样才能将机器人本身的TF和map接上，形成完整的TF树，所以Hector_Mapping还会输出一段map到odom的TF，这样就能和里程计的TF组合成完整的map到base_footprint的TF&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+&lt;p&gt;7：30：障碍物点云配准算法&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;                            为什么存在差异？
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;原因：对于激光雷达来说，缺少参照物特征的变化，无法估计自己的位移&lt;/p&gt;
+&lt;p&gt;解决方法：电机里程计&lt;/p&gt;
+&lt;blockquote class=&#34;alert alert-note&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;📝&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;Note&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;里程计不是一种硬件，而是一种软件算法，通过电机的速度计算出位移，但存在误差&lt;/p&gt;
+&lt;p&gt;运行在机器人的驱动节点中&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:7319/assets/86-20260210205845-zee0h2h.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:7319/assets/86-20260210205845-zee0h2h.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			&gt;
+	&lt;/a&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;激光雷达SLAM输出的是map到base_footprint的TF，靠的是map-odom的TF，再加上odom-base_footprint的TF&lt;/p&gt;
+&lt;p&gt;里程计输出的是odom到base_footprint的TF&lt;/p&gt;
+&lt;h2 id=&#34;困扰很久的点&#34;&gt;困扰很久的点
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;在hector_mapping建图的过程中，在rviz中打开TF关系，为什么odom坐标系会在找不到点云特征时后退？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;hector的定位结果，是map到scanmatcher_frame的TF关系，而为了在rviz中能够显示出地图和机器人模型，必须实现map到base_footprint的TF，而map到base_footprint间还存在一个odom&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;hector认为机器人没有动，因为长廊特征退化&lt;/li&gt;
+&lt;li&gt;底盘节点仍在发布odom到base_footprint的TF，假如hector没有反向输出odom的TF，则会出现scanmatcher_frame仍在原地，base_footprint向前移动的情况，导致scanmatcher_frame与base_footprint位置不一致，所以hector输出odom的反向TF，可以抵消base_footprint的向前移动，使得base_footprint和scanmatcher_frame保持一致&lt;/li&gt;
+&lt;li&gt;这样既实现了map-scanmatcher_frame作为定位结果，又实现了map-odom-base_footprint，保证了map与base_footprint的正常连接，能够形成完整的TF树。&lt;/li&gt;
+&lt;/ol&gt;
 </description>
         </item>
         <item>
         <title>Hugo Stack 主题使用教程</title>
-        <link>http://localhost:1313/post/test/</link>
+        <link>http://localhost:1313/post/hugo-stack-%E4%B8%BB%E9%A2%98%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/</link>
         <pubDate>Sun, 04 Jan 2026 10:00:00 +0800</pubDate>
         
-        <guid>http://localhost:1313/post/test/</guid>
+        <guid>http://localhost:1313/post/hugo-stack-%E4%B8%BB%E9%A2%98%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/</guid>
         <description>&lt;h1 id=&#34;这里开始写文章正文支持-markdown-格式&#34;&gt;这里开始写文章正文（支持 Markdown 格式）
 &lt;/h1&gt;&lt;h2 id=&#34;一什么是-hugo-stack-主题&#34;&gt;一、什么是 Hugo Stack 主题
 &lt;/h2&gt;&lt;p&gt;Stack 是一款简约、美观、高性能的 Hugo 主题，专注于内容展示，支持响应式布局。&lt;/p&gt;
@@ -30,13 +2238,12 @@
 </description>
         </item>
         <item>
-        <title>Article01</title>
-        <link>http://localhost:1313/post/article01/</link>
+        <title>记录手机第一次通过WIFI与ESP8266连接</title>
+        <link>http://localhost:1313/post/%E8%AE%B0%E5%BD%95%E6%89%8B%E6%9C%BA%E7%AC%AC%E4%B8%80%E6%AC%A1%E9%80%9A%E8%BF%87-wifi-%E4%B8%8E-esp8266-%E8%BF%9E%E6%8E%A5/</link>
         <pubDate>Thu, 13 Jul 2023 20:20:26 +0800</pubDate>
         
-        <guid>http://localhost:1313/post/article01/</guid>
-        <description>&lt;h2 id=&#34;记录手机第一次通过wifi与esp8266连接&#34;&gt;记录手机第一次通过WIFI与ESP8266连接
-&lt;/h2&gt;&lt;p&gt;(发送新行)
+        <guid>http://localhost:1313/post/%E8%AE%B0%E5%BD%95%E6%89%8B%E6%9C%BA%E7%AC%AC%E4%B8%80%E6%AC%A1%E9%80%9A%E8%BF%87-wifi-%E4%B8%8E-esp8266-%E8%BF%9E%E6%8E%A5/</guid>
+        <description>&lt;p&gt;(发送新行)
 1.发送AT，返回OK
 2.AT+CWMODE=1,设置ESP8266 Station模式该模式ESP不生成WIFI信号
 3.AT+RST,重启生效
@@ -61,575 +2268,6 @@ ESP AP模式配网完成&lt;/p&gt;
 8.AT+CIPSERVER=1,8080 建立服务器,端口8080
 ESP Station模式配网完成&lt;/p&gt;
 </description>
-        </item>
-        <item>
-        <title>Hugo | Hugo-stack-theme主题魔改版</title>
-        <link>http://localhost:1313/post/2022/stack-theme-mod/</link>
-        <pubDate>Sun, 13 Feb 2022 03:02:52 +0800</pubDate>
-        
-        <guid>http://localhost:1313/post/2022/stack-theme-mod/</guid>
-        <description>&lt;p&gt;Github仓库地址：&lt;a class=&#34;link&#34; href=&#34;https://github.com/Mantyke&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Mantyke&lt;/a&gt;/&lt;a class=&#34;link&#34; href=&#34;https://github.com/Mantyke/Hugo-stack-theme-mod&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;stack-theme-mod&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;本主题由&lt;a class=&#34;link&#34; href=&#34;https://github.com/CaiJimmy&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;CaiJimmy&lt;/a&gt;制作并&lt;a class=&#34;link&#34; href=&#34;https://github.com/CaiJimmy/hugo-theme-stack&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;发布&lt;/a&gt;，这个仓库是由&lt;a class=&#34;link&#34; href=&#34;https://mantyke.icu/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Mantyke&lt;/a&gt;修改的魔改版本&lt;/p&gt;
-&lt;p&gt;预览：&lt;a class=&#34;link&#34; href=&#34;https://stack-theme-mod.vercel.app/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Demo站&lt;/a&gt;&lt;/p&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;h2 id=&#34;使用方式&#34;&gt;使用方式
-&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;从零建立博客&lt;/strong&gt;：Fork仓库到自己账号下，用Github 注册 Vercel，依次点击Overview → New Project → import刚刚Fork的仓库，设置&lt;code&gt;FRAMEWORK PRESET&lt;/code&gt;为Hugo → 点击&lt;code&gt;Environment Variables&lt;/code&gt;，设置&lt;code&gt;NAME&lt;/code&gt;为&lt;code&gt;HUGO_VERSION&lt;/code&gt;，&lt;code&gt;Value&lt;/code&gt;为&lt;code&gt;Hugo版本号（如0.89.0）&lt;/code&gt; → 点击Add → 点击Deploy，稍等十来秒即可部署完成。下载仓库到本地后使用Github Desktop更新文章。（注，本地预览需安装Hugo，具体请参照&lt;a class=&#34;link&#34; href=&#34;https://mantyke.icu/2021/hugo-build-blog/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Hugo | 一起动手搭建个人博客吧&lt;/a&gt;相关内容）&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;旧博客更换主题&lt;/strong&gt;：不同主题方式不同，推荐只保留原博客的content文件夹，迁移到本仓库content文件夹后再按情况调整。&lt;/p&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;h2 id=&#34;魔改内容&#34;&gt;魔改内容
-&lt;/h2&gt;&lt;ul&gt;
-&lt;li&gt;调整文章页面为三栏显示（代码来自&lt;a class=&#34;link&#34; href=&#34;https://github.com/ShadowySpirits/hugo-theme-stack&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;ShadowySpirits&lt;/a&gt;）&lt;/li&gt;
-&lt;li&gt;文章按年份分类&lt;/li&gt;
-&lt;li&gt;增加文章字数统计与站点总字数、总篇数显示&lt;/li&gt;
-&lt;li&gt;修改全站字体为思源宋体&lt;/li&gt;
-&lt;li&gt;增加一个引用短代码（短代码来自&lt;a class=&#34;link&#34; href=&#34;https://guanqr.com/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;荷戟独彷徨&lt;/a&gt;）&lt;/li&gt;
-&lt;li&gt;添加一个友情链接页面并设置为双栏（友情链接代码来自&lt;a class=&#34;link&#34; href=&#34;https://bore.vip/archives/3bf3725e/#%E6%B7%BB%E5%8A%A0%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5-shortcodes&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Bore&lt;/a&gt;，双栏代码来自&lt;a class=&#34;link&#34; href=&#34;https://tech.randomwaves.space/posts/21-12-08-make-hugo-stack-theme-links-display-in-two-columns/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;BB_Roin&lt;/a&gt;）&lt;/li&gt;
-&lt;li&gt;一系列基于个人美观喜好的CSS修改&lt;/li&gt;
-&lt;li&gt;右侧栏增加Categories小部件&lt;/li&gt;
-&lt;/ul&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;h2 id=&#34;部分使用说明&#34;&gt;部分使用说明
-&lt;/h2&gt;&lt;h3 id=&#34;引用样式短代码&#34;&gt;引用样式短代码
-&lt;/h3&gt;&lt;p&gt;（注：实际使用请补全花括号&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;{&amp;lt; quote &amp;gt;}}}
-三月，因久旱不雨，苏轼赴郿，祈雨于太白山之上清宫。数日后，虽有微雨，父老以为不足，于是，再陪宋太守亲往祭祷，回程路上，便见道中有云气自山中来，如群马奔突而至车座左右，苏轼一时好奇心起，开笼收云归家，作《攓云篇》。
-{&amp;lt; /quote &amp;gt;}}
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;
-
-&lt;blockquote class=&#34;quote&#34;&gt;
-        &lt;p&gt;三月，因久旱不雨，苏轼赴郿，祈雨于太白山之上清宫。数日后，虽有微雨，父老以为不足，于是，再陪宋太守亲往祭祷，回程路上，便见道中有云气自山中来，如群马奔突而至车座左右，苏轼一时好奇心起，开笼收云归家，作《攓云篇》。&lt;/p&gt;&lt;/blockquote&gt; 
-&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;h3 id=&#34;友情链接使用方式&#34;&gt;友情链接使用方式
-&lt;/h3&gt;&lt;p&gt;友链头像放在&lt;code&gt;/assets/link-img&lt;/code&gt;，友链数据放在&lt;code&gt;/data/links.json&lt;/code&gt;&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;[
-    {
-        &amp;#34;title&amp;#34;: &amp;#34;小球飞鱼&amp;#34;,
-        &amp;#34;website&amp;#34;: &amp;#34;https://mantyke.icu/&amp;#34;,
-        &amp;#34;image&amp;#34;: &amp;#34;mantyke.png&amp;#34;,
-     &amp;#34;description&amp;#34;: &amp;#34;我们会一起遇见鲸鱼吗？&amp;#34;
-    },
-	{
-        &amp;#34;title&amp;#34;: &amp;#34;友情链接2&amp;#34;,
-        &amp;#34;website&amp;#34;: &amp;#34;&amp;#34;,
-        &amp;#34;image&amp;#34;: &amp;#34;&amp;#34;,
-     &amp;#34;description&amp;#34;: &amp;#34;&amp;#34;
-    }
-]
-&lt;/code&gt;&lt;/pre&gt;&lt;!-- raw HTML omitted --&gt;
-&lt;h3 id=&#34;修改页尾信息&#34;&gt;修改页尾信息
-&lt;/h3&gt;&lt;p&gt;站点名称及建站时间请修改以下代码&lt;/p&gt;
-&lt;p&gt;站点名称及链接：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#位置：layout/partials/footer/footer.html
-
-    &amp;lt;section class=&amp;#34;copyright&amp;#34;&amp;gt;
-        &amp;amp;copy; 
-        {{ if and (.Site.Params.footer.since) (ne .Site.Params.footer.since (int (now.Format &amp;#34;2006&amp;#34;))) }}
-            {{ .Site.Params.footer.since }} - 
-        {{ end }}
-        {{ now.Format &amp;#34;2006&amp;#34; }} &amp;lt;a href=&amp;#34;https://stack-theme-mod.vercel.app/&amp;#34;&amp;gt;Example Site&amp;lt;/a&amp;gt;·&amp;lt;i class=&amp;#34;fas fa-bell&amp;#34;&amp;gt;&amp;lt;/i&amp;gt; &amp;lt;a id=&amp;#34;days&amp;#34;&amp;gt;0&amp;lt;/a&amp;gt;Days&amp;lt;br&amp;gt;
-      {{$var :=  $scratch.Get &amp;#34;total&amp;#34;}}{{$var = div $var 100.0}}{{$var = math.Ceil $var}}{{$var = div $var 10.0}}共书写了{{$var}}k字·共 {{ len (where .Site.RegularPages &amp;#34;Section&amp;#34; &amp;#34;post&amp;#34;) }}篇文章&amp;lt;/br&amp;gt;&amp;lt;span&amp;gt;&amp;lt;p&amp;gt;
-    &amp;lt;/section&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#位置：layout/partials/footer/footer.html
-
-var s1 = &amp;#39;2022-02-13&amp;#39;;//设置为建站时间
-s1 = new Date(s1.replace(/-/g, &amp;#34;/&amp;#34;));
-s2 = new Date();
-var days = s2.getTime() - s1.getTime();
-var number_of_days = parseInt(days / (1000 * 60 * 60 * 24));
-document.getElementById(&amp;#39;days&amp;#39;).innerHTML = number_of_days;
-&lt;/code&gt;&lt;/pre&gt;&lt;!-- raw HTML omitted --&gt;
-&lt;h2 id=&#34;其他常见修改&#34;&gt;其他常见修改
-&lt;/h2&gt;&lt;h3 id=&#34;设置博客头像&#34;&gt;设置博客头像
-&lt;/h3&gt;&lt;p&gt;位置：&lt;code&gt;/assets/img&lt;/code&gt;，请将头像命名为&lt;code&gt;avatar.png&lt;/code&gt;，替换原头像文件&lt;/p&gt;
-&lt;h3 id=&#34;删除博客头像&#34;&gt;删除博客头像
-&lt;/h3&gt;&lt;p&gt;位置：&lt;code&gt;/layouts/partials/sidebar/left.html&lt;/code&gt;，注释或删去以下部分：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;        {{ with .Site.Params.sidebar.avatar }}
-            {{ if (default true .enabled) }}
-            &amp;lt;figure class=&amp;#34;site-avatar&amp;#34;&amp;gt;
-                &amp;lt;a href=&amp;#34;{{ .Site.BaseURL | relLangURL }}&amp;#34;&amp;gt;
-                {{ if not .local }}
-                    &amp;lt;img src=&amp;#34;{{ .src }}&amp;#34; width=&amp;#34;300&amp;#34; height=&amp;#34;300&amp;#34; class=&amp;#34;site-logo&amp;#34; loading=&amp;#34;lazy&amp;#34; alt=&amp;#34;Avatar&amp;#34;&amp;gt;
-                {{ else }}
-                    {{ $avatar := resources.Get (.src) }}
-                    
-                    {{ if $avatar }}
-                        {{ $avatarResized := $avatar.Resize &amp;#34;300x&amp;#34; }}
-                        &amp;lt;img src=&amp;#34;{{ $avatarResized.RelPermalink }}&amp;#34; width=&amp;#34;{{ $avatarResized.Width }}&amp;#34;
-                            height=&amp;#34;{{ $avatarResized.Height }}&amp;#34; class=&amp;#34;site-logo&amp;#34; loading=&amp;#34;lazy&amp;#34; alt=&amp;#34;Avatar&amp;#34;&amp;gt;
-                    {{ else }}
-                        {{ errorf &amp;#34;Failed loading avatar from %q&amp;#34; . }}
-                    {{ end }}
-                {{ end }}
-                &amp;lt;/a&amp;gt;
-                {{ with $.Site.Params.sidebar.emoji }}
-                    &amp;lt;span class=&amp;#34;emoji&amp;#34;&amp;gt;{{ . }}&amp;lt;/span&amp;gt;
-                {{ end }}
-            &amp;lt;/figure&amp;gt;
-            {{ end }}
-        {{ end }}
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;修改博客背景颜色&#34;&gt;修改博客背景颜色
-&lt;/h3&gt;&lt;p&gt;位置：&lt;code&gt;assets\scss\variables.scss&lt;/code&gt;&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;--body-background: #f6f6f6;
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;指定首页分类标签颜色&#34;&gt;指定首页分类标签颜色
-&lt;/h3&gt;&lt;p&gt;位置：&lt;code&gt;content\categories&lt;/code&gt;，创建分类同名文件夹后，在文件夹内创建&lt;code&gt;_index.md&lt;/code&gt;文件，写入frontmatter&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;title: &amp;#34;做猫贵在折腾&amp;#34; //分类名称
-description: &amp;#34;简介 Blablabla&amp;#34; //不需要可以删了
-image: &amp;#34;ffxiv_20210830_230509_817.png&amp;#34; //分类题图，不需要也可以删了
-style:
-    background: &amp;#34;#80aba9&amp;#34; //分类标签底色
-    color: &amp;#34;#fff&amp;#34;
----
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;配置各类图标&#34;&gt;配置各类图标
-&lt;/h3&gt;&lt;p&gt;图标放在：&lt;code&gt;/assets/icons&lt;/code&gt;，svg格式，配置方式参考&lt;a class=&#34;link&#34; href=&#34;https://docs.stack.jimmycai.com/zh/configuration/custom-menu&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;文档&lt;/a&gt;&lt;/p&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;h3 id=&#34;其他参考&#34;&gt;其他参考
-&lt;/h3&gt;&lt;p&gt;其他我站修改及Hugo博客搭建教程可参见以下文章，作者代码水平为0，写作时间跨度较大，参考时务必注意：&lt;/p&gt;
-&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://mantyke.icu/2021/hugo-build-blog/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Hugo | 一起动手搭建个人博客吧&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://mantyke.icu/2021/f9f0ec87/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Hugo | 看中 Stack 主题的归档功能，搬家并做修改&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://mantyke.icu/2021/a08f1963/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Hugo | 另一篇 Stack 主题装修记录&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://mantyke.icu/2021/comment/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Hugo | 为 Blog 增加评论区&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://mantyke.icu/2021/47a5331b/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Hugo | 以正确姿势自动添加文章最后更新时间&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://mantyke.icu/2021/cf2cf0fb/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Hugo | 在文章中插入轮播图片&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://mantyke.icu/2022/stack-theme-furnish03/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Hugo | 第三篇 Stack 主题装修记录，堂堂再临！&lt;/a&gt;&lt;/p&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;p&gt;如果您喜欢或使用这个魔改版主题成功搭建了自己的个人博客，欢迎到我的&lt;a class=&#34;link&#34; href=&#34;https://mantyke.icu/2022/stack-theme-mod/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;个人博客&lt;/a&gt;中留言告诉我，我会很开心的！&lt;/p&gt;
-&lt;!-- raw HTML omitted --&gt;
-</description>
-        </item>
-        <item>
-        <title>Chinese Test</title>
-        <link>http://localhost:1313/post/2021/test-chinese/</link>
-        <pubDate>Wed, 09 Sep 2020 00:00:00 +0000</pubDate>
-        
-        <guid>http://localhost:1313/post/2021/test-chinese/</guid>
-        <description>&lt;img src="http://localhost:1313/post/2021/test-chinese/helena-hertz-wWZzXlDpMog-unsplash.jpg" alt="Featured image of post Chinese Test" /&gt;&lt;h2 id=&#34;短代码测试&#34;&gt;短代码测试
-&lt;/h2&gt;
-
-&lt;blockquote class=&#34;quote&#34;&gt;
-        &lt;p&gt;三月，因久旱不雨，苏轼赴郿，祈雨于太白山之上清宫。数日后，虽有微雨，父老以为不足，于是，再陪宋太守亲往祭祷，回程路上，便见道中有云气自山中来，如群马奔突而至车座左右，苏轼一时好奇心起，开笼收云归家，作《攓云篇》。&lt;/p&gt;&lt;/blockquote&gt; 
-&lt;h2 id=&#34;正文测试&#34;&gt;正文测试
-&lt;/h2&gt;&lt;p&gt;而这些并不是完全重要，更加重要的问题是， 带着这些问题，我们来审视一下学生会退会。 既然如何， 对我个人而言，学生会退会不仅仅是一个重大的事件，还可能会改变我的人生。 我们不得不面对一个非常尴尬的事实，那就是， 可是，即使是这样，学生会退会的出现仍然代表了一定的意义。 学生会退会，发生了会如何，不发生又会如何。 经过上述讨论， 生活中，若学生会退会出现了，我们就不得不考虑它出现了的事实。 学生会退会，到底应该如何实现。 这样看来， 在这种困难的抉择下，本人思来想去，寝食难安。 对我个人而言，学生会退会不仅仅是一个重大的事件，还可能会改变我的人生。 就我个人来说，学生会退会对我的意义，不能不说非常重大。 莎士比亚曾经提到过，人的一生是短的，但如果卑劣地过这一生，就太长了。这似乎解答了我的疑惑。 莫扎特说过一句富有哲理的话，谁和我一样用功，谁就会和我一样成功。这启发了我， 对我个人而言，学生会退会不仅仅是一个重大的事件，还可能会改变我的人生。 学生会退会，到底应该如何实现。 一般来说， 从这个角度来看， 这种事实对本人来说意义重大，相信对这个世界也是有一定意义的。 在这种困难的抉择下，本人思来想去，寝食难安。 了解清楚学生会退会到底是一种怎么样的存在，是解决一切问题的关键。 一般来说， 生活中，若学生会退会出现了，我们就不得不考虑它出现了的事实。 问题的关键究竟为何？ 而这些并不是完全重要，更加重要的问题是。&lt;/p&gt;
-&lt;p&gt;奥斯特洛夫斯基曾经说过，共同的事业，共同的斗争，可以使人们产生忍受一切的力量。　带着这句话，我们还要更加慎重的审视这个问题： 一般来讲，我们都必须务必慎重的考虑考虑。 既然如此， 这种事实对本人来说意义重大，相信对这个世界也是有一定意义的。 带着这些问题，我们来审视一下学生会退会。 我认为， 我认为， 在这种困难的抉择下，本人思来想去，寝食难安。 问题的关键究竟为何？ 每个人都不得不面对这些问题。 在面对这种问题时， 要想清楚，学生会退会，到底是一种怎么样的存在。 我认为， 既然如此， 每个人都不得不面对这些问题。 在面对这种问题时， 那么， 我认为， 学生会退会因何而发生。&lt;/p&gt;
-&lt;h2 id=&#34;引用&#34;&gt;引用
-&lt;/h2&gt;
-    &lt;blockquote&gt;
-        &lt;p&gt;思念是最暖的忧伤像一双翅膀&lt;br&gt;
-让我停不了飞不远在过往游荡&lt;br&gt;
-不告而别的你 就算为了我着想&lt;br&gt;
-这么沉痛的呵护 我怎么能翱翔&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.youtube.com/watch?v=3aypp_YlBzI&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;最暖的憂傷 - 田馥甄&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
-
-    &lt;/blockquote&gt;
-&lt;h2 id=&#34;图片&#34;&gt;图片
-&lt;/h2&gt;&lt;p&gt;&lt;figure 
-	
-		class=&#34;gallery-image&#34; 
-		style=&#34;
-			flex-grow: 66; 
-			flex-basis: 160px&#34;
-	&gt;
-	&lt;a href=&#34;http://localhost:1313/post/2021/test-chinese/florian-klauer-nptLmg6jqDo-unsplash.jpg&#34; data-size=&#34;667x1000&#34;&gt;
-		&lt;img src=&#34;http://localhost:1313/post/2021/test-chinese/florian-klauer-nptLmg6jqDo-unsplash.jpg&#34;
-			width=&#34;667&#34;
-			height=&#34;1000&#34;
-			srcset=&#34;http://localhost:1313/post/2021/test-chinese/florian-klauer-nptLmg6jqDo-unsplash_hu_7b8a06820e6d5c.jpg 480w, http://localhost:1313/post/2021/test-chinese/florian-klauer-nptLmg6jqDo-unsplash_hu_a347f10e565b40ff.jpg 1024w&#34;
-			loading=&#34;lazy&#34;
-			alt=&#34;Photo by Florian Klauer on Unsplash&#34;&gt;
-	&lt;/a&gt;
-	
-	&lt;figcaption&gt;Photo by Florian Klauer on Unsplash&lt;/figcaption&gt;
-	
-&lt;/figure&gt;  &lt;figure 
-	
-		class=&#34;gallery-image&#34; 
-		style=&#34;
-			flex-grow: 149; 
-			flex-basis: 359px&#34;
-	&gt;
-	&lt;a href=&#34;http://localhost:1313/post/2021/test-chinese/luca-bravo-alS7ewQ41M8-unsplash.jpg&#34; data-size=&#34;1000x667&#34;&gt;
-		&lt;img src=&#34;http://localhost:1313/post/2021/test-chinese/luca-bravo-alS7ewQ41M8-unsplash.jpg&#34;
-			width=&#34;1000&#34;
-			height=&#34;667&#34;
-			srcset=&#34;http://localhost:1313/post/2021/test-chinese/luca-bravo-alS7ewQ41M8-unsplash_hu_258fc4da0cfc7de9.jpg 480w, http://localhost:1313/post/2021/test-chinese/luca-bravo-alS7ewQ41M8-unsplash_hu_d415bcea096fe061.jpg 1024w&#34;
-			loading=&#34;lazy&#34;
-			alt=&#34;Photo by Luca Bravo on Unsplash&#34;&gt;
-	&lt;/a&gt;
-	
-	&lt;figcaption&gt;Photo by Luca Bravo on Unsplash&lt;/figcaption&gt;
-	
-&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;&lt;figure 
-	
-		class=&#34;gallery-image&#34; 
-		style=&#34;
-			flex-grow: 133; 
-			flex-basis: 320px&#34;
-	&gt;
-	&lt;a href=&#34;http://localhost:1313/post/2021/test-chinese/helena-hertz-wWZzXlDpMog-unsplash.jpg&#34; data-size=&#34;1000x750&#34;&gt;
-		&lt;img src=&#34;http://localhost:1313/post/2021/test-chinese/helena-hertz-wWZzXlDpMog-unsplash.jpg&#34;
-			width=&#34;1000&#34;
-			height=&#34;750&#34;
-			srcset=&#34;http://localhost:1313/post/2021/test-chinese/helena-hertz-wWZzXlDpMog-unsplash_hu_dfbb0c559c3df461.jpg 480w, http://localhost:1313/post/2021/test-chinese/helena-hertz-wWZzXlDpMog-unsplash_hu_212d0718b8e99eaa.jpg 1024w&#34;
-			loading=&#34;lazy&#34;
-			alt=&#34;Photo by Helena Hertz on Unsplash&#34;&gt;
-	&lt;/a&gt;
-	
-	&lt;figcaption&gt;Photo by Helena Hertz on Unsplash&lt;/figcaption&gt;
-	
-&lt;/figure&gt;  &lt;figure 
-	
-		class=&#34;gallery-image&#34; 
-		style=&#34;
-			flex-grow: 66; 
-			flex-basis: 160px&#34;
-	&gt;
-	&lt;a href=&#34;http://localhost:1313/post/2021/test-chinese/hudai-gayiran-3Od_VKcDEAA-unsplash.jpg&#34; data-size=&#34;667x1000&#34;&gt;
-		&lt;img src=&#34;http://localhost:1313/post/2021/test-chinese/hudai-gayiran-3Od_VKcDEAA-unsplash.jpg&#34;
-			width=&#34;667&#34;
-			height=&#34;1000&#34;
-			srcset=&#34;http://localhost:1313/post/2021/test-chinese/hudai-gayiran-3Od_VKcDEAA-unsplash_hu_41819e288bf4a8c0.jpg 480w, http://localhost:1313/post/2021/test-chinese/hudai-gayiran-3Od_VKcDEAA-unsplash_hu_1277885c87f69490.jpg 1024w&#34;
-			loading=&#34;lazy&#34;
-			alt=&#34;Photo by Hudai Gayiran on Unsplash&#34;&gt;
-	&lt;/a&gt;
-	
-	&lt;figcaption&gt;Photo by Hudai Gayiran on Unsplash&lt;/figcaption&gt;
-	
-&lt;/figure&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-markdown&#34; data-lang=&#34;markdown&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;![&lt;span class=&#34;nt&#34;&gt;Photo by Florian Klauer on Unsplash&lt;/span&gt;](&lt;span class=&#34;na&#34;&gt;florian-klauer-nptLmg6jqDo-unsplash.jpg&lt;/span&gt;)  ![&lt;span class=&#34;nt&#34;&gt;Photo by Luca Bravo on Unsplash&lt;/span&gt;](&lt;span class=&#34;na&#34;&gt;luca-bravo-alS7ewQ41M8-unsplash.jpg&lt;/span&gt;) 
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;![&lt;span class=&#34;nt&#34;&gt;Photo by Helena Hertz on Unsplash&lt;/span&gt;](&lt;span class=&#34;na&#34;&gt;helena-hertz-wWZzXlDpMog-unsplash.jpg&lt;/span&gt;)  ![&lt;span class=&#34;nt&#34;&gt;Photo by Hudai Gayiran on Unsplash&lt;/span&gt;](&lt;span class=&#34;na&#34;&gt;hudai-gayiran-3Od_VKcDEAA-unsplash.jpg&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;相册语法来自 &lt;a class=&#34;link&#34; href=&#34;https://typlog.com/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Typlog&lt;/a&gt;&lt;/p&gt;
-</description>
-        </item>
-        <item>
-        <title>Markdown Syntax Guide</title>
-        <link>http://localhost:1313/post/2021/markdown-syntax/</link>
-        <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
-        
-        <guid>http://localhost:1313/post/2021/markdown-syntax/</guid>
-        <description>&lt;img src="http://localhost:1313/post/2021/markdown-syntax/pawel-czerwinski-8uZPynIu-rQ-unsplash.jpg" alt="Featured image of post Markdown Syntax Guide" /&gt;&lt;p&gt;This article offers a sample of basic Markdown syntax that can be used in Hugo content files, also it shows whether basic HTML elements are decorated with CSS in a Hugo theme.&lt;/p&gt;
-&lt;h2 id=&#34;headings&#34;&gt;Headings
-&lt;/h2&gt;&lt;p&gt;The following HTML &lt;code&gt;&amp;lt;h1&amp;gt;&lt;/code&gt;—&lt;code&gt;&amp;lt;h6&amp;gt;&lt;/code&gt; elements represent six levels of section headings. &lt;code&gt;&amp;lt;h1&amp;gt;&lt;/code&gt; is the highest section level while &lt;code&gt;&amp;lt;h6&amp;gt;&lt;/code&gt; is the lowest.&lt;/p&gt;
-&lt;h1 id=&#34;h1&#34;&gt;H1
-&lt;/h1&gt;&lt;h2 id=&#34;h2&#34;&gt;H2
-&lt;/h2&gt;&lt;h3 id=&#34;h3&#34;&gt;H3
-&lt;/h3&gt;&lt;h4 id=&#34;h4&#34;&gt;H4
-&lt;/h4&gt;&lt;h5 id=&#34;h5&#34;&gt;H5
-&lt;/h5&gt;&lt;h6 id=&#34;h6&#34;&gt;H6
-&lt;/h6&gt;&lt;h2 id=&#34;paragraph&#34;&gt;Paragraph
-&lt;/h2&gt;&lt;p&gt;Xerum, quo qui aut unt expliquam qui dolut labo. Aque venitatiusda cum, voluptionse latur sitiae dolessi aut parist aut dollo enim qui voluptate ma dolestendit peritin re plis aut quas inctum laceat est volestemque commosa as cus endigna tectur, offic to cor sequas etum rerum idem sintibus eiur? Quianimin porecus evelectur, cum que nis nust voloribus ratem aut omnimi, sitatur? Quiatem. Nam, omnis sum am facea corem alique molestrunt et eos evelece arcillit ut aut eos eos nus, sin conecerem erum fuga. Ri oditatquam, ad quibus unda veliamenimin cusam et facea ipsamus es exerum sitate dolores editium rerore eost, temped molorro ratiae volorro te reribus dolorer sperchicium faceata tiustia prat.&lt;/p&gt;
-&lt;p&gt;Itatur? Quiatae cullecum rem ent aut odis in re eossequodi nonsequ idebis ne sapicia is sinveli squiatum, core et que aut hariosam ex eat.&lt;/p&gt;
-&lt;h2 id=&#34;blockquotes&#34;&gt;Blockquotes
-&lt;/h2&gt;&lt;p&gt;The blockquote element represents content that is quoted from another source, optionally with a citation which must be within a &lt;code&gt;footer&lt;/code&gt; or &lt;code&gt;cite&lt;/code&gt; element, and optionally with in-line changes such as annotations and abbreviations.&lt;/p&gt;
-&lt;h4 id=&#34;blockquote-without-attribution&#34;&gt;Blockquote without attribution
-&lt;/h4&gt;
-    &lt;blockquote&gt;
-        &lt;p&gt;Tiam, ad mint andaepu dandae nostion secatur sequo quae.
-&lt;strong&gt;Note&lt;/strong&gt; that you can use &lt;em&gt;Markdown syntax&lt;/em&gt; within a blockquote.&lt;/p&gt;
-
-    &lt;/blockquote&gt;
-&lt;h4 id=&#34;blockquote-with-attribution&#34;&gt;Blockquote with attribution
-&lt;/h4&gt;
-    &lt;blockquote&gt;
-        &lt;p&gt;Don&amp;rsquo;t communicate by sharing memory, share memory by communicating.&lt;!-- raw HTML omitted --&gt;
-— &lt;!-- raw HTML omitted --&gt;Rob Pike&lt;sup id=&#34;fnref:1&#34;&gt;&lt;a href=&#34;#fn:1&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-
-    &lt;/blockquote&gt;
-&lt;h2 id=&#34;tables&#34;&gt;Tables
-&lt;/h2&gt;&lt;p&gt;Tables aren&amp;rsquo;t part of the core Markdown spec, but Hugo supports supports them out-of-the-box.&lt;/p&gt;
-&lt;table&gt;
-  &lt;thead&gt;
-      &lt;tr&gt;
-          &lt;th&gt;Name&lt;/th&gt;
-          &lt;th&gt;Age&lt;/th&gt;
-      &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-      &lt;tr&gt;
-          &lt;td&gt;Bob&lt;/td&gt;
-          &lt;td&gt;27&lt;/td&gt;
-      &lt;/tr&gt;
-      &lt;tr&gt;
-          &lt;td&gt;Alice&lt;/td&gt;
-          &lt;td&gt;23&lt;/td&gt;
-      &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h4 id=&#34;inline-markdown-within-tables&#34;&gt;Inline Markdown within tables
-&lt;/h4&gt;&lt;table&gt;
-  &lt;thead&gt;
-      &lt;tr&gt;
-          &lt;th&gt;Italics&lt;/th&gt;
-          &lt;th&gt;Bold&lt;/th&gt;
-          &lt;th&gt;Code&lt;/th&gt;
-      &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-      &lt;tr&gt;
-          &lt;td&gt;&lt;em&gt;italics&lt;/em&gt;&lt;/td&gt;
-          &lt;td&gt;&lt;strong&gt;bold&lt;/strong&gt;&lt;/td&gt;
-          &lt;td&gt;&lt;code&gt;code&lt;/code&gt;&lt;/td&gt;
-      &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;table&gt;
-  &lt;thead&gt;
-      &lt;tr&gt;
-          &lt;th&gt;A&lt;/th&gt;
-          &lt;th&gt;B&lt;/th&gt;
-          &lt;th&gt;C&lt;/th&gt;
-          &lt;th&gt;D&lt;/th&gt;
-          &lt;th&gt;E&lt;/th&gt;
-          &lt;th&gt;F&lt;/th&gt;
-      &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-      &lt;tr&gt;
-          &lt;td&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit.&lt;/td&gt;
-          &lt;td&gt;Phasellus ultricies, sapien non euismod aliquam, dui ligula tincidunt odio, at accumsan nulla sapien eget ex.&lt;/td&gt;
-          &lt;td&gt;Proin eleifend dictum ipsum, non euismod ipsum pulvinar et. Vivamus sollicitudin, quam in pulvinar aliquam, metus elit pretium purus&lt;/td&gt;
-          &lt;td&gt;Proin sit amet velit nec enim imperdiet vehicula.&lt;/td&gt;
-          &lt;td&gt;Ut bibendum vestibulum quam, eu egestas turpis gravida nec&lt;/td&gt;
-          &lt;td&gt;Sed scelerisque nec turpis vel viverra. Vivamus vitae pretium sapien&lt;/td&gt;
-      &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h2 id=&#34;code-blocks&#34;&gt;Code Blocks
-&lt;/h2&gt;&lt;h4 id=&#34;code-block-with-backticks&#34;&gt;Code block with backticks
-&lt;/h4&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-html&#34; data-lang=&#34;html&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&amp;lt;!doctype html&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;html&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;lang&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;en&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;head&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;meta&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;charset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;utf-8&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;Example HTML5 Document&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;head&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;Test&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;html&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;code-block-indented-with-four-spaces&#34;&gt;Code block indented with four spaces
-&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;&amp;lt;!doctype html&amp;gt;
-&amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt;
-&amp;lt;head&amp;gt;
-  &amp;lt;meta charset=&amp;quot;utf-8&amp;quot;&amp;gt;
-  &amp;lt;title&amp;gt;Example HTML5 Document&amp;lt;/title&amp;gt;
-&amp;lt;/head&amp;gt;
-&amp;lt;body&amp;gt;
-  &amp;lt;p&amp;gt;Test&amp;lt;/p&amp;gt;
-&amp;lt;/body&amp;gt;
-&amp;lt;/html&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id=&#34;code-block-with-hugos-internal-highlight-shortcode&#34;&gt;Code block with Hugo&amp;rsquo;s internal highlight shortcode
-&lt;/h4&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-html&#34; data-lang=&#34;html&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&amp;lt;!doctype html&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;html&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;lang&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;en&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;head&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;meta&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;charset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;utf-8&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;Example HTML5 Document&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;head&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;Test&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;html&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h4 id=&#34;diff-code-block&#34;&gt;Diff code block
-&lt;/h4&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-diff&#34; data-lang=&#34;diff&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[dependencies.bevy]
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;git = &amp;#34;https://github.com/bevyengine/bevy&amp;#34;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rev = &amp;#34;11f52b8c72fc3a568e8bb4a4cd1f3eb025ac2e13&amp;#34;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;gd&#34;&gt;- features = [&amp;#34;dynamic&amp;#34;]
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;gi&#34;&gt;+ features = [&amp;#34;jpeg&amp;#34;, &amp;#34;dynamic&amp;#34;]
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;list-types&#34;&gt;List Types
-&lt;/h2&gt;&lt;h4 id=&#34;ordered-list&#34;&gt;Ordered List
-&lt;/h4&gt;&lt;ol&gt;
-&lt;li&gt;First item&lt;/li&gt;
-&lt;li&gt;Second item&lt;/li&gt;
-&lt;li&gt;Third item&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h4 id=&#34;unordered-list&#34;&gt;Unordered List
-&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;List item&lt;/li&gt;
-&lt;li&gt;Another item&lt;/li&gt;
-&lt;li&gt;And another item&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&#34;nested-list&#34;&gt;Nested list
-&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;Fruit
-&lt;ul&gt;
-&lt;li&gt;Apple&lt;/li&gt;
-&lt;li&gt;Orange&lt;/li&gt;
-&lt;li&gt;Banana&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Dairy
-&lt;ul&gt;
-&lt;li&gt;Milk&lt;/li&gt;
-&lt;li&gt;Cheese&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;other-elements--abbr-sub-sup-kbd-mark&#34;&gt;Other Elements — abbr, sub, sup, kbd, mark
-&lt;/h2&gt;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;GIF&lt;!-- raw HTML omitted --&gt; is a bitmap image format.&lt;/p&gt;
-&lt;p&gt;H&lt;!-- raw HTML omitted --&gt;2&lt;!-- raw HTML omitted --&gt;O&lt;/p&gt;
-&lt;p&gt;X&lt;!-- raw HTML omitted --&gt;n&lt;!-- raw HTML omitted --&gt; + Y&lt;!-- raw HTML omitted --&gt;n&lt;!-- raw HTML omitted --&gt; = Z&lt;!-- raw HTML omitted --&gt;n&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;p&gt;Press &lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;CTRL&lt;!-- raw HTML omitted --&gt;+&lt;!-- raw HTML omitted --&gt;ALT&lt;!-- raw HTML omitted --&gt;+&lt;!-- raw HTML omitted --&gt;Delete&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt; to end the session.&lt;/p&gt;
-&lt;p&gt;Most &lt;!-- raw HTML omitted --&gt;salamanders&lt;!-- raw HTML omitted --&gt; are nocturnal, and hunt for insects, worms, and other small creatures.&lt;/p&gt;
-&lt;h2 id=&#34;hyperlinked-image&#34;&gt;Hyperlinked image
-&lt;/h2&gt;&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://google.com&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;&lt;figure 
-	&gt;
-	&lt;a href=&#34;https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png&#34; &gt;
-		&lt;img src=&#34;https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png&#34;
-			
-			
-			
-			loading=&#34;lazy&#34;
-			alt=&#34;Google&#34;&gt;
-	&lt;/a&gt;
-	
-	&lt;figcaption&gt;Google&lt;/figcaption&gt;
-	
-&lt;/figure&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;div class=&#34;footnotes&#34; role=&#34;doc-endnotes&#34;&gt;
-&lt;hr&gt;
-&lt;ol&gt;
-&lt;li id=&#34;fn:1&#34;&gt;
-&lt;p&gt;The above quote is excerpted from Rob Pike&amp;rsquo;s &lt;a class=&#34;link&#34; href=&#34;https://www.youtube.com/watch?v=PAAkCSZUG1c&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;talk&lt;/a&gt; during Gopherfest, November 18, 2015.&amp;#160;&lt;a href=&#34;#fnref:1&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/div&gt;</description>
-        </item>
-        <item>
-        <title>Placeholder Text</title>
-        <link>http://localhost:1313/post/2021/placeholder-text/</link>
-        <pubDate>Sat, 09 Mar 2019 00:00:00 +0000</pubDate>
-        
-        <guid>http://localhost:1313/post/2021/placeholder-text/</guid>
-        <description>&lt;img src="http://localhost:1313/post/2021/placeholder-text/matt-le-SJSpo9hQf7s-unsplash.jpg" alt="Featured image of post Placeholder Text" /&gt;&lt;p&gt;Lorem est tota propiore conpellat pectoribus de pectora summo.&lt;/p&gt;
-&lt;p&gt;Redit teque digerit hominumque toris verebor lumina non cervice subde tollit usus habet Arctonque, furores quas nec ferunt. Quoque montibus nunc caluere tempus inhospita parcite confusaque translucet patri vestro qui optatis lumine cognoscere flos nubis! Fronde ipsamque patulos Dryopen deorum.&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Exierant elisi ambit vivere dedere&lt;/li&gt;
-&lt;li&gt;Duce pollice&lt;/li&gt;
-&lt;li&gt;Eris modo&lt;/li&gt;
-&lt;li&gt;Spargitque ferrea quos palude&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Rursus nulli murmur; hastile inridet ut ab gravi sententia! Nomine potitus silentia flumen, sustinet placuit petis in dilapsa erat sunt. Atria tractus malis.&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Comas hunc haec pietate fetum procerum dixit&lt;/li&gt;
-&lt;li&gt;Post torum vates letum Tiresia&lt;/li&gt;
-&lt;li&gt;Flumen querellas&lt;/li&gt;
-&lt;li&gt;Arcanaque montibus omnes&lt;/li&gt;
-&lt;li&gt;Quidem et&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h1 id=&#34;vagus-elidunt&#34;&gt;Vagus elidunt
-&lt;/h1&gt;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Canons_of_page_construction#Van_de_Graaf_canon&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;The Van de Graaf Canon&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;mane-refeci-capiebant-unda-mulcebat&#34;&gt;Mane refeci capiebant unda mulcebat
-&lt;/h2&gt;&lt;p&gt;Victa caducifer, malo vulnere contra dicere aurato, ludit regale, voca! Retorsit colit est profanae esse virescere furit nec; iaculi matertera et visa est, viribus. Divesque creatis, tecta novat collumque vulnus est, parvas. &lt;strong&gt;Faces illo pepulere&lt;/strong&gt; tempus adest. Tendit flamma, ab opes virum sustinet, sidus sequendo urbis.&lt;/p&gt;
-&lt;p&gt;Iubar proles corpore raptos vero auctor imperium; sed et huic: manus caeli Lelegas tu lux. Verbis obstitit intus oblectamina fixis linguisque ausus sperare Echionides cornuaque tenent clausit possit. Omnia putatur. Praeteritae refert ausus; ferebant e primus lora nutat, vici quae mea ipse. Et iter nil spectatae vulnus haerentia iuste et exercebat, sui et.&lt;/p&gt;
-&lt;p&gt;Eurytus Hector, materna ipsumque ut Politen, nec, nate, ignari, vernum cohaesit sequitur. Vel &lt;strong&gt;mitis temploque&lt;/strong&gt; vocatus, inque alis, &lt;em&gt;oculos nomen&lt;/em&gt; non silvis corpore coniunx ne displicet illa. Crescunt non unus, vidit visa quantum inmiti flumina mortis facto sic: undique a alios vincula sunt iactata abdita! Suspenderat ego fuit tendit: luna, ante urbem Propoetides &lt;strong&gt;parte&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;style&gt;
-.canon { background: white; width: 100%; height: auto; }
-&lt;/style&gt;</description>
-        </item>
-        <item>
-        <title>Math Typesetting</title>
-        <link>http://localhost:1313/post/2021/math-typesetting/</link>
-        <pubDate>Fri, 08 Mar 2019 00:00:00 +0000</pubDate>
-        
-        <guid>http://localhost:1313/post/2021/math-typesetting/</guid>
-        <description>&lt;p&gt;Mathematical notation in a Hugo project can be enabled by using third party JavaScript libraries.&lt;/p&gt;
-&lt;p&gt;In this example we will be using &lt;a class=&#34;link&#34; href=&#34;https://katex.org/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;KaTeX&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Create a partial under &lt;code&gt;/layouts/partials/math.html&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;Within this partial reference the &lt;a class=&#34;link&#34; href=&#34;https://katex.org/docs/autorender.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Auto-render Extension&lt;/a&gt; or host these scripts locally.&lt;/li&gt;
-&lt;li&gt;Include the partial in your templates like so:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;{{&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; or .Params.math .Site.Params.math &lt;span class=&#34;o&#34;&gt;}}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;{{&lt;/span&gt; partial &lt;span class=&#34;s2&#34;&gt;&amp;#34;math.html&amp;#34;&lt;/span&gt; . &lt;span class=&#34;o&#34;&gt;}}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;{{&lt;/span&gt; end &lt;span class=&#34;o&#34;&gt;}}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
-&lt;li&gt;To enable KaTex globally set the parameter &lt;code&gt;math&lt;/code&gt; to &lt;code&gt;true&lt;/code&gt; in a project&amp;rsquo;s configuration&lt;/li&gt;
-&lt;li&gt;To enable KaTex on a per page basis include the parameter &lt;code&gt;math: true&lt;/code&gt; in content files&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; Use the online reference of &lt;a class=&#34;link&#34; href=&#34;https://katex.org/docs/supported.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Supported TeX Functions&lt;/a&gt;&lt;/p&gt;
-
-
-&lt;!-- KaTeX --&gt;
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css&#34; integrity=&#34;sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq&#34; crossorigin=&#34;anonymous&#34;&gt;
-&lt;script defer src=&#34;https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js&#34; integrity=&#34;sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz&#34; crossorigin=&#34;anonymous&#34;&gt;&lt;/script&gt;
-&lt;script defer src=&#34;https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js&#34; integrity=&#34;sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI&#34; crossorigin=&#34;anonymous&#34; onload=&#34;renderMathInElement(document.body);&#34;&gt;&lt;/script&gt;
-
-
-&lt;h3 id=&#34;examples&#34;&gt;Examples
-&lt;/h3&gt;
-&lt;p&gt;
-Inline math: \(\varphi = \dfrac{1+\sqrt5}{2}= 1.6180339887…\)
-&lt;/p&gt;
-
-&lt;p&gt;Block math:
-$$
-\varphi = 1+\frac{1} {1+\frac{1} {1+\frac{1} {1+\cdots} } }
-$$&lt;/p&gt;</description>
-        </item>
-        <item>
-        <title>Emoji Support</title>
-        <link>http://localhost:1313/post/2021/emoji-support/</link>
-        <pubDate>Tue, 05 Mar 2019 00:00:00 +0000</pubDate>
-        
-        <guid>http://localhost:1313/post/2021/emoji-support/</guid>
-        <description>&lt;img src="http://localhost:1313/post/2021/emoji-support/the-creative-exchange-d2zvqp3fpro-unsplash.jpg" alt="Featured image of post Emoji Support" /&gt;&lt;p&gt;Emoji can be enabled in a Hugo project in a number of ways.&lt;/p&gt;
-&lt;p&gt;The &lt;a class=&#34;link&#34; href=&#34;https://gohugo.io/functions/emojify/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;&lt;code&gt;emojify&lt;/code&gt;&lt;/a&gt; function can be called directly in templates or &lt;a class=&#34;link&#34; href=&#34;https://gohugo.io/templates/shortcode-templates/#inline-shortcodes&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Inline Shortcodes&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;To enable emoji globally, set &lt;code&gt;enableEmoji&lt;/code&gt; to &lt;code&gt;true&lt;/code&gt; in your site&amp;rsquo;s &lt;a class=&#34;link&#34; href=&#34;https://gohugo.io/getting-started/configuration/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;configuration&lt;/a&gt; and then you can type emoji shorthand codes directly in content files; e.g.&lt;/p&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;p&gt;The &lt;a class=&#34;link&#34; href=&#34;http://www.emoji-cheat-sheet.com/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Emoji cheat sheet&lt;/a&gt; is a useful reference for emoji shorthand codes.&lt;/p&gt;
-&lt;hr&gt;
-&lt;p&gt;&lt;strong&gt;N.B.&lt;/strong&gt; The above steps enable Unicode Standard emoji characters and sequences in Hugo, however the rendering of these glyphs depends on the browser and the platform. To style the emoji you can either use a third party emoji font or a font stack; e.g.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-html&#34; data-lang=&#34;html&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;.emoji {
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  font-family: Apple Color Emoji, Segoe UI Emoji, NotoColorEmoji, Segoe UI Symbol, Android Emoji, EmojiSymbols;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;style&gt;
-.emojify {
-	font-family: Apple Color Emoji, Segoe UI Emoji, NotoColorEmoji, Segoe UI Symbol, Android Emoji, EmojiSymbols;
-	font-size: 2rem;
-	vertical-align: middle;
-}
-@media screen and (max-width:650px) {
-  .nowrap {
-    display: block;
-    margin: 25px 0;
-  }
-}
-&lt;/style&gt;</description>
         </item>
         
     </channel>

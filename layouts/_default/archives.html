@@ -1,0 +1,103 @@
+{{ define "body-class" }}template-archives{{ end }}
+{{ define "main" }}
+    {{ $pages := where .Site.RegularPages "Type" "in" .Site.Params.mainSections }}
+    {{ $notHidden := where .Site.RegularPages "Params.hidden" "!=" true }}
+    {{ $filtered := ($pages | intersect $notHidden) }}
+
+    <style>
+    .archives-header {
+        margin-bottom: 40px;
+    }
+    .archives-title {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 30px;
+    }
+    .archives-year {
+        position: relative;
+        margin-bottom: 50px;
+        padding-left: 10px;
+    }
+    .archives-year-number {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        font-size: 140px;
+        font-weight: 900;
+        color: var(--card-text-color-main);
+        opacity: 0.08;
+        line-height: 1;
+        pointer-events: none;
+        z-index: -1;
+    }
+    .archives-year-count {
+        font-size: 14px;
+        color: var(--card-text-color-tertiary);
+        margin-bottom: 20px;
+        padding-top: 60px;
+    }
+    .archives-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .archives-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 10px;
+        border-radius: 8px;
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+    .archives-item:hover {
+        background: var(--card-background);
+    }
+    .archives-date {
+        font-size: 13px;
+        color: var(--card-text-color-tertiary);
+        width: 120px;
+        flex-shrink: 0;
+    }
+    .archives-link {
+        font-size: 16px;
+        color: var(--card-text-color-main);
+        text-decoration: none;
+        flex: 1;
+        font-weight: 500;
+    }
+    .archives-link:hover {
+        color: var(--accent-color);
+    }
+    .archives-arrow {
+        color: var(--card-text-color-tertiary);
+        font-size: 18px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .archives-item:hover .archives-arrow {
+        opacity: 1;
+    }
+    </style>
+
+    <div class="archives-header">
+        <h1 class="archives-title">Archives</h1>
+    </div>
+
+    {{ range $filtered.GroupByDate "2006" }}
+    <div class="archives-year">
+        <div class="archives-year-number">{{ .Key }}</div>
+        <div class="archives-year-count">{{ len .Pages }} posts</div>
+        <ul class="archives-list">
+            {{ range .Pages }}
+            <li class="archives-item">
+                <span class="archives-date">{{ .Date.Format "Jan 2, 2006" }}</span>
+                <a href="{{ .RelPermalink }}" class="archives-link">{{ .Title }}</a>
+                <span class="archives-arrow">›</span>
+            </li>
+            {{ end }}
+        </ul>
+    </div>
+    {{ end }}
+
+    {{ partialCached "footer/footer" . }}
+{{ end }}

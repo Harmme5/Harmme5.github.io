@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='LoRA微调【LoRA微调】从原理到调参，7 个问题彻底理解LoRA，不懂线性代数也没问题_大模型微调_低秩适配
+1.什么是LoRAimage image image （A）有5*2=10个参数 （B）有2*4=8个参数 LoRA总参数：10&#43;8 =18 个 💡💡 结论结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右
+'><title>LoRA微调</title>
+
+<link rel='canonical' href='http://localhost:1313/post/lora-finetuning-z1zm5w7.html'>
+
+<link rel="stylesheet" href="/scss/style.min.b5ae3e8b4e7afb47fddddbfa7021f08c631e65fb1e42f8797caf1f81ff100502.css">
+<meta property='og:title' content='LoRA微调'>
+<meta property='og:description' content='LoRA微调【LoRA微调】从原理到调参，7 个问题彻底理解LoRA，不懂线性代数也没问题_大模型微调_低秩适配
+1.什么是LoRAimage image image （A）有5*2=10个参数 （B）有2*4=8个参数 LoRA总参数：10&#43;8 =18 个 💡💡 结论结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右
+'>
+<meta property='og:url' content='http://localhost:1313/post/lora-finetuning-z1zm5w7.html'>
+<meta property='og:site_name' content='我的博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2026-06-11T19:32:06&#43;08:00'/><meta property='article:modified_time' content='2026-06-11T19:32:06&#43;08:00'/>
+<meta name="twitter:title" content="LoRA微调">
+<meta name="twitter:description" content="LoRA微调【LoRA微调】从原理到调参，7 个问题彻底理解LoRA，不懂线性代数也没问题_大模型微调_低秩适配
+1.什么是LoRAimage image image （A）有5*2=10个参数 （B）有2*4=8个参数 LoRA总参数：10&#43;8 =18 个 💡💡 结论结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右
+"><style>
+.site-avatar .emoji {
+    display: none !important;
+}
+ 
+body[data-template="links"] .article-header,
+.links + .article-header,
+.article-list--compact.links ~ .article-header {
+    display: none !important;
+}
+
+ 
+.widget--toc {
+    position: relative;
+    padding-left: 20px;
+}
+.widget--toc::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--card-separator-color);
+    border-radius: 2px;
+}
+.toc-progress-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 0%;
+    background: var(--accent-color);
+    border-radius: 2px;
+    transition: height 0.3s ease;
+    z-index: 1;
+}
+.widget--toc a {
+    transition: color 0.2s;
+}
+.widget--toc a.active {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+ 
+.lightbox-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    cursor: zoom-out;
+    align-items: center;
+    justify-content: center;
+}
+.lightbox-overlay.active {
+    display: flex;
+}
+.lightbox-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    animation: zoomIn 0.3s ease;
+}
+@keyframes zoomIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+</style>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const lightbox = document.createElement('div');
+    lightbox.className = 'lightbox-overlay';
+    document.body.appendChild(lightbox);
+
+    
+    lightbox.addEventListener('click', function() {
+        this.classList.remove('active');
+        this.innerHTML = '';
+    });
+
+    
+    const articleImages = document.querySelectorAll('article img');
+    articleImages.forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const clonedImg = this.cloneNode(true);
+            clonedImg.style.cursor = 'zoom-out';
+            lightbox.innerHTML = '';
+            lightbox.appendChild(clonedImg);
+            lightbox.classList.add('active');
+        });
+    });
+});
+
+
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (link && link.querySelector('img')) {
+        e.preventDefault();
+        return false;
+    }
+
+    
+    if (e.target.closest('.widget--toc a')) return;
+
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b731', '#5f27cd', '#ff9ff3'];
+    const particleCount = 12;
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
+        const velocity = 25 + Math.random() * 20;
+        const size = 4 + Math.random() * 6;
+
+        particle.style.cssText = `
+            position: fixed;
+            left: ${e.clientX}px;
+            top: ${e.clientY}px;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+        `;
+
+        document.body.appendChild(particle);
+
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity;
+
+        let progress = 0;
+        const animate = () => {
+            progress += 0.005;
+            if (progress >= 1) {
+                particle.remove();
+                return;
+            }
+
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const easeIn = progress < 0.5 ? easeOut : 1 - Math.pow((progress - 0.5) * 2, 2);
+
+            const x = progress < 0.5 ? tx * easeOut : tx * (1 - (progress - 0.5) * 2);
+            const y = progress < 0.5 ? ty * easeOut : ty * (1 - (progress - 0.5) * 2);
+            const opacity = progress < 0.5 ? 1 : 1 - (progress - 0.5) * 2;
+
+            particle.style.transform = `translate(${x}px, ${y}px)`;
+            particle.style.opacity = opacity;
+
+            requestAnimationFrame(animate);
+        };
+        animate();
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const toc = document.querySelector('.widget--toc');
+    if (!toc) return;
+
+    
+    const progressBar = document.createElement('div');
+    progressBar.className = 'toc-progress-bar';
+    toc.insertBefore(progressBar, toc.firstChild);
+
+    const links = toc.querySelectorAll('a');
+    const headings = Array.from(links).map(link => {
+        const id = link.getAttribute('href').slice(1);
+        return document.getElementById(id);
+    }).filter(h => h);
+
+    function updateTOC() {
+        let current = -1;
+        const scrollPos = window.scrollY + window.innerHeight / 3;
+
+        for (let i = headings.length - 1; i >= 0; i--) {
+            if (headings[i] && headings[i].offsetTop <= scrollPos) {
+                current = i;
+                break;
+            }
+        }
+
+        links.forEach((link, i) => {
+            link.classList.toggle('active', i === current);
+        });
+
+        if (current >= 0 && links.length > 1) {
+            const linkElement = links[current];
+            const linkTop = linkElement.offsetTop;
+            const firstLinkTop = links[0].offsetTop;
+            const lastLinkTop = links[links.length - 1].offsetTop;
+            const progress = ((linkTop - firstLinkTop) / (lastLinkTop - firstLinkTop)) * 100;
+            progressBar.style.height = Math.min(Math.max(progress, 0), 100) + '%';
+        }
+    }
+
+    
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('href').slice(1);
+            const target = document.getElementById(id);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    window.addEventListener('scroll', updateTOC, { passive: true });
+    updateTOC();
+});
+</script>
+
+    </head>
+    <body class="
+    article-page
+">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "light");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex 
+    
+        extended
+    
+">
+    
+<div id="article-toolbar">
+    <a href="http://localhost:1313/" class="back-home">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="15 6 9 12 15 18" />
+</svg>
+
+
+
+        <span></span>
+    </a>
+</div>
+    <aside class="sidebar left-sidebar sticky">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header class="site-info">
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_44f3f8bffe8efa0b.jpg" width="300"
+                            height="305" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <h1 class="site-name"><a href="/">我的博客</a></h1>
+        <h2 class="site-description">知行合一</h2><ol class="social-menu">
+                
+                    <li>
+                        <a 
+                            href='https://space.bilibili.com/52415281'
+                            target="_blank"
+                            title="Bilibili"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-bilibili" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M7 6l-2 -2" />
+  <path d="M17 6l2 -2" />
+  <path d="M5 8h14a2 2 0 0 1 2 2v7a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-7a2 2 0 0 1 2 -2z" />
+  <path d="M9 13v3" />
+  <path d="M15 13v3" />
+  <path d="M10 18h4" />
+</svg>
+
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a 
+                            href='mailto:siezh2927@163.com'
+                            target="_blank"
+                            title="Email"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-messages" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10" />
+  <path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a 
+                            href='https://github.com/Harmme5'
+                            target="_blank"
+                            title="GitHub"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+            </ol></header>
+
+    <ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/post' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-messages" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10" />
+  <path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2" />
+</svg>
+
+
+
+                
+                <span>文章</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+
+        
+            <li id="dark-mode-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                <span>暗色模式</span>
+            </li>
+        
+    </ol>
+</aside>
+
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <h2 class="article-title">
+        <a href="/post/lora-finetuning-z1zm5w7.html">LoRA微调</a>
+    </h2>
+
+    
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jun 11, 2026</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-words">
+                    2819字
+                </time>
+            </div>
+        
+    </footer>
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="lora微调">LoRA微调
+</h1><p><a class="link" href="https://www.bilibili.com/video/BV1waZ2YDEcp/?spm_id_from=333.788.recommend_more_video.0&amp;amp;trackid=web_related_0.router-related-2481894-74gx5.1772535756302.1023&amp;amp;vd_source=86ed3e91f3c360c8b63e6013dcb45257"  target="_blank" rel="noopener"
+    >【LoRA微调】从原理到调参，7 个问题彻底理解LoRA，不懂线性代数也没问题_大模型微调_低秩适配</a></p>
+<h1 id="1什么是lora">1.什么是LoRA
+</h1><p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213024-tfuhiq3.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213024-tfuhiq3.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213126-fklpuql.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213126-fklpuql.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213150-4h7grt6.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303213150-4h7grt6.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<ul>
+<li>（A）有5*2=10个参数</li>
+<li>（B）有2*4=8个参数</li>
+<li>LoRA总参数：10+8 =18 个</li>
+</ul>
+<blockquote class="alert alert-tip">
+        <div class="alert-header">
+            <span class="alert-icon">💡</span>
+            <span class="alert-title">💡 结论</span>
+        </div>
+        <div class="alert-body">
+            <p>结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右</p>
+        </div>
+    </blockquote>
+<h1 id="2为什么需要lora">2.为什么需要LoRA
+</h1><blockquote class="alert alert-caution">
+        <div class="alert-header">
+            <span class="alert-icon">🚨</span>
+            <span class="alert-title">🚨 资源消耗太大</span>
+        </div>
+        <div class="alert-body">
+            <p>大型语言模型动几亿甚至几千亿参数，全参数微调需要为每个新任务保存一份完整的模型副本。比如，一个10亿参数的模型，假设每个参数用4字节（float32），光存储就得4GB。多个任务下来，硬盘和显存都吃不消。</p>
+<p><span data-type="text" style="color: var(--b3-font-color9); background-color: var(--b3-card-warning-background);">LoRA的思路是：与其每次都复制整个模型，不如只调整一小部分参数，把成本降下来。</span></p>
+        </div>
+    </blockquote>
+<blockquote class="alert alert-caution">
+        <div class="alert-header">
+            <span class="alert-icon">🚨</span>
+            <span class="alert-title">🚨 训练效率低下</span>
+        </div>
+        <div class="alert-body">
+            <p>全参数微调不仅占空间，还需要大量计算资源和时间。每次训练都得更新所有参数，反向传播的计算量巨大，尤其是在GPU资源有限的情况下，普通研究者或公司根本玩不起。LoRA通过只更新一小块”增量参数”，让微调变得轻量化，普通设备也能跑得动。</p>
+        </div>
+    </blockquote>
+<h2 id="核心亮点">核心亮点
+</h2><ul>
+<li>
+<p>参数少：它只微调原始参数的1%甚至更少。</p>
+<ul>
+<li>在 GPT-3 上，r = 8 的 LoRA 参数量占全微调的 <span data-type="text" style="color: var(--b3-font-color8);">0.01%-0.1%</span>，性能却达到全微调的 <span data-type="text" style="color: var(--b3-font-color8);">95%-99%</span>。</li>
+<li>在 GLUE 任务（BERT），r = 16 的 LoRA 用 0.1% 参数，平均得分仅比全微调低 0.5-1 分。</li>
+</ul>
+</li>
+<li>
+<p>速度快：训练和部署都比全参数微调省时省力。</p>
+</li>
+<li>
+<p>模块化：训练好的LoRA”插件“可以随时加载或卸载，不影响原始模型，特别适合多任务场景。</p>
+</li>
+</ul>
+<p><span data-type="text" style="font-size: 20px;">模块化设计的优点</span><br>
+1.<span data-type="text" style="color: var(--b3-font-color2);">避免灾难性遗忘</span>：直接修改W可能导致模型在新任务上表现良好，但在原始任务上性能下降（即&quot;灾难性遗忘&quot;）。LoRA通过冻结W，保留了原始模型的能力</p>
+<p>2.<span data-type="text" style="color: var(--b3-font-color2);">存储效率高</span>：一个大模型可以搭配多个LoRA模块，每个模块只占几MB，相比全模型微调动几GB，节省空间。</p>
+<p>3.<span data-type="text" style="color: var(--b3-font-color2);">快速切换</span>：任务切换只需加载不同LoRA文件，几秒钟搞定，不用重新训练。</p>
+<p>4.<span data-type="text" style="color: var(--b3-font-color2);">兼容性强</span>：原始模型完全不动，多个团队可以共享同一个基础模型，只开发自己的LoRA模块。</p>
+<p>‍</p>
+<h1 id="3为什么可以对增量权重w低秩分解">3.为什么可以对增量权重△W低秩分解
+</h1><p>低秩分解的核心思想是：<strong>矩阵里的信息往往不是均匀分布的，很多维度是余的，只需要抓住”主要方向”就够了。</strong></p>
+
+    <blockquote>
+        <p>学过机器学习的同学，可以参考PCA主成分分析算法的理念。</p>
+
+    </blockquote>
+<h2 id="1什么是矩阵的秩rank">1.什么是矩阵的秩（Rank）？
+</h2><p>在线性代数中，一个矩阵的秩（rank）是它的<strong>线性独立行或列</strong>的数量。<span data-type="text" style="color: var(--b3-font-color2);">如果一个矩阵是”低秩”的，意味着它的信息可以用少量独立方向表达，而不是需要完整的维度。</span></p>
+<p>比如下述矩阵， 第 5 行([1, 2,0, 3, 0] ) 是第 1行( [1, 0, 0, 2, 0] )和第 2 行([0,2,0,1, 0] ) 的线性组合 (<strong>第5行=第1行+第2行</strong>），第5行没有提供更多的信息，理论上这个矩阵有前4行就能提供所有信息了，因此矩阵的行秩为4（列秩也为4，第5列全为0，没有信息增量）。</p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220131-uv6cuc5.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220131-uv6cuc5.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<h2 id="2从奇异值分解得到的启发-低秩分解的原理">2.从奇异值分解得到的启发&mdash;-低秩分解的原理
+</h2><p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220217-798kfrg.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220217-798kfrg.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220231-tciprgu.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220231-tciprgu.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220251-lazjnd3.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220251-lazjnd3.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220344-wt7bx9e.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220344-wt7bx9e.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220400-z2evra3.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220400-z2evra3.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220440-bku6jzr.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220440-bku6jzr.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220445-5e046h9.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220445-5e046h9.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p>结果对比原始矩阵和重构矩阵，直观地看，基本保持一致。证实上面的结论：<strong>如果只保留最大的几个奇异值（低秩近似），就能用更少的参数近似W。</strong></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220507-iazdkqp.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220507-iazdkqp.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p>事实上，可以通过保留的奇异值，计算重构后的矩阵，保留了多少信息，如下：</p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220540-9ulcmye.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303220540-9ulcmye.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<h2 id="3为什么可以对增量权重w低秩分解-1">3.为什么可以对增量权重△W低秩分解
+</h2><p>研究发现，通过对微调后的权重变化△W的奇异值分解，大部分信息集中在少数几个奇异值上。比如，LoRA论文（Huet al.,2021）在GPT-3上测试时发现，△W的前10-20个奇异值就占据了90%以上的信息。</p>
+<p>这意味着：当我们从一个预训练模型（比如 LLaMA 或 BERT）微调到某个特定任务时，权重矩阵的变化（即 △W=W<sub>任务</sub>－W<sub>预训练</sub>）并不是完全随机的，而是具有某种&quot;结构化&quot;特性。具体来说，这个变化可以用一个低秩矩阵来近似表示，它的有效自由度比原始权重矩阵的维度要少得多。<span data-type="text" style="color: var(--b3-font-color2);">由于△W的秩很低，可以用A和B直接构造，不需要完整的SVD计算，更加高效。</span></p>
+<p><strong>直观理解</strong><br>
+微调是为了强化模型某个特定领域的能力，不对所有方向的参数进行调整。想象预训练模型是一个已经学会“说话”的智能体，微调只是让它学会某种特定”口音”（如法律领域的术语）。这个&quot;口音&quot;调整不需要重新学习所有语言规则，只需在少数关键方面（如词汇选择、语调）做改变。这种改变的”自由度“很有限，因此可以用低秩矩阵近似。</p>
+<p><strong>举个例子</strong><br>
+假设一个512× 512的权重矩阵（W）（总共262,144个参数)：</p>
+<ul>
+<li>
+<p>全微调：可能调整所有262,144个参数。</p>
+</li>
+<li>
+<p>LoRA：假设r=8，只用A（512×8）和B（8×512)，总共8,192个参数，就能捕捉任务的主要变化。因为△W的变化集中在少数方向（比如8个，需要调参），而不是需要512个方向。</p>
+<p>r = 8 和r = 800，因为△W是低秩的，没有太大区别</p>
+</li>
+</ul>
+<h2 id="4对原始权重w可以低秩分解吗">4.对原始权重W可以低秩分解吗？
+</h2><blockquote class="alert alert-caution">
+        <div class="alert-header">
+            <span class="alert-icon">🚨</span>
+            <span class="alert-title">🚨 不行</span>
+        </div>
+        <div class="alert-body">
+            <p>研究表明，预训练模型（如BERT）的权重矩阵（W）通常具有<strong>较高的秩（接近满秩）</strong> ，奇异值分布较为平滑。</p>
+        </div>
+    </blockquote>
+<h1 id="4lora如何更新参数的">4.LoRA如何更新参数的
+</h1><p>本质上，还是反向传播算法。</p>
+<ul>
+<li>在前向过程，，代入A、B的参数算出损失；</li>
+<li>在反向过程，根据损失求导算出A、B参数的梯度，然后更新参数。</li>
+</ul>
+<h2 id="lora的核心参数">LoRA的核心参数
+</h2><p>LoRA的核心思想是通过一个低秩增量（△W）来调整预训练模型的原始权重（W），而不是直接修改W本身。它的核心公式可以简单写成：</p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223816-y20cyqv.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223816-y20cyqv.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223832-wjvapwc.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223832-wjvapwc.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<h2 id="参数更新过程">参数更新过程
+</h2><ol>
+<li>
+<p>初始化</p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224016-mxd7how.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224016-mxd7how.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+</li>
+<li>
+<p>计算损失</p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223946-rwwvd49.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223946-rwwvd49.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+</li>
+<li>
+<p>反向传播更新</p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224044-o29r0gx.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224044-o29r0gx.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+</li>
+<li>
+<p>迭代优化</p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223957-61ihzxf.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303223957-61ihzxf.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+</li>
+</ol>
+<h1 id="5lora可以用在transformer的哪些层">5.LoRA可以用在Transformer的哪些层
+</h1><p>tips：需对Transformer有一定了解。可参考：</p>
+<ul>
+<li>
+<p>知乎: <a class="link" href="https://zhuanlan.zhihu.com/p/338817680"  target="_blank" rel="noopener"
+    >https://zhuanlan.zhihu.com/p/338817680</a></p>
+</li>
+<li>
+<p>B站：搜“李宏毅transformer&quot;</p>
+</li>
+</ul>
+<p><strong>总结：LoRA是好钢，要用在刀刃上。并不是所有参数都要微调，选择部分参数进行微调就可以取得较好效果。</strong></p>
+<p>Transformer模型由多层堆叠组成，每层包括自注意力机制（Self-Attention）和前馈网络（Feed-ForwardNetwork,FFN）。</p>
+<p><strong>Transformer架构图</strong></p>
+<p>LoRA 的集成主要是将低秩增量△W =A × B 添加到这些层的权重矩阵上，同时保持原始权重（W）冻结，如：</p>
+<p><strong>注意力层（Self-Attention）</strong></p>
+<p>Transformer的核心是多头注意力机制，每个头有查询、键、值、输出（Query、Key、Value、Output），即<em><strong>Wq</strong></em>、<em><strong>Wk</strong></em>、<em><strong>Wv</strong></em>、<em><strong>Wo</strong></em>四个权重矩阵。</p>
+<p><strong>LoRA通常应用在</strong>​<em><strong>Wq</strong></em>​<strong>和</strong>​<em><strong>Wv</strong></em>​ <em><em>，上，<strong>​</strong></em>Wq</em><strong>​</strong>决定关注哪些信息，W<strong>​</strong><em>v</em><strong>​</strong>决定输出什么内容。调整它们能直接影响模型对任务的理解和生成能力。LoRA原论文发现，微调<strong>​</strong><em>Wq</em><strong>​</strong>和<strong>​</strong><em>Wv，<em><strong>​</strong>已能接近全参数微调效果，性价比高。</em></em><br>
+​<figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224917-0t181bc.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224917-0t181bc.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure><br>
+​<figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224928-bcvf2ji.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224928-bcvf2ji.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><strong>前馈层（FFN)</strong><br>
+​<figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224726-k2icyfj.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224726-k2icyfj.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure><br>
+FFN处理注意力输出，负责特征提取和非线性映射，调整它能增强任务特定表达。<br>
+小模型（如BERT）可能只加注意力层，大模型（如GPT-3）或生成任务常扩展到FFN</p>
+<p><strong>其他层</strong><br>
+​<figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224953-c3qiubd.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303224953-c3qiubd.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<h1 id="6lora有哪些改进版本">6.LoRA有哪些改进版本
+</h1><p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225142-n7egsmv.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225142-n7egsmv.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225131-1tipk4j.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225131-1tipk4j.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225311-08no6d0.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225311-08no6d0.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225318-e37odkt.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225318-e37odkt.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225401-x90pxvt.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225401-x90pxvt.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225423-weeymvi.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225423-weeymvi.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p>‍</p>
+<p>以 LLaMA-Factory 为例，说明LoRA相关的参数:</p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225510-phiwrtn.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225510-phiwrtn.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225618-1nmii8z.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225618-1nmii8z.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+<p><figure 
+	>
+	<a href="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225632-qe1flgm.png" >
+		<img src="https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303225632-qe1flgm.png"
+			
+			
+			
+			loading="lazy"
+			alt="image">
+	</a>
+	
+	<figcaption>image</figcaption>
+	
+</figure></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    <aside class="related-contents--wrapper">
+    
+    
+</aside>
+
+     
+     
+        
+    <div class="disqus-container">
+    
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (DISQUS) {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+  
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+<script>
+(function(u, c) {
+  var d = document, t = 'script', o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+  o.src = u;
+  if (c) { o.addEventListener('load', function(e) { c(e); }); }
+  s.parentNode.insertBefore(o, s);
+})('//cdn.bootcss.com/pangu/3.3.0/pangu.min.js', function() {
+  pangu.spacingPage();
+});
+</script>
+
+    <section class="copyright">
+        &copy; 
+        
+        2026 <a href="http://localhost:1313/">我的博客</a>·<i class="fas fa-bell"></i> <a id="days">0</a>Days<br>
+      共书写了10.8k字·共 4篇文章</br><span><p>
+    </section>
+    
+    <section class="powerby">
+         <br />
+        <br />
+         <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">© Licensed Under CC BY-NC-SA 4.0</a>
+    </section>
+
+<script>
+var s1 = '2026-06-10';
+s1 = new Date(s1.replace(/-/g, "/"));
+s2 = new Date();
+var days = s2.getTime() - s1.getTime();
+var number_of_days = parseInt(days / (1000 * 60 * 60 * 24));
+document.getElementById('days').innerHTML = number_of_days;
+</script>
+    
+</footer>
+
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    
+        <aside class="sidebar right-sidebar sticky">
+            <section class="widget archives widget-toc">
+                <div class="widget-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+                </div>
+                <h2 class="widget-title section-title">目录</h2>
+                
+                <div class="widget--toc">
+                    <nav id="TableOfContents">
+  <ol>
+    <li><a href="#lora微调">LoRA微调</a></li>
+    <li><a href="#1什么是lora">1.什么是LoRA</a></li>
+    <li><a href="#2为什么需要lora">2.为什么需要LoRA</a>
+      <ol>
+        <li><a href="#核心亮点">核心亮点</a></li>
+      </ol>
+    </li>
+    <li><a href="#3为什么可以对增量权重w低秩分解">3.为什么可以对增量权重△W低秩分解</a>
+      <ol>
+        <li><a href="#1什么是矩阵的秩rank">1.什么是矩阵的秩（Rank）？</a></li>
+        <li><a href="#2从奇异值分解得到的启发-低秩分解的原理">2.从奇异值分解得到的启发&mdash;-低秩分解的原理</a></li>
+        <li><a href="#3为什么可以对增量权重w低秩分解-1">3.为什么可以对增量权重△W低秩分解</a></li>
+        <li><a href="#4对原始权重w可以低秩分解吗">4.对原始权重W可以低秩分解吗？</a></li>
+      </ol>
+    </li>
+    <li><a href="#4lora如何更新参数的">4.LoRA如何更新参数的</a>
+      <ol>
+        <li><a href="#lora的核心参数">LoRA的核心参数</a></li>
+        <li><a href="#参数更新过程">参数更新过程</a></li>
+      </ol>
+    </li>
+    <li><a href="#5lora可以用在transformer的哪些层">5.LoRA可以用在Transformer的哪些层</a></li>
+    <li><a href="#6lora有哪些改进版本">6.LoRA有哪些改进版本</a></li>
+  </ol>
+</nav>
+                </div>
+            </section>
+        </aside>
+    
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

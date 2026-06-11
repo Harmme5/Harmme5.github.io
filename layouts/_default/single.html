@@ -1,16 +1,15 @@
 {{ define "body-class" }}
     {{ $TOCEnabled := default (default false .Site.Params.article.toc) .Params.toc }}
-    {{- .Scratch.Set "hasTOC" (and (gt (len .TableOfContents) 0) $TOCEnabled) -}}
+    {{- .Scratch.Set "hasTOC" (and (ge (len .TableOfContents) 100) $TOCEnabled) -}}
     article-page
 {{ end }}
 
 {{ define "container-class" }}
-    <!-- {{ if (.Scratch.Get "hasTOC") }}
+    {{ if (.Scratch.Get "hasTOC") }}
         extended
     {{ else }}
         on-phone--column {{ if .Site.Params.widgets.enabled }}extended{{ else }}compact{{ end }}
-    {{ end }} -->
-    on-phone--column {{ if .Site.Params.widgets.enabled }}extended{{ else }}compact{{ end }}
+    {{ end }}
 {{ end }}
 
 {{ define "main" }}
@@ -48,13 +47,13 @@
 {{ end }}
 
 {{ define "right-sidebar" }}
-    <!-- {{ if (.Scratch.Get "hasTOC") }}
+    {{ if (.Scratch.Get "hasTOC") }}
         <aside class="sidebar right-sidebar sticky">
-            <section class="widget archives">
+            <section class="widget archives widget-toc">
                 <div class="widget-icon">
                     {{ partial "helper/icon" "hash" }}
                 </div>
-                <h2 class="widget-title section-title">{{ T "article.tableOfContents" }}</h2>
+                <h2 class="widget-title section-title">目录</h2>
                 
                 <div class="widget--toc">
                     {{ .TableOfContents }}
@@ -63,6 +62,5 @@
         </aside>
     {{ else }}
         {{ partial "sidebar/right.html" . }}
-    {{ end }} -->
-    {{ partial "sidebar/right.html" . }}
+    {{ end }}
 {{ end }}

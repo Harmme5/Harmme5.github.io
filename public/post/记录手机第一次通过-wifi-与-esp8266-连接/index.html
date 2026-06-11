@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='(发送新行) 1.发送AT，返回OK 2.AT&#43;CWMODE=1,设置ESP8266 Station模式该模式ESP不生成WIFI信号 3.AT&#43;RST,重启生效 4.AT&#43;CWLAP,查询当前WIFI列表(2.4G) 5.AT&#43;CWJAP=&ldquo;WIFI名&rdquo;,&ldquo;WIFI密码&rdquo; 连接WIFI,成功会显示连接 6.AT&#43;CIFSR 查询ESP的IP 7.AT&#43;CIPMUX=1 建立多连接 8.AT&#43;CIPSERVER=1,8080 建立服务器,端口8080 ESP Station模式配网完成
+'><title>记录手机第一次通过WIFI与ESP8266连接</title>
+
+<link rel='canonical' href='http://localhost:1313/post/%E8%AE%B0%E5%BD%95%E6%89%8B%E6%9C%BA%E7%AC%AC%E4%B8%80%E6%AC%A1%E9%80%9A%E8%BF%87-wifi-%E4%B8%8E-esp8266-%E8%BF%9E%E6%8E%A5/'>
+
+<link rel="stylesheet" href="/scss/style.min.b5ae3e8b4e7afb47fddddbfa7021f08c631e65fb1e42f8797caf1f81ff100502.css">
+<meta property='og:title' content='记录手机第一次通过WIFI与ESP8266连接'>
+<meta property='og:description' content='(发送新行) 1.发送AT，返回OK 2.AT&#43;CWMODE=1,设置ESP8266 Station模式该模式ESP不生成WIFI信号 3.AT&#43;RST,重启生效 4.AT&#43;CWLAP,查询当前WIFI列表(2.4G) 5.AT&#43;CWJAP=&ldquo;WIFI名&rdquo;,&ldquo;WIFI密码&rdquo; 连接WIFI,成功会显示连接 6.AT&#43;CIFSR 查询ESP的IP 7.AT&#43;CIPMUX=1 建立多连接 8.AT&#43;CIPSERVER=1,8080 建立服务器,端口8080 ESP Station模式配网完成
+'>
+<meta property='og:url' content='http://localhost:1313/post/%E8%AE%B0%E5%BD%95%E6%89%8B%E6%9C%BA%E7%AC%AC%E4%B8%80%E6%AC%A1%E9%80%9A%E8%BF%87-wifi-%E4%B8%8E-esp8266-%E8%BF%9E%E6%8E%A5/'>
+<meta property='og:site_name' content='我的博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2023-07-13T20:20:26&#43;08:00'/><meta property='article:modified_time' content='2023-07-13T20:20:26&#43;08:00'/>
+<meta name="twitter:title" content="记录手机第一次通过WIFI与ESP8266连接">
+<meta name="twitter:description" content="(发送新行) 1.发送AT，返回OK 2.AT&#43;CWMODE=1,设置ESP8266 Station模式该模式ESP不生成WIFI信号 3.AT&#43;RST,重启生效 4.AT&#43;CWLAP,查询当前WIFI列表(2.4G) 5.AT&#43;CWJAP=&ldquo;WIFI名&rdquo;,&ldquo;WIFI密码&rdquo; 连接WIFI,成功会显示连接 6.AT&#43;CIFSR 查询ESP的IP 7.AT&#43;CIPMUX=1 建立多连接 8.AT&#43;CIPSERVER=1,8080 建立服务器,端口8080 ESP Station模式配网完成
+"><style>
+.site-avatar .emoji {
+    display: none !important;
+}
+ 
+body[data-template="links"] .article-header,
+.links + .article-header,
+.article-list--compact.links ~ .article-header {
+    display: none !important;
+}
+
+ 
+.widget--toc {
+    position: relative;
+    padding-left: 20px;
+}
+.widget--toc::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--card-separator-color);
+    border-radius: 2px;
+}
+.toc-progress-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 0%;
+    background: var(--accent-color);
+    border-radius: 2px;
+    transition: height 0.3s ease;
+    z-index: 1;
+}
+.widget--toc a {
+    transition: color 0.2s;
+}
+.widget--toc a.active {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+ 
+.lightbox-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    cursor: zoom-out;
+    align-items: center;
+    justify-content: center;
+}
+.lightbox-overlay.active {
+    display: flex;
+}
+.lightbox-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    animation: zoomIn 0.3s ease;
+}
+@keyframes zoomIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+</style>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const lightbox = document.createElement('div');
+    lightbox.className = 'lightbox-overlay';
+    document.body.appendChild(lightbox);
+
+    
+    lightbox.addEventListener('click', function() {
+        this.classList.remove('active');
+        this.innerHTML = '';
+    });
+
+    
+    const articleImages = document.querySelectorAll('article img');
+    articleImages.forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const clonedImg = this.cloneNode(true);
+            clonedImg.style.cursor = 'zoom-out';
+            lightbox.innerHTML = '';
+            lightbox.appendChild(clonedImg);
+            lightbox.classList.add('active');
+        });
+    });
+});
+
+
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (link && link.querySelector('img')) {
+        e.preventDefault();
+        return false;
+    }
+
+    
+    if (e.target.closest('.widget--toc a')) return;
+
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b731', '#5f27cd', '#ff9ff3'];
+    const particleCount = 12;
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
+        const velocity = 25 + Math.random() * 20;
+        const size = 4 + Math.random() * 6;
+
+        particle.style.cssText = `
+            position: fixed;
+            left: ${e.clientX}px;
+            top: ${e.clientY}px;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+        `;
+
+        document.body.appendChild(particle);
+
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity;
+
+        let progress = 0;
+        const animate = () => {
+            progress += 0.005;
+            if (progress >= 1) {
+                particle.remove();
+                return;
+            }
+
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const easeIn = progress < 0.5 ? easeOut : 1 - Math.pow((progress - 0.5) * 2, 2);
+
+            const x = progress < 0.5 ? tx * easeOut : tx * (1 - (progress - 0.5) * 2);
+            const y = progress < 0.5 ? ty * easeOut : ty * (1 - (progress - 0.5) * 2);
+            const opacity = progress < 0.5 ? 1 : 1 - (progress - 0.5) * 2;
+
+            particle.style.transform = `translate(${x}px, ${y}px)`;
+            particle.style.opacity = opacity;
+
+            requestAnimationFrame(animate);
+        };
+        animate();
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const toc = document.querySelector('.widget--toc');
+    if (!toc) return;
+
+    
+    const progressBar = document.createElement('div');
+    progressBar.className = 'toc-progress-bar';
+    toc.insertBefore(progressBar, toc.firstChild);
+
+    const links = toc.querySelectorAll('a');
+    const headings = Array.from(links).map(link => {
+        const id = link.getAttribute('href').slice(1);
+        return document.getElementById(id);
+    }).filter(h => h);
+
+    function updateTOC() {
+        let current = -1;
+        const scrollPos = window.scrollY + window.innerHeight / 3;
+
+        for (let i = headings.length - 1; i >= 0; i--) {
+            if (headings[i] && headings[i].offsetTop <= scrollPos) {
+                current = i;
+                break;
+            }
+        }
+
+        links.forEach((link, i) => {
+            link.classList.toggle('active', i === current);
+        });
+
+        if (current >= 0 && links.length > 1) {
+            const linkElement = links[current];
+            const linkTop = linkElement.offsetTop;
+            const firstLinkTop = links[0].offsetTop;
+            const lastLinkTop = links[links.length - 1].offsetTop;
+            const progress = ((linkTop - firstLinkTop) / (lastLinkTop - firstLinkTop)) * 100;
+            progressBar.style.height = Math.min(Math.max(progress, 0), 100) + '%';
+        }
+    }
+
+    
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('href').slice(1);
+            const target = document.getElementById(id);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    window.addEventListener('scroll', updateTOC, { passive: true });
+    updateTOC();
+});
+</script>
+
+    </head>
+    <body class="
+    article-page
+">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "light");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex 
+    
+        on-phone--column extended
+    
+">
+    
+<div id="article-toolbar">
+    <a href="http://localhost:1313/" class="back-home">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="15 6 9 12 15 18" />
+</svg>
+
+
+
+        <span></span>
+    </a>
+</div>
+    <aside class="sidebar left-sidebar sticky">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header class="site-info">
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_44f3f8bffe8efa0b.jpg" width="300"
+                            height="305" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <h1 class="site-name"><a href="/">我的博客</a></h1>
+        <h2 class="site-description">知行合一</h2><ol class="social-menu">
+                
+                    <li>
+                        <a 
+                            href='https://space.bilibili.com/52415281'
+                            target="_blank"
+                            title="Bilibili"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-bilibili" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M7 6l-2 -2" />
+  <path d="M17 6l2 -2" />
+  <path d="M5 8h14a2 2 0 0 1 2 2v7a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-7a2 2 0 0 1 2 -2z" />
+  <path d="M9 13v3" />
+  <path d="M15 13v3" />
+  <path d="M10 18h4" />
+</svg>
+
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a 
+                            href='mailto:siezh2927@163.com'
+                            target="_blank"
+                            title="Email"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-messages" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10" />
+  <path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a 
+                            href='https://github.com/Harmme5'
+                            target="_blank"
+                            title="GitHub"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+            </ol></header>
+
+    <ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/post' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-messages" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10" />
+  <path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2" />
+</svg>
+
+
+
+                
+                <span>文章</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+
+        
+            <li id="dark-mode-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                <span>暗色模式</span>
+            </li>
+        
+    </ol>
+</aside>
+
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <h2 class="article-title">
+        <a href="/post/%E8%AE%B0%E5%BD%95%E6%89%8B%E6%9C%BA%E7%AC%AC%E4%B8%80%E6%AC%A1%E9%80%9A%E8%BF%87-wifi-%E4%B8%8E-esp8266-%E8%BF%9E%E6%8E%A5/">记录手机第一次通过WIFI与ESP8266连接</a>
+    </h2>
+
+    
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 13, 2023</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-words">
+                    469字
+                </time>
+            </div>
+        
+    </footer>
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>(发送新行)
+1.发送AT，返回OK
+2.AT+CWMODE=1,设置ESP8266 Station模式该模式ESP不生成WIFI信号
+3.AT+RST,重启生效
+4.AT+CWLAP,查询当前WIFI列表(2.4G)
+5.AT+CWJAP=&ldquo;WIFI名&rdquo;,&ldquo;WIFI密码&rdquo;  连接WIFI,成功会显示连接
+6.AT+CIFSR 查询ESP的IP
+7.AT+CIPMUX=1 建立多连接
+8.AT+CIPSERVER=1,8080 建立服务器,端口8080
+ESP Station模式配网完成</p>
+<p>1.AT+CWMODE=2,设置ESP8266 AP模式
+2.AT+RST,重启生效
+3.AT+CIFSR 查询ESP的IP
+4.AT+CIPMUX=1 建立多连接
+5.AT+CIPSERVER=1,8080 建立服务器,端口8080
+ESP AP模式配网完成</p>
+<p>2.AT+CWMODE=3,设置ESP8266 APStation模式
+3.AT+RST,重启生效
+4.AT+CWLAP,查询当前WIFI列表(2.4G)
+5.AT+CWJAP=&ldquo;WIFI名&rdquo;,&ldquo;WIFI密码&rdquo;  连接WIFI,成功会显示连接
+6.AT+CIFSR 查询ESP的IP
+7.AT+CIPMUX=1 建立多连接
+8.AT+CIPSERVER=1,8080 建立服务器,端口8080
+ESP Station模式配网完成</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    <aside class="related-contents--wrapper">
+    
+    
+</aside>
+
+     
+     
+        
+    <div class="disqus-container">
+    
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (DISQUS) {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+  
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+<script>
+(function(u, c) {
+  var d = document, t = 'script', o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+  o.src = u;
+  if (c) { o.addEventListener('load', function(e) { c(e); }); }
+  s.parentNode.insertBefore(o, s);
+})('//cdn.bootcss.com/pangu/3.3.0/pangu.min.js', function() {
+  pangu.spacingPage();
+});
+</script>
+
+    <section class="copyright">
+        &copy; 
+        
+        2026 <a href="http://localhost:1313/">我的博客</a>·<i class="fas fa-bell"></i> <a id="days">0</a>Days<br>
+      共书写了10.8k字·共 4篇文章</br><span><p>
+    </section>
+    
+    <section class="powerby">
+         <br />
+        <br />
+         <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">© Licensed Under CC BY-NC-SA 4.0</a>
+    </section>
+
+<script>
+var s1 = '2026-06-10';
+s1 = new Date(s1.replace(/-/g, "/"));
+s2 = new Date();
+var days = s2.getTime() - s1.getTime();
+var number_of_days = parseInt(days / (1000 * 60 * 60 * 24));
+document.getElementById('days').innerHTML = number_of_days;
+</script>
+    
+</footer>
+
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    
+        
+    
+    <aside class="sidebar right-sidebar sticky">
+        
+            <form action="/search/" class="search-form widget" >
+        <p>
+            <label></label>
+            <input name="keyword" required placeholder="" />
+        
+            <button title="">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+            </button>
+        </p>
+    </form>
+        
+            <section class="widget categories">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-infinity" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M9.828 9.172a4 4 0 1 0 0 5.656 a10 10 0 0 0 2.172 -2.828a10 10 0 0 1 2.172 -2.828 a4 4 0 1 1 0 5.656a10 10 0 0 1 -2.172 -2.828a10 10 0 0 0 -2.172 -2.828" />
+</svg>
+
+
+  
+        </div> 
+        <h2 class="widget-title section-title">Categories</h2>
+    <div class="widget-categories--list">
+<div class="widget">
+    <h3 class="widget-title"> </h3>
+    <div class="widget-body">
+        <div class="category-list">
+            <div class="category-list-item"><a href="http://localhost:1313/categories/%E6%8A%80%E6%9C%AF%E6%95%99%E7%A8%8B/" class="category-list-link">技术教程<span class="category-list-count">1</a>
+            </span></div>
+        </div>
+    </div>
+</div>
+    </div>
+    </section>
+        
+            <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-infinity" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M9.828 9.172a4 4 0 1 0 0 5.656 a10 10 0 0 0 2.172 -2.828a10 10 0 0 1 2.172 -2.828 a4 4 0 1 1 0 5.656a10 10 0 0 1 -2.172 -2.828a10 10 0 0 0 -2.172 -2.828" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title"></h2>
+
+        
+        
+        
+        
+        
+        <div class="widget-archive--list">
+            <div class="archives-year">
+                    <a href="/archives/#2026">
+                        
+                            <span class="year">2026</span>
+                            <span class="count">3</span>
+                        
+                    </a> 
+                </div>
+            <div class="archives-year">
+                    <a href="/archives/#2023">
+                        
+                            <span class="year">2023</span>
+                            <span class="count">1</span>
+                        
+                    </a> 
+                </div>
+            
+        </div>
+    </section>
+        
+    </aside>
+
+    
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

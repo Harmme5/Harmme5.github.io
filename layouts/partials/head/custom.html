@@ -1,0 +1,221 @@
+<style>
+.site-avatar .emoji {
+    display: none !important;
+}
+/* 隐藏友链页面的文章头部 */
+body[data-template="links"] .article-header,
+.links + .article-header,
+.article-list--compact.links ~ .article-header {
+    display: none !important;
+}
+
+/* 目录进度条样式 */
+.widget--toc {
+    position: relative;
+    padding-left: 20px;
+}
+.widget--toc::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--card-separator-color);
+    border-radius: 2px;
+}
+.toc-progress-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 0%;
+    background: var(--accent-color);
+    border-radius: 2px;
+    transition: height 0.3s ease;
+    z-index: 1;
+}
+.widget--toc a {
+    transition: color 0.2s;
+}
+.widget--toc a.active {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+/* 图片灯箱样式 */
+.lightbox-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    cursor: zoom-out;
+    align-items: center;
+    justify-content: center;
+}
+.lightbox-overlay.active {
+    display: flex;
+}
+.lightbox-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    animation: zoomIn 0.3s ease;
+}
+@keyframes zoomIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+</style>
+
+<script>
+// 图片灯箱功能
+document.addEventListener('DOMContentLoaded', function() {
+    // 创建灯箱容器
+    const lightbox = document.createElement('div');
+    lightbox.className = 'lightbox-overlay';
+    document.body.appendChild(lightbox);
+
+    // 关闭灯箱
+    lightbox.addEventListener('click', function() {
+        this.classList.remove('active');
+        this.innerHTML = '';
+    });
+
+    // 为文章中的图片添加点击放大
+    const articleImages = document.querySelectorAll('article img');
+    articleImages.forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const clonedImg = this.cloneNode(true);
+            clonedImg.style.cursor = 'zoom-out';
+            lightbox.innerHTML = '';
+            lightbox.appendChild(clonedImg);
+            lightbox.classList.add('active');
+        });
+    });
+});
+
+// 阻止文章中图片链接的默认行为
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (link && link.querySelector('img')) {
+        e.preventDefault();
+        return false;
+    }
+
+    // 排除目录链接的点击
+    if (e.target.closest('.widget--toc a')) return;
+
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b731', '#5f27cd', '#ff9ff3'];
+    const particleCount = 12;
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
+        const velocity = 25 + Math.random() * 20;
+        const size = 4 + Math.random() * 6;
+
+        particle.style.cssText = `
+            position: fixed;
+            left: ${e.clientX}px;
+            top: ${e.clientY}px;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+        `;
+
+        document.body.appendChild(particle);
+
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity;
+
+        let progress = 0;
+        const animate = () => {
+            progress += 0.005;
+            if (progress >= 1) {
+                particle.remove();
+                return;
+            }
+
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const easeIn = progress < 0.5 ? easeOut : 1 - Math.pow((progress - 0.5) * 2, 2);
+
+            const x = progress < 0.5 ? tx * easeOut : tx * (1 - (progress - 0.5) * 2);
+            const y = progress < 0.5 ? ty * easeOut : ty * (1 - (progress - 0.5) * 2);
+            const opacity = progress < 0.5 ? 1 : 1 - (progress - 0.5) * 2;
+
+            particle.style.transform = `translate(${x}px, ${y}px)`;
+            particle.style.opacity = opacity;
+
+            requestAnimationFrame(animate);
+        };
+        animate();
+    }
+});
+
+// 目录进度条功能
+document.addEventListener('DOMContentLoaded', function() {
+    const toc = document.querySelector('.widget--toc');
+    if (!toc) return;
+
+    // 插入进度条元素
+    const progressBar = document.createElement('div');
+    progressBar.className = 'toc-progress-bar';
+    toc.insertBefore(progressBar, toc.firstChild);
+
+    const links = toc.querySelectorAll('a');
+    const headings = Array.from(links).map(link => {
+        const id = link.getAttribute('href').slice(1);
+        return document.getElementById(id);
+    }).filter(h => h);
+
+    function updateTOC() {
+        let current = -1;
+        const scrollPos = window.scrollY + window.innerHeight / 3;
+
+        for (let i = headings.length - 1; i >= 0; i--) {
+            if (headings[i] && headings[i].offsetTop <= scrollPos) {
+                current = i;
+                break;
+            }
+        }
+
+        links.forEach((link, i) => {
+            link.classList.toggle('active', i === current);
+        });
+
+        if (current >= 0 && links.length > 1) {
+            const linkElement = links[current];
+            const linkTop = linkElement.offsetTop;
+            const firstLinkTop = links[0].offsetTop;
+            const lastLinkTop = links[links.length - 1].offsetTop;
+            const progress = ((linkTop - firstLinkTop) / (lastLinkTop - firstLinkTop)) * 100;
+            progressBar.style.height = Math.min(Math.max(progress, 0), 100) + '%';
+        }
+    }
+
+    // 手动处理目录链接点击，确保平滑滚动
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('href').slice(1);
+            const target = document.getElementById(id);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    window.addEventListener('scroll', updateTOC, { passive: true });
+    updateTOC();
+});
+</script>

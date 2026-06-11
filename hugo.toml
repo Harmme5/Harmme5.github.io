@@ -8,6 +8,9 @@ hasCJKLanguage = true
 enableInlineShortcodes = true
 enableRobotsTXT = true               # 启用 robots.txt
 
+[outputs]
+home = ["HTML", "RSS", "JSON"]
+
 # 分页配置
 paginate = 10                        # 首页/分类页每页显示文章数量
 
@@ -31,6 +34,7 @@ paginate = 10                        # 首页/分类页每页显示文章数量
     # 页脚配置
     [params.footer]
         enable = true
+        since = 2026  # 博客建站年份（会显示为 2020 - 当前年份）
         text = "© 2026 我的博客 | 基于 Hugo & Stack 构建"
         # 社交图标（支持 Github、Twitter 等，完整列表参考 Stack 文档）
         social = [
@@ -48,6 +52,8 @@ paginate = 10                        # 首页/分类页每页显示文章数量
 [markup]
     defaultMarkdownHandler = "goldmark"
     [markup.goldmark]
+        [markup.goldmark.renderer]
+            unsafe = true
         [markup.goldmark.extensions]
             definitionList = true
             footnote = true
@@ -66,42 +72,83 @@ paginate = 10                        # 首页/分类页每页显示文章数量
 # Stack reads navigation from Hugo's top-level menu, not params.menu
 
 [[menu.main]]
-identifier = "home"
-name = "首页"
-url = "/"
-weight = 1
-
-[[menu.main]]
 identifier = "blogs"
 name = "文章"
-pageRef = "/post"
+url = "/post"
 weight = 2
+    [menu.main.params]
+    icon = "messages"
 
 [[menu.main]]
 identifier = "archives"
 name = "归档"
 pageRef = "/archives"
 weight = 3
+    [menu.main.params]
+    icon = "archives"
 
 [[menu.main]]
 identifier = "links"
 name = "友链"
 pageRef = "/links"
 weight = 4
+    [menu.main.params]
+    icon = "link"
 
 [[menu.main]]
 identifier = "about"
 name = "关于"
 pageRef = "/about"
 weight = 5
+    [menu.main.params]
+    icon = "user"
+
+[[menu.social]]
+identifier = "github"
+name = "GitHub"
+url = "https://github.com/Harmme5"
+    [menu.social.params]
+    icon = "brand-github"
+
+[[menu.social]]
+identifier = "email"
+name = "Email"
+url = "mailto:siezh2927@163.com"
+    [menu.social.params]
+    icon = "messages"
+
+[[menu.social]]
+identifier = "bilibili"
+name = "Bilibili"
+url = "https://space.bilibili.com/52415281"
+    [menu.social.params]
+    icon = "bilibili"
 
 [params.article]
 toc = true
 
+[params.sidebar]
+subtitle = "知行合一"
+
+[params.sidebar.avatar]
+enabled = true
+local = true
+src = "img/avatar.jpg"
+
+[params.colorScheme]
+toggle = true
+default = "light"
+
 [params.widgets]
-enabled = ["toc"]
+enabled = ["search", "categories", "archives"]
+
+[params.widgets.archives]
+limit = 5
+
+[params.widgets.tagCloud]
+limit = 10
 
 [markup.tableOfContents]
-startLevel = 2
+startLevel = 1
 endLevel = 4
 ordered = true

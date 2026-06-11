@@ -144,6 +144,64 @@
     border: 0;
 }
 
+.left-sidebar .site-name a {
+    color: #334155;
+}
+
+.left-sidebar .site-description {
+    color: #7c8798;
+}
+
+.left-sidebar .social-menu a {
+    color: #334155;
+}
+
+.left-sidebar .social-menu svg {
+    stroke: #334155;
+}
+
+.left-sidebar .menu li a {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.left-sidebar .menu li svg {
+    color: #94a3b8;
+    stroke: #94a3b8;
+}
+
+.left-sidebar .menu li.current a,
+.left-sidebar .menu li a:hover {
+    color: #334155;
+}
+
+.left-sidebar .menu li.current svg,
+.left-sidebar .menu li a:hover svg {
+    color: #334155;
+    stroke: #334155;
+}
+
+[data-scheme="dark"] .left-sidebar .site-name a,
+[data-scheme="dark"] .left-sidebar .social-menu a {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+[data-scheme="dark"] .left-sidebar .site-description,
+[data-scheme="dark"] .left-sidebar .menu li a {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+[data-scheme="dark"] .left-sidebar .menu li svg,
+[data-scheme="dark"] .left-sidebar .social-menu svg {
+    color: rgba(255, 255, 255, 0.72);
+    stroke: rgba(255, 255, 255, 0.72);
+}
+
+.widget-toc .widget-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
 @media (max-width: 900px) {
     .top-nav .nav-inner {
         flex-wrap: wrap;
