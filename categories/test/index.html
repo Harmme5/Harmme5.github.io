@@ -58,6 +58,18 @@ body[data-template="links"] .article-header,
     font-weight: 600;
 }
  
+.reading-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: var(--accent-color);
+    z-index: 9999;
+    transition: width 0.1s ease;
+}
+
+ 
 .code-copy-btn {
     position: absolute;
     top: 8px;
@@ -142,6 +154,24 @@ pre:hover .code-copy-btn {
 </style>
 
 <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBar = document.createElement('div');
+    progressBar.className = 'reading-progress-bar';
+    document.body.appendChild(progressBar);
+
+    function updateReadingProgress() {
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.scrollY;
+        const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+        progressBar.style.width = Math.min(scrollPercent, 100) + '%';
+    }
+
+    window.addEventListener('scroll', updateReadingProgress, { passive: true });
+    updateReadingProgress();
+});
+
 
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('pre').forEach(function(pre) {
