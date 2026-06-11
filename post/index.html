@@ -79,10 +79,48 @@ body[data-template="links"] .article-header,
 .article-list--compact article {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border-radius: 8px;
+    cursor: pointer;
 }
 .article-list--compact article:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+ 
+.article-image:empty::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+ 
+.article-list--compact article,
+.article-list--tile .article-list__item {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.article-list--compact article.fade-in,
+.article-list--tile .article-list__item.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+ 
+.article-page {
+    animation: pageLoad 0.6s ease;
+}
+@keyframes pageLoad {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
  
@@ -172,6 +210,21 @@ pre:hover .code-copy-btn {
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {
+    
+    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.article-list--compact article, .article-list--tile .article-list__item').forEach(el => {
+        observer.observe(el);
+    });
+
     const progressBar = document.createElement('div');
     progressBar.className = 'reading-progress-bar';
     document.body.appendChild(progressBar);
@@ -190,6 +243,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 document.addEventListener('DOMContentLoaded', function() {
+    
+    document.querySelectorAll('.article-list--compact article').forEach(function(article) {
+        const link = article.querySelector('a');
+        if (link) {
+            article.addEventListener('click', function(e) {
+                window.location.href = link.href;
+            });
+        }
+    });
+
     document.querySelectorAll('pre').forEach(function(pre) {
         pre.style.position = 'relative';
 
@@ -248,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     
-    const articleImages = document.querySelectorAll('article img');
+    const articleImages = document.querySelectorAll('.article-content img, .article-page img');
     articleImages.forEach(img => {
         img.style.cursor = 'zoom-in';
         img.addEventListener('click', function(e) {
@@ -846,10 +909,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <h2 class="article-title">LoRA微调</h2>
             <footer class="article-time">
                 <time datetime='2026-03-03T19:32:06&#43;08:00'>Mar 03, 2026</time>
+                
+                    <span> · 2819 字 · 9 分钟</span>
+                
             </footer>
         </div>
     </a>
 </article>
+
         
             <article>
     <a href="/post/ros-study-1p5djp.html">
@@ -857,10 +924,20 @@ document.addEventListener('DOMContentLoaded', function() {
             <h2 class="article-title">ROS学习</h2>
             <footer class="article-time">
                 <time datetime='2026-03-03T10:10:41&#43;08:00'>Mar 03, 2026</time>
+                
+                    <span> · 6992 字 · 23 分钟</span>
+                
             </footer>
         </div>
+            <div class="article-image">
+                
+                    <img src="/img/covers/ros-cover.png" loading="lazy" alt="Featured image of post ROS学习" />
+                
+            </div>
+        
     </a>
 </article>
+
         
             <article>
     <a href="/post/hugo-stack-%E4%B8%BB%E9%A2%98%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/">
@@ -868,10 +945,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <h2 class="article-title">Hugo Stack 主题使用教程</h2>
             <footer class="article-time">
                 <time datetime='2026-01-04T10:00:00&#43;08:00'>Jan 04, 2026</time>
+                
+                    <span> · 72 字 · 0 分钟</span>
+                
             </footer>
         </div>
     </a>
 </article>
+
         
             <article>
     <a href="/post/%E8%AE%B0%E5%BD%95%E6%89%8B%E6%9C%BA%E7%AC%AC%E4%B8%80%E6%AC%A1%E9%80%9A%E8%BF%87-wifi-%E4%B8%8E-esp8266-%E8%BF%9E%E6%8E%A5/">
@@ -879,10 +960,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <h2 class="article-title">记录手机第一次通过WIFI与ESP8266连接</h2>
             <footer class="article-time">
                 <time datetime='2023-07-13T20:20:26&#43;08:00'>Jul 13, 2023</time>
+                
+                    <span> · 469 字 · 1 分钟</span>
+                
             </footer>
         </div>
     </a>
 </article>
+
         
     </section>
 <footer class="site-footer">

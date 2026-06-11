@@ -614,7 +614,7 @@ FFN处理注意力输出，负责特征提取和非线性映射，调整它能�
         <pubDate>Tue, 03 Mar 2026 10:10:41 +0800</pubDate>
         
         <guid>http://localhost:1313/post/ros-study-1p5djp.html</guid>
-        <description>&lt;h1 id=&#34;ros学习&#34;&gt;ROS学习
+        <description>&lt;img src="http://localhost:1313/img/covers/ros-cover.png" alt="Featured image of post ROS学习" /&gt;&lt;h1 id=&#34;ros学习&#34;&gt;ROS学习
 &lt;/h1&gt;&lt;h1 id=&#34;1ros是什么&#34;&gt;1.Ros是什么
 &lt;/h1&gt;&lt;p&gt;谷歌在Arm和Linux基础上，做了安卓系统，只需要开发一次，就能在大多数安卓机上运行。&lt;/p&gt;
 &lt;p&gt;以前，机器人没有统一的操作系统，每做一个机器人，都要软件-硬件重新来一遍&lt;/p&gt;
