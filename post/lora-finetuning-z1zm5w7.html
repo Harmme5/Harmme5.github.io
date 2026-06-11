@@ -75,6 +75,23 @@ body[data-template="links"] .article-header,
 }
 
  
+.article-list--tile .article-list__item {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.article-list--tile .article-list__item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+.article-list--compact article {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+}
+.article-list--compact article:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+ 
 .code-copy-btn {
     position: absolute;
     top: 8px;
