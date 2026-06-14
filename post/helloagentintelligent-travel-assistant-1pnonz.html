@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='Hello-Agent-智能旅行助手代码部分hello-agents/first_agent at main · Harmme5/hello-agents
+依赖import re #正则库 import os #读取环境变量 from OpenAICompatibleClient import OpenAICompatibleClient from wttr_in import get_weather from search_attraction import get_attraction 提示词AGENT_SYSTEM_PROMPT = &#34;&#34;&#34; 你是一个智能旅行助手。你的任务是分析用户的请求，并使用可用工具一步步地解决问题。 # 可用工具: - `get_weather(city: str)`: 查询指定城市的实时天气。 - `get_attraction(city: str, weather: str)`: 根据城市和天气搜索推荐的旅游景点。 # 输出格式要求: 你的每次回复必须严格遵循以下格式，包含一对Thought和Action： Thought: [你的思考过程和下一步计划] Action: [你要执行的具体行动] Action的格式必须是以下之一： 1. 调用工具：function_name(arg_name=&#34;arg_value&#34;) 2. 结束任务：Finish[最终答案] # 重要提示: - 每次只输出一对Thought-Action - Action必须在同一行，不要换行 - 当收集到足够信息可以回答用户问题时，必须使用 Action: Finish[最终答案] 格式结束 请开始吧！ &#34;&#34;&#34; 初始化# 将所有工具函数放入一个字典，方便后续调用 available_tools = { &#34;get_weather&#34;: get_weather, &#34;get_attraction&#34;: get_attraction, } # --- 1. 配置LLM客户端 --- # 请根据您使用的服务，将这里替换成对应的凭证和地址 API_KEY = os.getenv(&#34;DASHSCOPE_API_KEY&#34;) BASE_URL = &#34;https://dashscope.aliyuncs.com/compatible-mode/v1&#34; MODEL_ID = &#34;glm-5.1&#34; llm = OpenAICompatibleClient( model=MODEL_ID, api_key=API_KEY, base_url=BASE_URL ) # --- 2. 初始化 --- user_prompt = &#34;你好，请帮我查询一下今天沈阳的天气，然后根据天气推荐一个合适的旅游景点。&#34; prompt_history = [f&#34;用户请求: {user_prompt}&#34;] print(f&#34;用户输入: {user_prompt}\n&#34; &#43; &#34;=&#34; * 40) 主循环# --- 3. 运行主循环 --- for i in range(5): # 设置最大循环次数 print(f&#34;--- 循环 {i &#43; 1} ---\n&#34;) # 3.1. 构建Prompt full_prompt = &#34;\n&#34;.join(prompt_history) # 在历史prompt前添加换行，结构更清晰 # 3.2. 调用LLM进行思考 llm_output = llm.generate(full_prompt, system_prompt=AGENT_SYSTEM_PROMPT) # 模型可能会输出多余的Thought-Action，需要截断 # re是正则表达式，下行用于截取模型输出里&#34;第一个&#34;完整的Thought &#43; Action match = re.search(r&#39;(Thought:.*?Action:.*?)(?=\n\s*(?:Thought:|Action:|Observation:)|\Z)&#39;, llm_output, re.DOTALL) if match: truncated = match.group(1).strip() # group(1)取正则第一个括号()捕获到的内容 if truncated != llm_output.strip(): # strip(),去掉前后空白字符，比如多余的换行、空格 llm_output = truncated print(&#34;已截断多余的 Thought-Action 对&#34;) print(f&#34;模型输出:\n{llm_output}\n&#34;) prompt_history.append(llm_output)# 把llm_output的内容添加到prompt_history # 3.3. 解析并执行行动 # 截取Action：后的所有内容 action_match = re.search(r&#34;Action: (.*)&#34;, llm_output, re.DOTALL) if not action_match: # 等价于if action_match is None: observation = &#34;错误: 未能解析到 Action 字段。请确保你的回复严格遵循 &#39;Thought: ... Action: ...&#39; 的格式。&#34; observation_str = f&#34;Observation: {observation}&#34; print(f&#34;{observation_str}\n&#34; &#43; &#34;=&#34; * 40) prompt_history.append(observation_str) continue action_str = action_match.group(1).strip() # 如果是最终步骤，根据提示词，会输出Finish[最终答案] if action_str.startswith(&#34;Finish&#34;): # 获取“最终答案” final_answer = re.match(r&#34;Finish\[(.*)\]&#34;, action_str).group(1) print(f&#34;任务完成，最终答案: {final_answer}&#34;) break # re.search：在整个字符串里查找第一个能匹配上的位置 # (\w&#43;)：匹配一个或多个“单词字符”，例如search、call_tool、abc123 # \(：匹配左括号，因为 ( 在正则里有特殊含义，所以要写成 \( # .group(1)：取第一个捕获组 tool_name = re.search(r&#34;(\w&#43;)\(&#34;, action_str).group(1) # 提取括号里的全部内容 args_str = re.search(r&#34;\((.*)\)&#34;, action_str).group(1) # 找出所有的 参数名=参数值 kwargs = dict(re.findall(r&#39;(\w&#43;)=&#34;([^&#34;]*)&#34;&#39;, args_str)) if tool_name in available_tools: # 动态调用工具 observation = available_tools[tool_name](**kwargs) else: observation = f&#34;错误:未定义的工具 &#39;{tool_name}&#39;&#34; # 3.4. 记录观察结果 observation_str = f&#34;Observation: {observation}&#34; print(f&#34;{observation_str}\n&#34; &#43; &#34;=&#34; * 40) prompt_history.append(observation_str) 主循环拆解拼接历史上下文# 3.1. 构建Prompt full_prompt = &#34;\n&#34;.join(prompt_history) # 在历史prompt前添加换行，结构更清晰 该行代码在每次循环开始都会运行，作用：把历史prompt添加进完整的prompt，Observation观察的对象。
+'><title>Hello-Agent-智能旅行助手</title>
+
+<link rel='canonical' href='http://localhost:1313/post/helloagentintelligent-travel-assistant-1pnonz.html'>
+
+<link rel="stylesheet" href="/scss/style.min.b5ae3e8b4e7afb47fddddbfa7021f08c631e65fb1e42f8797caf1f81ff100502.css">
+<meta property='og:title' content='Hello-Agent-智能旅行助手'>
+<meta property='og:description' content='Hello-Agent-智能旅行助手代码部分hello-agents/first_agent at main · Harmme5/hello-agents
+依赖import re #正则库 import os #读取环境变量 from OpenAICompatibleClient import OpenAICompatibleClient from wttr_in import get_weather from search_attraction import get_attraction 提示词AGENT_SYSTEM_PROMPT = &#34;&#34;&#34; 你是一个智能旅行助手。你的任务是分析用户的请求，并使用可用工具一步步地解决问题。 # 可用工具: - `get_weather(city: str)`: 查询指定城市的实时天气。 - `get_attraction(city: str, weather: str)`: 根据城市和天气搜索推荐的旅游景点。 # 输出格式要求: 你的每次回复必须严格遵循以下格式，包含一对Thought和Action： Thought: [你的思考过程和下一步计划] Action: [你要执行的具体行动] Action的格式必须是以下之一： 1. 调用工具：function_name(arg_name=&#34;arg_value&#34;) 2. 结束任务：Finish[最终答案] # 重要提示: - 每次只输出一对Thought-Action - Action必须在同一行，不要换行 - 当收集到足够信息可以回答用户问题时，必须使用 Action: Finish[最终答案] 格式结束 请开始吧！ &#34;&#34;&#34; 初始化# 将所有工具函数放入一个字典，方便后续调用 available_tools = { &#34;get_weather&#34;: get_weather, &#34;get_attraction&#34;: get_attraction, } # --- 1. 配置LLM客户端 --- # 请根据您使用的服务，将这里替换成对应的凭证和地址 API_KEY = os.getenv(&#34;DASHSCOPE_API_KEY&#34;) BASE_URL = &#34;https://dashscope.aliyuncs.com/compatible-mode/v1&#34; MODEL_ID = &#34;glm-5.1&#34; llm = OpenAICompatibleClient( model=MODEL_ID, api_key=API_KEY, base_url=BASE_URL ) # --- 2. 初始化 --- user_prompt = &#34;你好，请帮我查询一下今天沈阳的天气，然后根据天气推荐一个合适的旅游景点。&#34; prompt_history = [f&#34;用户请求: {user_prompt}&#34;] print(f&#34;用户输入: {user_prompt}\n&#34; &#43; &#34;=&#34; * 40) 主循环# --- 3. 运行主循环 --- for i in range(5): # 设置最大循环次数 print(f&#34;--- 循环 {i &#43; 1} ---\n&#34;) # 3.1. 构建Prompt full_prompt = &#34;\n&#34;.join(prompt_history) # 在历史prompt前添加换行，结构更清晰 # 3.2. 调用LLM进行思考 llm_output = llm.generate(full_prompt, system_prompt=AGENT_SYSTEM_PROMPT) # 模型可能会输出多余的Thought-Action，需要截断 # re是正则表达式，下行用于截取模型输出里&#34;第一个&#34;完整的Thought &#43; Action match = re.search(r&#39;(Thought:.*?Action:.*?)(?=\n\s*(?:Thought:|Action:|Observation:)|\Z)&#39;, llm_output, re.DOTALL) if match: truncated = match.group(1).strip() # group(1)取正则第一个括号()捕获到的内容 if truncated != llm_output.strip(): # strip(),去掉前后空白字符，比如多余的换行、空格 llm_output = truncated print(&#34;已截断多余的 Thought-Action 对&#34;) print(f&#34;模型输出:\n{llm_output}\n&#34;) prompt_history.append(llm_output)# 把llm_output的内容添加到prompt_history # 3.3. 解析并执行行动 # 截取Action：后的所有内容 action_match = re.search(r&#34;Action: (.*)&#34;, llm_output, re.DOTALL) if not action_match: # 等价于if action_match is None: observation = &#34;错误: 未能解析到 Action 字段。请确保你的回复严格遵循 &#39;Thought: ... Action: ...&#39; 的格式。&#34; observation_str = f&#34;Observation: {observation}&#34; print(f&#34;{observation_str}\n&#34; &#43; &#34;=&#34; * 40) prompt_history.append(observation_str) continue action_str = action_match.group(1).strip() # 如果是最终步骤，根据提示词，会输出Finish[最终答案] if action_str.startswith(&#34;Finish&#34;): # 获取“最终答案” final_answer = re.match(r&#34;Finish\[(.*)\]&#34;, action_str).group(1) print(f&#34;任务完成，最终答案: {final_answer}&#34;) break # re.search：在整个字符串里查找第一个能匹配上的位置 # (\w&#43;)：匹配一个或多个“单词字符”，例如search、call_tool、abc123 # \(：匹配左括号，因为 ( 在正则里有特殊含义，所以要写成 \( # .group(1)：取第一个捕获组 tool_name = re.search(r&#34;(\w&#43;)\(&#34;, action_str).group(1) # 提取括号里的全部内容 args_str = re.search(r&#34;\((.*)\)&#34;, action_str).group(1) # 找出所有的 参数名=参数值 kwargs = dict(re.findall(r&#39;(\w&#43;)=&#34;([^&#34;]*)&#34;&#39;, args_str)) if tool_name in available_tools: # 动态调用工具 observation = available_tools[tool_name](**kwargs) else: observation = f&#34;错误:未定义的工具 &#39;{tool_name}&#39;&#34; # 3.4. 记录观察结果 observation_str = f&#34;Observation: {observation}&#34; print(f&#34;{observation_str}\n&#34; &#43; &#34;=&#34; * 40) prompt_history.append(observation_str) 主循环拆解拼接历史上下文# 3.1. 构建Prompt full_prompt = &#34;\n&#34;.join(prompt_history) # 在历史prompt前添加换行，结构更清晰 该行代码在每次循环开始都会运行，作用：把历史prompt添加进完整的prompt，Observation观察的对象。
+'>
+<meta property='og:url' content='http://localhost:1313/post/helloagentintelligent-travel-assistant-1pnonz.html'>
+<meta property='og:site_name' content='我的博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2026-06-14T11:53:59&#43;08:00'/><meta property='article:modified_time' content='2026-06-14T17:26:42&#43;08:00'/>
+<meta name="twitter:title" content="Hello-Agent-智能旅行助手">
+<meta name="twitter:description" content="Hello-Agent-智能旅行助手代码部分hello-agents/first_agent at main · Harmme5/hello-agents
+依赖import re #正则库 import os #读取环境变量 from OpenAICompatibleClient import OpenAICompatibleClient from wttr_in import get_weather from search_attraction import get_attraction 提示词AGENT_SYSTEM_PROMPT = &#34;&#34;&#34; 你是一个智能旅行助手。你的任务是分析用户的请求，并使用可用工具一步步地解决问题。 # 可用工具: - `get_weather(city: str)`: 查询指定城市的实时天气。 - `get_attraction(city: str, weather: str)`: 根据城市和天气搜索推荐的旅游景点。 # 输出格式要求: 你的每次回复必须严格遵循以下格式，包含一对Thought和Action： Thought: [你的思考过程和下一步计划] Action: [你要执行的具体行动] Action的格式必须是以下之一： 1. 调用工具：function_name(arg_name=&#34;arg_value&#34;) 2. 结束任务：Finish[最终答案] # 重要提示: - 每次只输出一对Thought-Action - Action必须在同一行，不要换行 - 当收集到足够信息可以回答用户问题时，必须使用 Action: Finish[最终答案] 格式结束 请开始吧！ &#34;&#34;&#34; 初始化# 将所有工具函数放入一个字典，方便后续调用 available_tools = { &#34;get_weather&#34;: get_weather, &#34;get_attraction&#34;: get_attraction, } # --- 1. 配置LLM客户端 --- # 请根据您使用的服务，将这里替换成对应的凭证和地址 API_KEY = os.getenv(&#34;DASHSCOPE_API_KEY&#34;) BASE_URL = &#34;https://dashscope.aliyuncs.com/compatible-mode/v1&#34; MODEL_ID = &#34;glm-5.1&#34; llm = OpenAICompatibleClient( model=MODEL_ID, api_key=API_KEY, base_url=BASE_URL ) # --- 2. 初始化 --- user_prompt = &#34;你好，请帮我查询一下今天沈阳的天气，然后根据天气推荐一个合适的旅游景点。&#34; prompt_history = [f&#34;用户请求: {user_prompt}&#34;] print(f&#34;用户输入: {user_prompt}\n&#34; &#43; &#34;=&#34; * 40) 主循环# --- 3. 运行主循环 --- for i in range(5): # 设置最大循环次数 print(f&#34;--- 循环 {i &#43; 1} ---\n&#34;) # 3.1. 构建Prompt full_prompt = &#34;\n&#34;.join(prompt_history) # 在历史prompt前添加换行，结构更清晰 # 3.2. 调用LLM进行思考 llm_output = llm.generate(full_prompt, system_prompt=AGENT_SYSTEM_PROMPT) # 模型可能会输出多余的Thought-Action，需要截断 # re是正则表达式，下行用于截取模型输出里&#34;第一个&#34;完整的Thought &#43; Action match = re.search(r&#39;(Thought:.*?Action:.*?)(?=\n\s*(?:Thought:|Action:|Observation:)|\Z)&#39;, llm_output, re.DOTALL) if match: truncated = match.group(1).strip() # group(1)取正则第一个括号()捕获到的内容 if truncated != llm_output.strip(): # strip(),去掉前后空白字符，比如多余的换行、空格 llm_output = truncated print(&#34;已截断多余的 Thought-Action 对&#34;) print(f&#34;模型输出:\n{llm_output}\n&#34;) prompt_history.append(llm_output)# 把llm_output的内容添加到prompt_history # 3.3. 解析并执行行动 # 截取Action：后的所有内容 action_match = re.search(r&#34;Action: (.*)&#34;, llm_output, re.DOTALL) if not action_match: # 等价于if action_match is None: observation = &#34;错误: 未能解析到 Action 字段。请确保你的回复严格遵循 &#39;Thought: ... Action: ...&#39; 的格式。&#34; observation_str = f&#34;Observation: {observation}&#34; print(f&#34;{observation_str}\n&#34; &#43; &#34;=&#34; * 40) prompt_history.append(observation_str) continue action_str = action_match.group(1).strip() # 如果是最终步骤，根据提示词，会输出Finish[最终答案] if action_str.startswith(&#34;Finish&#34;): # 获取“最终答案” final_answer = re.match(r&#34;Finish\[(.*)\]&#34;, action_str).group(1) print(f&#34;任务完成，最终答案: {final_answer}&#34;) break # re.search：在整个字符串里查找第一个能匹配上的位置 # (\w&#43;)：匹配一个或多个“单词字符”，例如search、call_tool、abc123 # \(：匹配左括号，因为 ( 在正则里有特殊含义，所以要写成 \( # .group(1)：取第一个捕获组 tool_name = re.search(r&#34;(\w&#43;)\(&#34;, action_str).group(1) # 提取括号里的全部内容 args_str = re.search(r&#34;\((.*)\)&#34;, action_str).group(1) # 找出所有的 参数名=参数值 kwargs = dict(re.findall(r&#39;(\w&#43;)=&#34;([^&#34;]*)&#34;&#39;, args_str)) if tool_name in available_tools: # 动态调用工具 observation = available_tools[tool_name](**kwargs) else: observation = f&#34;错误:未定义的工具 &#39;{tool_name}&#39;&#34; # 3.4. 记录观察结果 observation_str = f&#34;Observation: {observation}&#34; print(f&#34;{observation_str}\n&#34; &#43; &#34;=&#34; * 40) prompt_history.append(observation_str) 主循环拆解拼接历史上下文# 3.1. 构建Prompt full_prompt = &#34;\n&#34;.join(prompt_history) # 在历史prompt前添加换行，结构更清晰 该行代码在每次循环开始都会运行，作用：把历史prompt添加进完整的prompt，Observation观察的对象。
+"><style>
+.site-avatar .emoji {
+    display: none !important;
+}
+ 
+body[data-template="links"] .article-header,
+.links + .article-header,
+.article-list--compact.links ~ .article-header {
+    display: none !important;
+}
+
+ 
+.widget--toc {
+    position: relative;
+    padding-left: 20px;
+}
+.widget--toc::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--card-separator-color);
+    border-radius: 2px;
+}
+.toc-progress-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 0%;
+    background: var(--accent-color);
+    border-radius: 2px;
+    transition: height 0.3s ease;
+    z-index: 1;
+}
+.widget--toc a {
+    transition: color 0.2s;
+}
+.widget--toc a.active {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+ 
+.reading-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: var(--accent-color);
+    z-index: 9999;
+    transition: width 0.1s ease;
+}
+
+ 
+.article-list--tile .article-list__item {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.article-list--tile .article-list__item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+.article-list--compact article {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.article-list--compact article:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+ 
+.article-image:empty::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+ 
+blockquote {
+    border-left: 4px solid var(--accent-color);
+    background: rgba(var(--accent-color-rgb), 0.05);
+    padding: 1em 1.2em;
+    margin: 1.5em 0;
+    border-radius: 4px;
+    position: relative;
+}
+blockquote::before {
+    content: '"';
+    font-size: 3em;
+    color: var(--accent-color);
+    opacity: 0.2;
+    position: absolute;
+    left: 10px;
+    top: -10px;
+    line-height: 1;
+}
+blockquote p {
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+ 
+.article-list--compact article,
+.article-list--tile .article-list__item {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.article-list--compact article.fade-in,
+.article-list--tile .article-list__item.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+ 
+.article-page {
+    animation: pageLoad 0.6s ease;
+}
+@keyframes pageLoad {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+ 
+.code-copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+.highlight:hover .code-copy-btn,
+pre:hover .code-copy-btn {
+    opacity: 1;
+}
+.code-copy-btn:hover {
+    background: white;
+}
+.code-copy-btn.copied {
+    background: #4caf50;
+    color: white;
+    border-color: #4caf50;
+}
+
+ 
+.back-to-top {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    width: 50px;
+    height: 50px;
+    background: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    z-index: 999;
+    font-size: 24px;
+}
+.back-to-top.show {
+    display: flex;
+}
+.back-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+ 
+.lightbox-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    cursor: zoom-out;
+    align-items: center;
+    justify-content: center;
+}
+.lightbox-overlay.active {
+    display: flex;
+}
+.lightbox-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    animation: zoomIn 0.3s ease;
+}
+@keyframes zoomIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+</style>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.article-list--compact article, .article-list--tile .article-list__item').forEach(el => {
+        observer.observe(el);
+    });
+
+    const progressBar = document.createElement('div');
+    progressBar.className = 'reading-progress-bar';
+    document.body.appendChild(progressBar);
+
+    function updateReadingProgress() {
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.scrollY;
+        const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+        progressBar.style.width = Math.min(scrollPercent, 100) + '%';
+    }
+
+    window.addEventListener('scroll', updateReadingProgress, { passive: true });
+    updateReadingProgress();
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    document.querySelectorAll('.article-list--compact article').forEach(function(article) {
+        const link = article.querySelector('a');
+        if (link) {
+            article.addEventListener('click', function(e) {
+                window.location.href = link.href;
+            });
+        }
+    });
+
+    document.querySelectorAll('pre').forEach(function(pre) {
+        pre.style.position = 'relative';
+
+        const btn = document.createElement('button');
+        btn.className = 'code-copy-btn';
+        btn.textContent = '复制';
+
+        btn.addEventListener('click', function() {
+            const code = pre.querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = '已复制';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '复制';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        });
+
+        pre.appendChild(btn);
+    });
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const backToTop = document.createElement('div');
+    backToTop.className = 'back-to-top';
+    backToTop.innerHTML = '↑';
+    backToTop.title = '回到顶部';
+    document.body.appendChild(backToTop);
+
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+            backToTop.classList.add('show');
+        } else {
+            backToTop.classList.remove('show');
+        }
+    }, { passive: true });
+
+    backToTop.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const lightbox = document.createElement('div');
+    lightbox.className = 'lightbox-overlay';
+    document.body.appendChild(lightbox);
+
+    
+    lightbox.addEventListener('click', function() {
+        this.classList.remove('active');
+        this.innerHTML = '';
+    });
+
+    
+    const articleImages = document.querySelectorAll('.article-content img, .article-page img');
+    articleImages.forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const clonedImg = this.cloneNode(true);
+            clonedImg.style.cursor = 'zoom-out';
+            lightbox.innerHTML = '';
+            lightbox.appendChild(clonedImg);
+            lightbox.classList.add('active');
+        });
+    });
+});
+
+
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (link && link.querySelector('img')) {
+        e.preventDefault();
+        return false;
+    }
+
+    
+    if (e.target.closest('.widget--toc a')) return;
+
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b731', '#5f27cd', '#ff9ff3'];
+    const particleCount = 12;
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
+        const velocity = 25 + Math.random() * 20;
+        const size = 4 + Math.random() * 6;
+
+        particle.style.cssText = `
+            position: fixed;
+            left: ${e.clientX}px;
+            top: ${e.clientY}px;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+        `;
+
+        document.body.appendChild(particle);
+
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity;
+
+        let progress = 0;
+        const animate = () => {
+            progress += 0.005;
+            if (progress >= 1) {
+                particle.remove();
+                return;
+            }
+
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const easeIn = progress < 0.5 ? easeOut : 1 - Math.pow((progress - 0.5) * 2, 2);
+
+            const x = progress < 0.5 ? tx * easeOut : tx * (1 - (progress - 0.5) * 2);
+            const y = progress < 0.5 ? ty * easeOut : ty * (1 - (progress - 0.5) * 2);
+            const opacity = progress < 0.5 ? 1 : 1 - (progress - 0.5) * 2;
+
+            particle.style.transform = `translate(${x}px, ${y}px)`;
+            particle.style.opacity = opacity;
+
+            requestAnimationFrame(animate);
+        };
+        animate();
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const toc = document.querySelector('.widget--toc');
+    if (!toc) return;
+
+    
+    const progressBar = document.createElement('div');
+    progressBar.className = 'toc-progress-bar';
+    toc.insertBefore(progressBar, toc.firstChild);
+
+    const links = toc.querySelectorAll('a');
+    const headings = Array.from(links).map(link => {
+        const id = link.getAttribute('href').slice(1);
+        return document.getElementById(id);
+    }).filter(h => h);
+
+    function updateTOC() {
+        let current = -1;
+        const scrollPos = window.scrollY + window.innerHeight / 3;
+
+        for (let i = headings.length - 1; i >= 0; i--) {
+            if (headings[i] && headings[i].offsetTop <= scrollPos) {
+                current = i;
+                break;
+            }
+        }
+
+        links.forEach((link, i) => {
+            link.classList.toggle('active', i === current);
+        });
+
+        if (current >= 0 && links.length > 1) {
+            const linkElement = links[current];
+            const linkTop = linkElement.offsetTop;
+            const firstLinkTop = links[0].offsetTop;
+            const lastLinkTop = links[links.length - 1].offsetTop;
+            const progress = ((linkTop - firstLinkTop) / (lastLinkTop - firstLinkTop)) * 100;
+            progressBar.style.height = Math.min(Math.max(progress, 0), 100) + '%';
+        }
+    }
+
+    
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('href').slice(1);
+            const target = document.getElementById(id);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    window.addEventListener('scroll', updateTOC, { passive: true });
+    updateTOC();
+});
+</script>
+
+    </head>
+    <body class="
+    article-page
+">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "light");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex 
+    
+        extended
+    
+">
+    
+<div id="article-toolbar">
+    <a href="http://localhost:1313/" class="back-home">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="15 6 9 12 15 18" />
+</svg>
+
+
+
+        <span></span>
+    </a>
+</div>
+    <aside class="sidebar left-sidebar sticky">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header class="site-info">
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_44f3f8bffe8efa0b.jpg" width="300"
+                            height="305" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <h1 class="site-name"><a href="/">我的博客</a></h1>
+        <h2 class="site-description">知行合一</h2><ol class="social-menu">
+                
+                    <li>
+                        <a 
+                            href='https://space.bilibili.com/52415281'
+                            target="_blank"
+                            title="Bilibili"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-bilibili" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M7 6l-2 -2" />
+  <path d="M17 6l2 -2" />
+  <path d="M5 8h14a2 2 0 0 1 2 2v7a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-7a2 2 0 0 1 2 -2z" />
+  <path d="M9 13v3" />
+  <path d="M15 13v3" />
+  <path d="M10 18h4" />
+</svg>
+
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a 
+                            href='mailto:siezh2927@163.com'
+                            target="_blank"
+                            title="Email"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-messages" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10" />
+  <path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a 
+                            href='https://github.com/Harmme5'
+                            target="_blank"
+                            title="GitHub"
+                        >
+                            
+                            
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                            
+                        </a>
+                    </li>
+                
+            </ol></header>
+
+    <ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/post' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-messages" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10" />
+  <path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2" />
+</svg>
+
+
+
+                
+                <span>文章</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+
+        
+            <li id="dark-mode-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                <span>暗色模式</span>
+            </li>
+        
+    </ol>
+</aside>
+
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <h2 class="article-title">
+        <a href="/post/helloagentintelligent-travel-assistant-1pnonz.html">Hello-Agent-智能旅行助手</a>
+    </h2>
+
+    
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jun 14, 2026</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    5077 字 · 16 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="hello-agent-智能旅行助手">Hello-Agent-智能旅行助手
+</h1><h1 id="代码部分">代码部分
+</h1><p><a class="link" href="https://github.com/Harmme5/hello-agents/tree/main/first_agent"  target="_blank" rel="noopener"
+    >hello-agents/first_agent at main · Harmme5/hello-agents</a></p>
+<h2 id="依赖">依赖
+</h2><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">re</span> <span class="c1">#正则库</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span> <span class="c1">#读取环境变量</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">OpenAICompatibleClient</span> <span class="kn">import</span> <span class="n">OpenAICompatibleClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">wttr_in</span> <span class="kn">import</span> <span class="n">get_weather</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">search_attraction</span> <span class="kn">import</span> <span class="n">get_attraction</span>
+</span></span></code></pre></div><h2 id="提示词">提示词
+</h2><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">AGENT_SYSTEM_PROMPT</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">你是一个智能旅行助手。你的任务是分析用户的请求，并使用可用工具一步步地解决问题。
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2"># 可用工具:
+</span></span></span><span class="line"><span class="cl"><span class="s2">- `get_weather(city: str)`: 查询指定城市的实时天气。
+</span></span></span><span class="line"><span class="cl"><span class="s2">- `get_attraction(city: str, weather: str)`: 根据城市和天气搜索推荐的旅游景点。
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2"># 输出格式要求:
+</span></span></span><span class="line"><span class="cl"><span class="s2">你的每次回复必须严格遵循以下格式，包含一对Thought和Action：
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">Thought: [你的思考过程和下一步计划]
+</span></span></span><span class="line"><span class="cl"><span class="s2">Action: [你要执行的具体行动]
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">Action的格式必须是以下之一：
+</span></span></span><span class="line"><span class="cl"><span class="s2">1. 调用工具：function_name(arg_name=&#34;arg_value&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s2">2. 结束任务：Finish[最终答案]
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2"># 重要提示:
+</span></span></span><span class="line"><span class="cl"><span class="s2">- 每次只输出一对Thought-Action
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Action必须在同一行，不要换行
+</span></span></span><span class="line"><span class="cl"><span class="s2">- 当收集到足够信息可以回答用户问题时，必须使用 Action: Finish[最终答案] 格式结束
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">请开始吧！
+</span></span></span><span class="line"><span class="cl"><span class="s2">&#34;&#34;&#34;</span>
+</span></span></code></pre></div><h2 id="初始化">初始化
+</h2><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 将所有工具函数放入一个字典，方便后续调用</span>
+</span></span><span class="line"><span class="cl"><span class="n">available_tools</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;get_weather&#34;</span><span class="p">:</span> <span class="n">get_weather</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;get_attraction&#34;</span><span class="p">:</span> <span class="n">get_attraction</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># --- 1. 配置LLM客户端 ---</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 请根据您使用的服务，将这里替换成对应的凭证和地址</span>
+</span></span><span class="line"><span class="cl"><span class="n">API_KEY</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;DASHSCOPE_API_KEY&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">BASE_URL</span> <span class="o">=</span> <span class="s2">&#34;https://dashscope.aliyuncs.com/compatible-mode/v1&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">MODEL_ID</span> <span class="o">=</span> <span class="s2">&#34;glm-5.1&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">llm</span> <span class="o">=</span> <span class="n">OpenAICompatibleClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">api_key</span><span class="o">=</span><span class="n">API_KEY</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">base_url</span><span class="o">=</span><span class="n">BASE_URL</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># --- 2. 初始化 ---</span>
+</span></span><span class="line"><span class="cl"><span class="n">user_prompt</span> <span class="o">=</span> <span class="s2">&#34;你好，请帮我查询一下今天沈阳的天气，然后根据天气推荐一个合适的旅游景点。&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">prompt_history</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&#34;用户请求: </span><span class="si">{</span><span class="n">user_prompt</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;用户输入: </span><span class="si">{</span><span class="n">user_prompt</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+</span></span></code></pre></div><h2 id="主循环">主循环
+</h2><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># --- 3. 运行主循环 ---</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>  <span class="c1"># 设置最大循环次数</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;--- 循环 </span><span class="si">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> ---</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 3.1. 构建Prompt</span>
+</span></span><span class="line"><span class="cl">    <span class="n">full_prompt</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prompt_history</span><span class="p">)</span> <span class="c1"># 在历史prompt前添加换行，结构更清晰</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 3.2. 调用LLM进行思考</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm_output</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">full_prompt</span><span class="p">,</span> <span class="n">system_prompt</span><span class="o">=</span><span class="n">AGENT_SYSTEM_PROMPT</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 模型可能会输出多余的Thought-Action，需要截断</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># re是正则表达式，下行用于截取模型输出里&#34;第一个&#34;完整的Thought + Action</span>
+</span></span><span class="line"><span class="cl">    <span class="k">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(Thought:.*?Action:.*?)(?=\n\s*(?:Thought:|Action:|Observation:)|\Z)&#39;</span><span class="p">,</span> <span class="n">llm_output</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="k">match</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">truncated</span> <span class="o">=</span> <span class="k">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="c1"># group(1)取正则第一个括号()捕获到的内容</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">truncated</span> <span class="o">!=</span> <span class="n">llm_output</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span> <span class="c1"># strip(),去掉前后空白字符，比如多余的换行、空格</span>
+</span></span><span class="line"><span class="cl">            <span class="n">llm_output</span> <span class="o">=</span> <span class="n">truncated</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;已截断多余的 Thought-Action 对&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;模型输出:</span><span class="se">\n</span><span class="si">{</span><span class="n">llm_output</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">prompt_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">llm_output</span><span class="p">)</span><span class="c1"># 把llm_output的内容添加到prompt_history</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 3.3. 解析并执行行动</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 截取Action：后的所有内容</span>
+</span></span><span class="line"><span class="cl">    <span class="n">action_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;Action: (.*)&#34;</span><span class="p">,</span> <span class="n">llm_output</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">action_match</span><span class="p">:</span> <span class="c1"># 等价于if action_match is None:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="s2">&#34;错误: 未能解析到 Action 字段。请确保你的回复严格遵循 &#39;Thought: ... Action: ...&#39; 的格式。&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">observation_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;Observation: </span><span class="si">{</span><span class="n">observation</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">observation_str</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">prompt_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation_str</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">continue</span>
+</span></span><span class="line"><span class="cl">    <span class="n">action_str</span> <span class="o">=</span> <span class="n">action_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 如果是最终步骤，根据提示词，会输出Finish[最终答案]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">action_str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&#34;Finish&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 获取“最终答案”</span>
+</span></span><span class="line"><span class="cl">        <span class="n">final_answer</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="k">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;Finish\[(.*)\]&#34;</span><span class="p">,</span> <span class="n">action_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;任务完成，最终答案: </span><span class="si">{</span><span class="n">final_answer</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">break</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># re.search：在整个字符串里查找第一个能匹配上的位置</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># (\w+)：匹配一个或多个“单词字符”，例如search、call_tool、abc123</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># \(：匹配左括号，因为 ( 在正则里有特殊含义，所以要写成 \(</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># .group(1)：取第一个捕获组</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tool_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;(\w+)\(&#34;</span><span class="p">,</span> <span class="n">action_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 提取括号里的全部内容</span>
+</span></span><span class="line"><span class="cl">    <span class="n">args_str</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;\((.*)\)&#34;</span><span class="p">,</span> <span class="n">action_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 找出所有的 参数名=参数值</span>
+</span></span><span class="line"><span class="cl">    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(\w+)=&#34;([^&#34;]*)&#34;&#39;</span><span class="p">,</span> <span class="n">args_str</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="n">available_tools</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 动态调用工具</span>
+</span></span><span class="line"><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="n">available_tools</span><span class="p">[</span><span class="n">tool_name</span><span class="p">](</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;错误:未定义的工具 &#39;</span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">&#39;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 3.4. 记录观察结果</span>
+</span></span><span class="line"><span class="cl">    <span class="n">observation_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;Observation: </span><span class="si">{</span><span class="n">observation</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">observation_str</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">prompt_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation_str</span><span class="p">)</span>
+</span></span></code></pre></div><h1 id="主循环拆解">主循环拆解
+</h1><h2 id="拼接历史上下文">拼接历史上下文
+</h2><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">    <span class="c1"># 3.1. 构建Prompt</span>
+</span></span><span class="line"><span class="cl">    <span class="n">full_prompt</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prompt_history</span><span class="p">)</span> <span class="c1"># 在历史prompt前添加换行，结构更清晰</span>
+</span></span></code></pre></div><p>该行代码在每次循环开始都会运行，作用：把历史prompt添加进完整的prompt，Observation观察的对象。</p>
+<h2 id="调用大模型截断多余输出">调用大模型+截断多余输出
+</h2><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">    <span class="c1"># 3.2. 调用LLM进行思考</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm_output</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">full_prompt</span><span class="p">,</span> <span class="n">system_prompt</span><span class="o">=</span><span class="n">AGENT_SYSTEM_PROMPT</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 模型可能会输出多余的Thought-Action，需要截断</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># re是正则表达式，下行用于截取模型输出里&#34;第一个&#34;完整的Thought + Action</span>
+</span></span><span class="line"><span class="cl">    <span class="k">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(Thought:.*?Action:.*?)(?=\n\s*(?:Thought:|Action:|Observation:)|\Z)&#39;</span><span class="p">,</span> <span class="n">llm_output</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="k">match</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">truncated</span> <span class="o">=</span> <span class="k">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="c1"># group(1)取正则第一个括号()捕获到的内容</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">truncated</span> <span class="o">!=</span> <span class="n">llm_output</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span> <span class="c1"># strip(),去掉前后空白字符，比如多余的换行、空格</span>
+</span></span><span class="line"><span class="cl">            <span class="n">llm_output</span> <span class="o">=</span> <span class="n">truncated</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;已截断多余的 Thought-Action 对&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;模型输出:</span><span class="se">\n</span><span class="si">{</span><span class="n">llm_output</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">prompt_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">llm_output</span><span class="p">)</span><span class="c1"># 把llm_output的内容添加到prompt_history</span>
+</span></span></code></pre></div><ul>
+<li>
+<p>​<code>re.search</code>​：在字符串 <code>llm_output</code>​ 中<strong>从头开始查找第一个匹配正则规则</strong>的内容，找到就返回匹配对象 <code>match</code>​，没找到返回 <code>None</code>。</p>
+</li>
+<li>
+<p>​<code>re.DOTALL</code>​：使正则里的<code>.</code>可以匹配换行符，</p>
+<p>如果不开启<code>re.DOTALL</code>​，正则<code>Thought:.*Action:</code>​，遇到换行<code>\n</code>就会终止，只能匹配到第一行，拿不到完整内容</p>
+<p>若开启<code>re.DOTALL</code>​，则<code>.*</code>​ 能跳过 <code>\n</code>，连续匹配两行</p>
+</li>
+</ul>
+<ol>
+<li>
+<p>​<code>(?=\n\s*(?:Thought:|Action:|Observation:)|\Z)</code>：</p>
+<p>​<code>（？=）</code>：只判断“后面是不是这个内容”，不会把这部分文本纳入匹配结果，用来划定匹配的结束边界。</p>
+<p>​<code>\n</code>：换行</p>
+<p>​<code>\s*</code>：匹配0个 / 多个空格、制表符等空白字符</p>
+<p>​<code>(?:...)</code>：非捕获组，只做匹配、不单独提取内容</p>
+<p>​<code>Thought:|Action:|Observation:</code>：遇到下一轮任意标准标识，就停止当前匹配</p>
+</li>
+<li>
+<p>​<code>|\Z</code></p>
+<p>​<code>|</code>：或</p>
+<p>​<code>\Z</code>：匹配整个字符串的末尾(文本最后一行)</p>
+</li>
+</ol>
+<h2 id="解析action动作">解析Action动作
+</h2><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"> <span class="c1"># 3.3. 解析并执行行动</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 截取Action：后的所有内容</span>
+</span></span><span class="line"><span class="cl">    <span class="n">action_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;Action: (.*)&#34;</span><span class="p">,</span> <span class="n">llm_output</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">action_match</span><span class="p">:</span> <span class="c1"># 等价于if action_match is None:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="s2">&#34;错误: 未能解析到 Action 字段。请确保你的回复严格遵循 &#39;Thought: ... Action: ...&#39; 的格式。&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">observation_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;Observation: </span><span class="si">{</span><span class="n">observation</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">observation_str</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">prompt_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation_str</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">continue</span>
+</span></span><span class="line"><span class="cl">    <span class="n">action_str</span> <span class="o">=</span> <span class="n">action_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span></span></code></pre></div><ul>
+<li>正则提前<code>Action：</code>后面的全部内容</li>
+<li>如果解析失败，则输出错误提示，同时存入上下文（<code>.append(observation_str)</code>），进入下一轮循环</li>
+</ul>
+<h2 id="判断任务是否结束">判断任务是否结束
+</h2><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"> <span class="c1"># 如果是最终步骤，根据提示词，会输出Finish[最终答案]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">action_str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&#34;Finish&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 获取“最终答案”</span>
+</span></span><span class="line"><span class="cl">        <span class="n">final_answer</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="k">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;Finish\[(.*)\]&#34;</span><span class="p">,</span> <span class="n">action_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;任务完成，最终答案: </span><span class="si">{</span><span class="n">final_answer</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">break</span>
+</span></span></code></pre></div><p>识别到 <code>Finish[] </code>代表任务完成，提取括号内最终回答，跳出主循环，程序结束。</p>
+<h2 id="解析工具名参数并调用工具">解析工具名、参数并调用工具
+</h2><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 提取工具名</span>
+</span></span><span class="line"><span class="cl"><span class="n">tool_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;(\w+)\(&#34;</span><span class="p">,</span> <span class="n">action_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 提取括号内所有参数文本</span>
+</span></span><span class="line"><span class="cl"><span class="n">args_str</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;\((.*)\)&#34;</span><span class="p">,</span> <span class="n">action_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 正则匹配 参数字符串=&#34;参数值&#34;，转为字典</span>
+</span></span><span class="line"><span class="cl"><span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(\w+)=&#34;([^&#34;]*)&#34;&#39;</span><span class="p">,</span> <span class="n">args_str</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 动态调用工具</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="n">available_tools</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">observation</span> <span class="o">=</span> <span class="n">available_tools</span><span class="p">[</span><span class="n">tool_name</span><span class="p">](</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">observation</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;错误:未定义的工具 &#39;</span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">&#39;&#34;</span>
+</span></span></code></pre></div><h3 id="第一步提取工具名">第一步：提取工具名
+</h3><p>假设经过前面解析，<code>action_str </code>​的内容为：<code>get_attraction(city=&quot;沈阳&quot;, weather=&quot;晴&quot;)</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">tool_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;(\w+)\(&#34;</span><span class="p">,</span> <span class="n">action_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span></code></pre></div><ul>
+<li>​<code>\w+</code>​：匹配<strong>单词字符</strong>（字母、数字、下划线），<code>+</code> 代表匹配 1 个及以上，用来抓取函数名；</li>
+<li>​<code>\(</code>​：<code>(</code>​ 在正则中有特殊分组含义，所以需要<strong>转义</strong>，代表匹配字面左括号 <code>(</code>；</li>
+<li>​<code>(\w+)</code>​：外层圆括号是<strong>捕获组</strong>，会单独把匹配到的内容提取出来。</li>
+</ul>
+<p>从字符串 <code>get_attraction(city=&quot;沈阳&quot;, weather=&quot;晴&quot;)</code>​ 中匹配：匹配到 <code>get_attraction(</code>​，捕获组拿到 <code>get_attraction</code>。</p>
+<ul>
+<li>​<code>.group(1)</code>：取出第一个捕获组的内容</li>
+<li>结果：<code>tool_name = &quot;get_attraction&quot;</code></li>
+</ul>
+<h3 id="第二步提取括号内参数字符串">第二步：提取括号内参数字符串
+</h3><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">args_str</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;\((.*)\)&#34;</span><span class="p">,</span> <span class="n">action_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span></code></pre></div><ul>
+<li>​<code>\(</code>​：匹配左括号 <code>(</code></li>
+<li>​<code>.*</code>​：匹配括号中间​<strong>所有字符</strong>（任意内容）</li>
+<li>​<code>\)</code>​：转义，匹配右括号 <code>)</code></li>
+<li>整体作用：精准截取一对括号内部的全部文本。</li>
+</ul>
+<p>原字符串：<code>get_attraction(city=&quot;沈阳&quot;, weather=&quot;晴&quot;)</code>​括号内内容为：<code>city=&quot;沈阳&quot;, weather=&quot;晴&quot;</code></p>
+<ul>
+<li>结果：<code>args_str = 'city=&quot;沈阳&quot;, weather=&quot;晴&quot;'</code></li>
+</ul>
+<h3 id="第三步拆分参数转为字典kwargs">第三步：拆分参数，转为字典kwargs
+</h3><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(\w+)=&#34;([^&#34;]*)&#34;&#39;</span><span class="p">,</span> <span class="n">args_str</span><span class="p">))</span>
+</span></span></code></pre></div><ol>
+<li>
+<p>​<code>re.findall</code>​：找出所有符合规则的内容，返回<strong>列表</strong></p>
+</li>
+<li>
+<p>正则表达式拆解<code>(\w+)=&quot;([^&quot;]*)&quot;</code></p>
+<ul>
+<li>
+<p>​<code>(\w+)</code>​：捕获组 1，匹配<strong>参数名</strong>（如 <code>city</code>​、<code>weather</code>）；</p>
+<ul>
+<li>​<code>=</code>：匹配等号；</li>
+<li>​<code>&quot;</code>：匹配左侧双引号；</li>
+</ul>
+</li>
+<li>
+<p>​<code>([^&quot;]*)</code>​：捕获组 2，<strong>非双引号的所有字符</strong></p>
+<ul>
+<li>​<code>[^&quot;]</code>​：取反，代表<strong>除了双引号以外</strong>的任意字符；</li>
+<li>​<code>*</code>：匹配 0 个或多个；</li>
+<li>作用：精准拿到引号内的参数值，不会跨引号乱匹配；</li>
+</ul>
+</li>
+<li>
+<p>​<code>&quot;</code>：匹配右侧双引号。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>执行过程</p>
+<p>输入<code>args_str = 'city=&quot;沈阳&quot;, weather=&quot;晴&quot;'</code></p>
+<ol>
+<li>
+<p>​<code>re.findall</code>​匹配出两组结果，返回嵌套列表：<code>[(&quot;city&quot;, &quot;沈阳&quot;), (&quot;weather&quot;, &quot;晴&quot;)]</code></p>
+</li>
+<li>
+<p>​<code>dict(...)</code>：把「键值对列表」直接转为字典</p>
+<p>​<code>kwargs = {&quot;city&quot;: &quot;沈阳&quot;, &quot;weather&quot;: &quot;晴&quot;}</code></p>
+</li>
+</ol>
+</li>
+</ol>
+<h3 id="第四步动态调用工具函数">第四步：动态调用工具函数
+</h3><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="n">available_tools</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="n">available_tools</span><span class="p">[</span><span class="n">tool_name</span><span class="p">](</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;错误:未定义的工具 &#39;</span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">&#39;&#34;</span>
+</span></span></code></pre></div><ol>
+<li>​<code>available_tools[tool_name]</code></li>
+</ol>
+<p>示例中 <code>tool_name=&quot;get_attraction&quot;</code>​，等价于：<code>available_tools[&quot;get_attraction&quot;]</code></p>
+<ol start="2">
+<li>
+<p>​<code>**kwargs</code>字典解包</p>
+<p>​<code>**</code>​ 是 Python 字典解包运算符，把字典 <code>{&quot;city&quot;: &quot;沈阳&quot;, &quot;weather&quot;: &quot;晴&quot;}</code>​拆解成关键字参数形式：<code>city=&quot;沈阳&quot;, weather=&quot;晴&quot;</code></p>
+</li>
+</ol>
+<p>​<code>available_tools[tool_name](**kwargs)</code>​ 等价于 手写调用<code>get_attraction(city=&quot;沈阳&quot;, weather=&quot;晴&quot;)</code></p>
+<h2 id="记录工具返回结果">记录工具返回结果
+</h2><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">    <span class="c1"># 3.4. 记录观察结果</span>
+</span></span><span class="line"><span class="cl">    <span class="n">observation_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;Observation: </span><span class="si">{</span><span class="n">observation</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">observation_str</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">prompt_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation_str</span><span class="p">)</span>
+</span></span></code></pre></div><p>将工具执行结果包装为 <code>Observation: </code>格式，追加到历史上下文，供给下一轮 LLM 思考使用</p>
+<h1 id="最终输出">最终输出
+</h1><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">用户输入: 你好，请帮我查询一下今天沈阳的天气，然后根据天气推荐一个合适的旅游景点。
+</span></span><span class="line"><span class="cl"><span class="o">========================================</span>
+</span></span><span class="line"><span class="cl">--- 循环 <span class="m">1</span> ---
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">正在调用大语言模型...
+</span></span><span class="line"><span class="cl">大语言模型响应成功。
+</span></span><span class="line"><span class="cl">模型输出:
+</span></span><span class="line"><span class="cl">Thought: 用户需要查询沈阳的天气并根据天气推荐景点。我应该先第一步查询沈阳的实时天气。
+</span></span><span class="line"><span class="cl">Action: get_weather<span class="o">(</span><span class="nv">city</span><span class="o">=</span><span class="s2">&#34;沈阳&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Observation: 沈阳当前天气：Sunny,气温30摄氏度
+</span></span><span class="line"><span class="cl"><span class="o">========================================</span>
+</span></span><span class="line"><span class="cl">--- 循环 <span class="m">2</span> ---
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">正在调用大语言模型...
+</span></span><span class="line"><span class="cl">大语言模型响应成功。
+</span></span><span class="line"><span class="cl">模型输出:
+</span></span><span class="line"><span class="cl">Thought: 已经获取了沈阳的天气为晴天<span class="o">(</span>Sunny<span class="o">)</span>，现在需要根据这个天气情况为沈阳推荐合适的旅游景点。
+</span></span><span class="line"><span class="cl">Action: get_attraction<span class="o">(</span><span class="nv">city</span><span class="o">=</span><span class="s2">&#34;沈阳&#34;</span>, <span class="nv">weather</span><span class="o">=</span><span class="s2">&#34;Sunny&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Observation: In sunny weather, visit the Shenynag Imperial Palace Museum and Zhong Street <span class="k">for</span> historical and cultural experiences. Comfortable clothing is advised due to temperature variations. Wi-Fi is widely available.
+</span></span><span class="line"><span class="cl"><span class="o">========================================</span>
+</span></span><span class="line"><span class="cl">--- 循环 <span class="m">3</span> ---
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">正在调用大语言模型...
+</span></span><span class="line"><span class="cl">大语言模型响应成功。
+</span></span><span class="line"><span class="cl">模型输出:
+</span></span><span class="line"><span class="cl">Thought: 我已经成功获取了沈阳的天气情况（晴天，30度）以及相应的旅游景点推荐（沈阳故宫博物院和中街）。现在信息已经足够，可以为用户生成最终的完整回复了。
+</span></span><span class="line"><span class="cl">Action: Finish<span class="o">[</span>沈阳今天的天气是晴天，气温30摄氏度。根据当前的天气情况，为您推荐以下旅游景点：沈阳故宫博物院和中街，您可以在那里享受历史和文化的体验。由于气温较高且有温差变化，建议穿着舒适的衣服。<span class="o">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">任务完成，最终答案: 沈阳今天的天气是晴天，气温30摄氏度。根据当前的天气情况，为您推荐以下旅游景点：沈阳故宫博物院和中街，您可以在那里享受历史和文化的体验。由于气温较高且有温差变化，建议穿着舒适的衣服。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">进程已结束，退出代码为 <span class="m">0</span>
+</span></span></code></pre></div><ul>
+<li>
+<p>​<strong>初始</strong>​：上下文存入用户请求 <code>查询沈阳天气+推荐景点</code></p>
+</li>
+<li>
+<p><strong>第 1 轮循环</strong></p>
+<ul>
+<li>拼接历史文本传给 LLM；</li>
+<li>LLM 输出：<code>Thought: 先查询沈阳天气 Action: get_weather(city=&quot;沈阳&quot;)</code>；</li>
+<li>解析工具名 &amp; 参数，调用 <code>get_weather</code>；</li>
+<li>拿到天气结果，生成 <code>Observation</code> 并入上下文。</li>
+</ul>
+</li>
+<li>
+<p><strong>第 2 轮循环</strong></p>
+<ul>
+<li>上下文包含：用户请求 + 第一轮思考动作 + 天气结果；</li>
+<li>LLM 输出：<code>Thought: 根据天气推荐景点 Action: get_attraction(city=&quot;沈阳&quot;, weather=&quot;xxx&quot;)</code>；</li>
+<li>调用景点工具，获取推荐结果，生成新 <code>Observation</code>。</li>
+</ul>
+</li>
+<li>
+<p><strong>第 3 轮循环</strong></p>
+<ul>
+<li>信息收集完毕，LLM 输出：<code>Action: Finish[最终回答内容]</code>；</li>
+<li>识别到 Finish，输出答案，循环结束。</li>
+</ul>
+</li>
+</ul>
+<h1 id="要点">要点
+</h1><ul>
+<li>​ <strong>​<code>**kwargs</code>​</strong>​ <strong>动态调用的优势</strong>不用硬编码函数和参数，<strong>新增工具时，只需要在</strong> <strong>​<code>available_tools</code>​</strong>​ <strong>里加一行</strong>，解析逻辑完全不用改，扩展性很强，也是 Agent 工具调用的标准写法。</li>
+<li>​<strong>​<code>re.findall</code>​</strong>​ <strong>配合双捕获组</strong>正则里写了两个 <code>()</code>​，返回的列表就是 <code>[(键1,值1), (键2,值2)]</code>，天生适合转字典。</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    <section class="article-lastmod">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+        <span>
+             Jun 14, 2026 17:26 CST
+        </span>
+    </section></footer>
+
+
+    
+</article>
+
+    <aside class="related-contents--wrapper">
+    
+    
+</aside>
+
+     
+     
+        
+    <div class="disqus-container">
+    
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (DISQUS) {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+  
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+<script>
+(function(u, c) {
+  var d = document, t = 'script', o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+  o.src = u;
+  if (c) { o.addEventListener('load', function(e) { c(e); }); }
+  s.parentNode.insertBefore(o, s);
+})('//cdn.bootcss.com/pangu/3.3.0/pangu.min.js', function() {
+  pangu.spacingPage();
+});
+</script>
+
+    <section class="copyright">
+        &copy; 
+        
+        2026 <a href="http://localhost:1313/">我的博客</a>·<i class="fas fa-bell"></i> <a id="days">0</a>Days<br>
+      共书写了15.9k字·共 5篇文章</br><span><p>
+    </section>
+    
+    <section class="powerby">
+         <br />
+        <br />
+         <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">© Licensed Under CC BY-NC-SA 4.0</a>
+    </section>
+
+<script>
+var s1 = '2026-06-10';
+s1 = new Date(s1.replace(/-/g, "/"));
+s2 = new Date();
+var days = s2.getTime() - s1.getTime();
+var number_of_days = parseInt(days / (1000 * 60 * 60 * 24));
+document.getElementById('days').innerHTML = number_of_days;
+</script>
+    
+</footer>
+
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    
+        <aside class="sidebar right-sidebar sticky">
+            <section class="widget archives widget-toc">
+                <div class="widget-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+                </div>
+                <h2 class="widget-title section-title">目录</h2>
+                
+                <div class="widget--toc">
+                    <nav id="TableOfContents">
+  <ol>
+    <li><a href="#hello-agent-智能旅行助手">Hello-Agent-智能旅行助手</a></li>
+    <li><a href="#代码部分">代码部分</a>
+      <ol>
+        <li><a href="#依赖">依赖</a></li>
+        <li><a href="#提示词">提示词</a></li>
+        <li><a href="#初始化">初始化</a></li>
+        <li><a href="#主循环">主循环</a></li>
+      </ol>
+    </li>
+    <li><a href="#主循环拆解">主循环拆解</a>
+      <ol>
+        <li><a href="#拼接历史上下文">拼接历史上下文</a></li>
+        <li><a href="#调用大模型截断多余输出">调用大模型+截断多余输出</a></li>
+        <li><a href="#解析action动作">解析Action动作</a></li>
+        <li><a href="#判断任务是否结束">判断任务是否结束</a></li>
+        <li><a href="#解析工具名参数并调用工具">解析工具名、参数并调用工具</a>
+          <ol>
+            <li><a href="#第一步提取工具名">第一步：提取工具名</a></li>
+            <li><a href="#第二步提取括号内参数字符串">第二步：提取括号内参数字符串</a></li>
+            <li><a href="#第三步拆分参数转为字典kwargs">第三步：拆分参数，转为字典kwargs</a></li>
+            <li><a href="#第四步动态调用工具函数">第四步：动态调用工具函数</a></li>
+          </ol>
+        </li>
+        <li><a href="#记录工具返回结果">记录工具返回结果</a></li>
+      </ol>
+    </li>
+    <li><a href="#最终输出">最终输出</a></li>
+    <li><a href="#要点">要点</a></li>
+  </ol>
+</nav>
+                </div>
+            </section>
+        </aside>
+    
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

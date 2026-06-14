@@ -10,7 +10,7 @@
 <meta property='og:description' content='知行合一'>
 <meta property='og:url' content='http://localhost:1313/series/'>
 <meta property='og:site_name' content='我的博客'>
-<meta property='og:type' content='website'><meta property='og:updated_time' content=' 2026-06-09T21:13:49&#43;08:00 '/>
+<meta property='og:type' content='website'><meta property='og:updated_time' content=' 2026-06-14T17:26:42&#43;08:00 '/>
 <meta name="twitter:title" content="Series">
 <meta name="twitter:description" content="知行合一"><link rel="alternate" type="application/rss&#43;xml" href="http://localhost:1313/series/index.xml"><style>
 .site-avatar .emoji {
@@ -118,19 +118,6 @@ blockquote p {
     margin: 0;
     position: relative;
     z-index: 1;
-}
-
- 
-.subtitle {
-    overflow: hidden;
-    border-right: 2px solid var(--accent-color);
-    white-space: nowrap;
-}
-.subtitle.typing {
-    animation: blink 0.7s step-end infinite;
-}
-@keyframes blink {
-    50% { border-color: transparent; }
 }
 
  
@@ -481,31 +468,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('scroll', updateTOC, { passive: true });
     updateTOC();
 });
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const subtitle = document.querySelector('.subtitle');
-
-    if (window.location.pathname !== '/') return;
-    if (!subtitle) return;
-
-    const text = '知行合一';
-    subtitle.textContent = '';
-    subtitle.classList.add('typing');
-    let i = 0;
-
-    function type() {
-        if (i < text.length) {
-            subtitle.textContent += text[i];
-            i++;
-            setTimeout(type, 150);
-        } else {
-            subtitle.classList.remove('typing');
-        }
-    }
-
-    type();
-});
 </script>
 
     </head>
@@ -788,6 +750,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
 
+    
+
 
 <script>
 (function(u, c) {
@@ -805,7 +769,7 @@ document.addEventListener('DOMContentLoaded', function() {
         &copy; 
         
         2026 <a href="http://localhost:1313/">我的博客</a>·<i class="fas fa-bell"></i> <a id="days">0</a>Days<br>
-      共书写了10.8k字·共 4篇文章</br><span><p>
+      共书写了15.9k字·共 5篇文章</br><span><p>
     </section>
     
     <section class="powerby">
@@ -896,7 +860,7 @@ document.getElementById('days').innerHTML = number_of_days;
                     <a href="/archives/#2026">
                         
                             <span class="year">2026</span>
-                            <span class="count">3</span>
+                            <span class="count">4</span>
                         
                     </a> 
                 </div>

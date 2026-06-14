@@ -128,19 +128,6 @@ blockquote p {
 }
 
  
-.subtitle {
-    overflow: hidden;
-    border-right: 2px solid var(--accent-color);
-    white-space: nowrap;
-}
-.subtitle.typing {
-    animation: blink 0.7s step-end infinite;
-}
-@keyframes blink {
-    50% { border-color: transparent; }
-}
-
- 
 .article-list--compact article,
 .article-list--tile .article-list__item {
     opacity: 0;
@@ -487,31 +474,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.addEventListener('scroll', updateTOC, { passive: true });
     updateTOC();
-});
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const subtitle = document.querySelector('.subtitle');
-
-    if (window.location.pathname !== '/') return;
-    if (!subtitle) return;
-
-    const text = '知行合一';
-    subtitle.textContent = '';
-    subtitle.classList.add('typing');
-    let i = 0;
-
-    function type() {
-        if (i < text.length) {
-            subtitle.textContent += text[i];
-            i++;
-            setTimeout(type, 150);
-        } else {
-            subtitle.classList.remove('typing');
-        }
-    }
-
-    type();
 });
 </script>
 
@@ -2527,6 +2489,8 @@ catkin_make
 
     
 
+    
+
 
 <script>
 (function(u, c) {
@@ -2544,7 +2508,7 @@ catkin_make
         &copy; 
         
         2026 <a href="http://localhost:1313/">我的博客</a>·<i class="fas fa-bell"></i> <a id="days">0</a>Days<br>
-      共书写了10.8k字·共 4篇文章</br><span><p>
+      共书写了15.9k字·共 5篇文章</br><span><p>
     </section>
     
     <section class="powerby">
