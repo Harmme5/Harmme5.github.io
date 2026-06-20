@@ -2,22 +2,22 @@
 <html lang="zh-cn">
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='LoRA微调【LoRA微调】从原理到调参，7 个问题彻底理解LoRA，不懂线性代数也没问题_大模型微调_低秩适配
-1.什么是LoRAimage image image （A）有5*2=10个参数 （B）有2*4=8个参数 LoRA总参数：10&#43;8 =18 个 💡💡 结论结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右
+1.什么是LoRAimage image image （A）有5*2=10个参数 （B）有2*4=8个参数 LoRA总参数：10&#43;8 =18 个 💡 结论 结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右
 '><title>LoRA微调</title>
 
 <link rel='canonical' href='https://Harmme5.github.io/post/lora-finetuning-z1zm5w7.html'>
 
-<link rel="stylesheet" href="/scss/style.min.b5ae3e8b4e7afb47fddddbfa7021f08c631e65fb1e42f8797caf1f81ff100502.css">
+<link rel="stylesheet" href="/scss/style.min.dce26e99b539380ca9fdbfc1973cc66fec98b946ca4a5528bec150d2a6b82d8d.css">
 <meta property='og:title' content='LoRA微调'>
 <meta property='og:description' content='LoRA微调【LoRA微调】从原理到调参，7 个问题彻底理解LoRA，不懂线性代数也没问题_大模型微调_低秩适配
-1.什么是LoRAimage image image （A）有5*2=10个参数 （B）有2*4=8个参数 LoRA总参数：10&#43;8 =18 个 💡💡 结论结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右
+1.什么是LoRAimage image image （A）有5*2=10个参数 （B）有2*4=8个参数 LoRA总参数：10&#43;8 =18 个 💡 结论 结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右
 '>
 <meta property='og:url' content='https://Harmme5.github.io/post/lora-finetuning-z1zm5w7.html'>
 <meta property='og:site_name' content='我的博客'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2026-03-03T19:32:06&#43;08:00'/><meta property='article:modified_time' content='2026-03-04T19:32:06&#43;08:00'/>
 <meta name="twitter:title" content="LoRA微调">
 <meta name="twitter:description" content="LoRA微调【LoRA微调】从原理到调参，7 个问题彻底理解LoRA，不懂线性代数也没问题_大模型微调_低秩适配
-1.什么是LoRAimage image image （A）有5*2=10个参数 （B）有2*4=8个参数 LoRA总参数：10&#43;8 =18 个 💡💡 结论结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右
+1.什么是LoRAimage image image （A）有5*2=10个参数 （B）有2*4=8个参数 LoRA总参数：10&#43;8 =18 个 💡 结论 结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右
 "><style>
 .site-avatar .emoji {
     display: none !important;
@@ -765,7 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
                 <time class="article-time--reading">
-                    2819 字 · 9 分钟
+                    2815 字 · 9 分钟
                 </time>
             </div>
         
@@ -832,32 +832,35 @@ document.addEventListener('DOMContentLoaded', function() {
 <blockquote class="alert alert-tip">
         <div class="alert-header">
             <span class="alert-icon">💡</span>
-            <span class="alert-title">💡 结论</span>
+            <span class="alert-title">结论</span>
         </div>
         <div class="alert-body">
             <p>结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右</p>
         </div>
     </blockquote>
+
 <h1 id="2为什么需要lora">2.为什么需要LoRA
 </h1><blockquote class="alert alert-caution">
         <div class="alert-header">
             <span class="alert-icon">🚨</span>
-            <span class="alert-title">🚨 资源消耗太大</span>
+            <span class="alert-title">资源消耗太大</span>
         </div>
         <div class="alert-body">
             <p>大型语言模型动几亿甚至几千亿参数，全参数微调需要为每个新任务保存一份完整的模型副本。比如，一个10亿参数的模型，假设每个参数用4字节（float32），光存储就得4GB。多个任务下来，硬盘和显存都吃不消。</p>
 <p><span data-type="text" style="color: var(--b3-font-color9); background-color: var(--b3-card-warning-background);">LoRA的思路是：与其每次都复制整个模型，不如只调整一小部分参数，把成本降下来。</span></p>
         </div>
     </blockquote>
+
 <blockquote class="alert alert-caution">
         <div class="alert-header">
             <span class="alert-icon">🚨</span>
-            <span class="alert-title">🚨 训练效率低下</span>
+            <span class="alert-title">训练效率低下</span>
         </div>
         <div class="alert-body">
             <p>全参数微调不仅占空间，还需要大量计算资源和时间。每次训练都得更新所有参数，反向传播的计算量巨大，尤其是在GPU资源有限的情况下，普通研究者或公司根本玩不起。LoRA通过只更新一小块”增量参数”，让微调变得轻量化，普通设备也能跑得动。</p>
         </div>
     </blockquote>
+
 <h2 id="核心亮点">核心亮点
 </h2><ul>
 <li>
@@ -887,6 +890,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <p>学过机器学习的同学，可以参考PCA主成分分析算法的理念。</p>
 
     </blockquote>
+
 <h2 id="1什么是矩阵的秩rank">1.什么是矩阵的秩（Rank）？
 </h2><p>在线性代数中，一个矩阵的秩（rank）是它的<strong>线性独立行或列</strong>的数量。<span data-type="text" style="color: var(--b3-font-color2);">如果一个矩阵是”低秩”的，意味着它的信息可以用少量独立方向表达，而不是需要完整的维度。</span></p>
 <p>比如下述矩阵， 第 5 行([1, 2,0, 3, 0] ) 是第 1行( [1, 0, 0, 2, 0] )和第 2 行([0,2,0,1, 0] ) 的线性组合 (<strong>第5行=第1行+第2行</strong>），第5行没有提供更多的信息，理论上这个矩阵有前4行就能提供所有信息了，因此矩阵的行秩为4（列秩也为4，第5列全为0，没有信息增量）。</p>
@@ -1053,12 +1057,13 @@ document.addEventListener('DOMContentLoaded', function() {
 </h2><blockquote class="alert alert-caution">
         <div class="alert-header">
             <span class="alert-icon">🚨</span>
-            <span class="alert-title">🚨 不行</span>
+            <span class="alert-title">不行</span>
         </div>
         <div class="alert-body">
             <p>研究表明，预训练模型（如BERT）的权重矩阵（W）通常具有<strong>较高的秩（接近满秩）</strong> ，奇异值分布较为平滑。</p>
         </div>
     </blockquote>
+
 <h1 id="4lora如何更新参数的">4.LoRA如何更新参数的
 </h1><p>本质上，还是反向传播算法。</p>
 <ul>
@@ -1469,6 +1474,8 @@ FFN处理注意力输出，负责特征提取和非线性映射，调整它能�
 
     
 
+    
+
 
 <script>
 (function(u, c) {
@@ -1486,7 +1493,7 @@ FFN处理注意力输出，负责特征提取和非线性映射，调整它能�
         &copy; 
         
         2026 <a href="https://Harmme5.github.io/">我的博客</a>·<i class="fas fa-bell"></i> <a id="days">0</a>Days<br>
-      共书写了28.5k字·共 5篇文章</br><span><p>
+      共书写了29.5k字·共 6篇文章</br><span><p>
     </section>
     
     <section class="powerby">

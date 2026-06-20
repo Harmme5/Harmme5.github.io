@@ -6,6 +6,123 @@
         <description>Recent content in Categories on 我的博客</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language><atom:link href="https://Harmme5.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>如何让大语言模型稳定输出JSON格式固定内容</title>
+        <link>https://Harmme5.github.io/post/how-to-make-a-large-language-model-stably-output-fixed-content-in-json-format-znoxqp.html</link>
+        <pubDate>Sat, 20 Jun 2026 15:56:24 +0800</pubDate>
+        
+        <guid>https://Harmme5.github.io/post/how-to-make-a-large-language-model-stably-output-fixed-content-in-json-format-znoxqp.html</guid>
+        <description>&lt;h1 id=&#34;如何让大语言模型稳定输出json格式固定内容&#34;&gt;如何让大语言模型稳定输出JSON格式固定内容
+&lt;/h1&gt;&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.douyin.com/video/7624851375507439098&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;如何让大语言模型稳定输出JSON格式固定内容？#大模型 #人工智能 #AI大模型 #AI #Agent - 抖音&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;笔记记录自抖音视频，关于&lt;strong&gt;控制大模型稳定输出JSON格式&lt;/strong&gt;这个问题，之前在做六足机器人项目时，我最多尝试到了本视频描述到的第二步，即设置&lt;code&gt;response_format&lt;/code&gt;​参数为&lt;code&gt;{&amp;quot;type&amp;quot;: &amp;quot;json_object&amp;quot;}&lt;/code&gt;​，使用该模式同时需要确保提示词中包含“JSON”关键词。该模式在，一共跑过478次调用大模型(&lt;code&gt;qwen-vl-flash&lt;/code&gt;系列)，这478次全部稳定输出JSON格式，并无其他冗余文案，但该场景下，无需极致稳定，也就没有了后续的校验优化。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;工业级开发需要绝对的确定性，而模型天生自带“随机性”，是追求稳定性的障碍，不可控即不可用。&lt;/p&gt;
+&lt;h1 id=&#34;第一道防线提示词控制schema注入近因效应&#34;&gt;第一道防线：提示词控制（Schema注入+近因效应）
+&lt;/h1&gt;&lt;blockquote class=&#34;alert alert-caution&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;🚨&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;传统Prompt痛点&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;仅有在提示词中加入&amp;quot;输出JSON&amp;quot;时，模型常添加多余文字或解释，导致程序解析失败。&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+
+&lt;h2 id=&#34;schema注入few-shot&#34;&gt;Schema注入+Few-shot
+&lt;/h2&gt;&lt;p&gt;明确提供TypeScript接口或JSON Schema定义，并给出2-3个真实范例，强制模型对齐格式。&lt;/p&gt;
+&lt;h2 id=&#34;近因效应&#34;&gt;近因效应
+&lt;/h2&gt;&lt;p&gt;将“禁止废话，仅输出JSON”指令置于末尾，并用定界符框定输出区域，避免长上下文模型遗忘格式要求&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;经过以上措施，如果还是翻车，就上第二道防线&lt;/p&gt;
+&lt;h1 id=&#34;第二道防线生成控制层&#34;&gt;第二道防线：生成控制层
+&lt;/h1&gt;&lt;h2 id=&#34;针对闭源apistructured-outputs&#34;&gt;针对闭源API：Structured Outputs
+&lt;/h2&gt;&lt;p&gt;在模型解码时将Schema预编译到引擎中，以&lt;a class=&#34;link&#34; href=&#34;https://help.aliyun.com/zh/model-studio/qwen-structured-output#f39f3c9e1a03&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;千问设置结构化输出&lt;/a&gt;为例&lt;/p&gt;
+&lt;p&gt;&lt;figure 
+	&gt;
+	&lt;a href=&#34;http://127.0.0.1:10803/assets/image-20260620124931-8waypks.png&#34; &gt;
+		&lt;img src=&#34;http://127.0.0.1:10803/assets/image-20260620124931-8waypks.png&#34;
+			
+			
+			
+			loading=&#34;lazy&#34;
+			alt=&#34;image&#34;&gt;
+	&lt;/a&gt;
+	
+	&lt;figcaption&gt;image&lt;/figcaption&gt;
+	
+&lt;/figure&gt;&lt;/p&gt;
+&lt;h2 id=&#34;针对开源模型logit-masking&#34;&gt;针对开源模型：Logit Masking
+&lt;/h2&gt;&lt;blockquote class=&#34;alert alert-note&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;✏️&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;Logit Masking&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;Logit Masking（概率掩码）技术&lt;/p&gt;
+&lt;p&gt;基于有限状态机或正则约束，把不符合阶层语法的字符概率直接设为负无穷，从物理层面彻底杜绝格式错误。&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+
+&lt;hr&gt;
+&lt;p&gt;前面两道防线都做好了，还要留好兜底方案&lt;/p&gt;
+&lt;h1 id=&#34;第三道防线工程校验与自修复的闭环逻辑&#34;&gt;第三道防线：工程校验与自修复的闭环逻辑
+&lt;/h1&gt;&lt;blockquote class=&#34;alert alert-note&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;✏️&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;强校验框架&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;引入Pydantic等工具，对模型输出进行字段完整性和类型正确性检查，杜绝脏数据。&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+
+&lt;blockquote class=&#34;alert alert-note&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;✏️&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;闭环自修复机制&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;将校验报错信息（如“字段缺失”）反馈给模型，指导其修正错误，利用LLM能力完成自我修复&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+
+&lt;blockquote class=&#34;alert alert-note&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;✏️&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;流式解析优化&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;针对超长JSON输出，采用边生成边检查的流式方式，及时发现错误并中断，节省计算资源，&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+
+&lt;h1 id=&#34;总结&#34;&gt;总结
+&lt;/h1&gt;&lt;blockquote class=&#34;alert alert-important&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;❗&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;总体思路&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;让模型稳定输出，不能靠“灵光一闪”，而要靠确定的&lt;strong&gt;软件工程防线&lt;/strong&gt;去包裹非确定的生成模型。&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+
+&lt;blockquote class=&#34;alert alert-note&#34;&gt;
+        &lt;div class=&#34;alert-header&#34;&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;✏️&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;工程组合拳&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&#34;alert-body&#34;&gt;
+            &lt;p&gt;提示词给样例 + API开约束 + 推理端加掩码 + 工程端自修复重试。将格式错误率降至0.1%以下&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/blockquote&gt;
+
+&lt;h2 id=&#34;进阶方案&#34;&gt;进阶方案
+&lt;/h2&gt;&lt;p&gt;对于极致稳定性要求的场景，采用&lt;strong&gt;SFT监督微调&lt;/strong&gt;&lt;span data-type=&#34;text&#34;&gt;，让模型形成“肌肉记忆”，实现条件反射式的正确输出。&lt;/span&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>智能体经典范式构建</title>
         <link>https://Harmme5.github.io/post/construction-of-the-classic-paradigm-of-intelligent-agents-mqrqx.html</link>
         <pubDate>Fri, 19 Jun 2026 11:19:47 +0800</pubDate>
@@ -1474,32 +1591,35 @@
 &lt;blockquote class=&#34;alert alert-tip&#34;&gt;
         &lt;div class=&#34;alert-header&#34;&gt;
             &lt;span class=&#34;alert-icon&#34;&gt;💡&lt;/span&gt;
-            &lt;span class=&#34;alert-title&#34;&gt;💡 结论&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;结论&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&#34;alert-body&#34;&gt;
             &lt;p&gt;结论：通过LoRA微调，调参对象从W变为A、B，参数量由20个减少为18个，这是简化例子。实际案例中，参数量可以减少为0.01%-3%左右&lt;/p&gt;
         &lt;/div&gt;
     &lt;/blockquote&gt;
+
 &lt;h1 id=&#34;2为什么需要lora&#34;&gt;2.为什么需要LoRA
 &lt;/h1&gt;&lt;blockquote class=&#34;alert alert-caution&#34;&gt;
         &lt;div class=&#34;alert-header&#34;&gt;
             &lt;span class=&#34;alert-icon&#34;&gt;🚨&lt;/span&gt;
-            &lt;span class=&#34;alert-title&#34;&gt;🚨 资源消耗太大&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;资源消耗太大&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&#34;alert-body&#34;&gt;
             &lt;p&gt;大型语言模型动几亿甚至几千亿参数，全参数微调需要为每个新任务保存一份完整的模型副本。比如，一个10亿参数的模型，假设每个参数用4字节（float32），光存储就得4GB。多个任务下来，硬盘和显存都吃不消。&lt;/p&gt;
 &lt;p&gt;&lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color9); background-color: var(--b3-card-warning-background);&#34;&gt;LoRA的思路是：与其每次都复制整个模型，不如只调整一小部分参数，把成本降下来。&lt;/span&gt;&lt;/p&gt;
         &lt;/div&gt;
     &lt;/blockquote&gt;
+
 &lt;blockquote class=&#34;alert alert-caution&#34;&gt;
         &lt;div class=&#34;alert-header&#34;&gt;
             &lt;span class=&#34;alert-icon&#34;&gt;🚨&lt;/span&gt;
-            &lt;span class=&#34;alert-title&#34;&gt;🚨 训练效率低下&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;训练效率低下&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&#34;alert-body&#34;&gt;
             &lt;p&gt;全参数微调不仅占空间，还需要大量计算资源和时间。每次训练都得更新所有参数，反向传播的计算量巨大，尤其是在GPU资源有限的情况下，普通研究者或公司根本玩不起。LoRA通过只更新一小块”增量参数”，让微调变得轻量化，普通设备也能跑得动。&lt;/p&gt;
         &lt;/div&gt;
     &lt;/blockquote&gt;
+
 &lt;h2 id=&#34;核心亮点&#34;&gt;核心亮点
 &lt;/h2&gt;&lt;ul&gt;
 &lt;li&gt;
@@ -1529,6 +1649,7 @@
         &lt;p&gt;学过机器学习的同学，可以参考PCA主成分分析算法的理念。&lt;/p&gt;
 
     &lt;/blockquote&gt;
+
 &lt;h2 id=&#34;1什么是矩阵的秩rank&#34;&gt;1.什么是矩阵的秩（Rank）？
 &lt;/h2&gt;&lt;p&gt;在线性代数中，一个矩阵的秩（rank）是它的&lt;strong&gt;线性独立行或列&lt;/strong&gt;的数量。&lt;span data-type=&#34;text&#34; style=&#34;color: var(--b3-font-color2);&#34;&gt;如果一个矩阵是”低秩”的，意味着它的信息可以用少量独立方向表达，而不是需要完整的维度。&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;比如下述矩阵， 第 5 行([1, 2,0, 3, 0] ) 是第 1行( [1, 0, 0, 2, 0] )和第 2 行([0,2,0,1, 0] ) 的线性组合 (&lt;strong&gt;第5行=第1行+第2行&lt;/strong&gt;），第5行没有提供更多的信息，理论上这个矩阵有前4行就能提供所有信息了，因此矩阵的行秩为4（列秩也为4，第5列全为0，没有信息增量）。&lt;/p&gt;
@@ -1695,12 +1816,13 @@
 &lt;/h2&gt;&lt;blockquote class=&#34;alert alert-caution&#34;&gt;
         &lt;div class=&#34;alert-header&#34;&gt;
             &lt;span class=&#34;alert-icon&#34;&gt;🚨&lt;/span&gt;
-            &lt;span class=&#34;alert-title&#34;&gt;🚨 不行&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;不行&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&#34;alert-body&#34;&gt;
             &lt;p&gt;研究表明，预训练模型（如BERT）的权重矩阵（W）通常具有&lt;strong&gt;较高的秩（接近满秩）&lt;/strong&gt; ，奇异值分布较为平滑。&lt;/p&gt;
         &lt;/div&gt;
     &lt;/blockquote&gt;
+
 &lt;h1 id=&#34;4lora如何更新参数的&#34;&gt;4.LoRA如何更新参数的
 &lt;/h1&gt;&lt;p&gt;本质上，还是反向传播算法。&lt;/p&gt;
 &lt;ul&gt;
@@ -2093,7 +2215,7 @@ FFN处理注意力输出，负责特征提取和非线性映射，调整它能�
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;roscore
 &lt;/code&gt;&lt;/pre&gt;&lt;blockquote class=&#34;alert alert-note&#34;&gt;
         &lt;div class=&#34;alert-header&#34;&gt;
-            &lt;span class=&#34;alert-icon&#34;&gt;📝&lt;/span&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;✏️&lt;/span&gt;
             &lt;span class=&#34;alert-title&#34;&gt;Note&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&#34;alert-body&#34;&gt;
@@ -2102,6 +2224,7 @@ FFN处理注意力输出，负责特征提取和非线性映射，调整它能�
 &lt;p&gt;rosout_agg :  统一的聚合日志&lt;/p&gt;
         &lt;/div&gt;
     &lt;/blockquote&gt;
+
 &lt;p&gt;&lt;figure 
 	&gt;
 	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303154534-66wprhf.png&#34; &gt;
@@ -2363,14 +2486,15 @@ catkin_create_pkg ssr_pkg rospy roscpp std_msgs
 &lt;/h2&gt;&lt;h3 id=&#34;publisher的py实现&#34;&gt;Publisher的PY实现
 &lt;/h3&gt;&lt;blockquote class=&#34;alert alert-note&#34;&gt;
         &lt;div class=&#34;alert-header&#34;&gt;
-            &lt;span class=&#34;alert-icon&#34;&gt;📝&lt;/span&gt;
-            &lt;span class=&#34;alert-title&#34;&gt;✏️ 新建软件包后只编译1次&lt;/span&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;✏️&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;新建软件包后只编译1次&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&#34;alert-body&#34;&gt;
             &lt;p&gt;编译后，软件包就能进入ros软件包列表&lt;/p&gt;
 &lt;p&gt;后续都无需再编译 &lt;strong&gt;（这是与C++不同的地方）&lt;/strong&gt;&lt;/p&gt;
         &lt;/div&gt;
     &lt;/blockquote&gt;
+
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;figure 
@@ -2397,6 +2521,7 @@ catkin_create_pkg ssr_pkg rospy roscpp std_msgs
 &lt;p&gt;+x &lt;span data-type=&#34;text&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;  : execute&lt;/p&gt;
 
     &lt;/blockquote&gt;
+
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-undefined&#34; data-lang=&#34;undefined&#34;&gt;cd ~/.catkin_ws/scripts
 chmod +x chao_node.py
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
@@ -3585,13 +3710,14 @@ catkin_make
 &lt;/ul&gt;
 &lt;blockquote class=&#34;alert alert-note&#34;&gt;
         &lt;div class=&#34;alert-header&#34;&gt;
-            &lt;span class=&#34;alert-icon&#34;&gt;📝&lt;/span&gt;
-            &lt;span class=&#34;alert-title&#34;&gt;（这是与C++不同的地方）&lt;/span&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;✏️&lt;/span&gt;
+            &lt;span class=&#34;alert-title&#34;&gt;（这是与C&amp;#43;&amp;#43;不同的地方）&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&#34;alert-body&#34;&gt;
             &lt;p&gt;如想在Rviz中显示地图和机器人模型，必须实现map到base_footprint的TF，这样才能将机器人本身的TF和map接上，形成完整的TF树，所以Hector_Mapping还会输出一段map到odom的TF，这样就能和里程计的TF组合成完整的map到base_footprint的TF&lt;/p&gt;
         &lt;/div&gt;
     &lt;/blockquote&gt;
+
 &lt;p&gt;7：30：障碍物点云配准算法&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;                            为什么存在差异？
 &lt;/code&gt;&lt;/pre&gt;
@@ -3599,7 +3725,7 @@ catkin_make
 &lt;p&gt;解决方法：电机里程计&lt;/p&gt;
 &lt;blockquote class=&#34;alert alert-note&#34;&gt;
         &lt;div class=&#34;alert-header&#34;&gt;
-            &lt;span class=&#34;alert-icon&#34;&gt;📝&lt;/span&gt;
+            &lt;span class=&#34;alert-icon&#34;&gt;✏️&lt;/span&gt;
             &lt;span class=&#34;alert-title&#34;&gt;Note&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&#34;alert-body&#34;&gt;
@@ -3607,6 +3733,7 @@ catkin_make
 &lt;p&gt;运行在机器人的驱动节点中&lt;/p&gt;
         &lt;/div&gt;
     &lt;/blockquote&gt;
+
 &lt;p&gt;&lt;figure 
 	&gt;
 	&lt;a href=&#34;https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/86-20260210205845-zee0h2h.png&#34; &gt;
