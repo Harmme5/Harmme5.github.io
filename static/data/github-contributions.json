@@ -4,12 +4,12 @@
     "name": "Harmme",
     "createdAt": "2023-05-08T01:17:35Z"
   },
-  "generatedAt": "2026-06-21T11:47:44.432Z",
-  "from": "2025-06-16T11:47:44.432Z",
-  "to": "2026-06-21T11:47:44.432Z",
-  "totalContributions": 40,
+  "generatedAt": "2026-06-21T12:53:45.553Z",
+  "from": "2025-06-16T12:53:45.553Z",
+  "to": "2026-06-21T12:53:45.553Z",
+  "totalContributions": 14,
   "daysOnline": 1140,
-  "lastContributionDate": "2026-06-20",
+  "lastContributionDate": "2026-06-21",
   "colors": [
     "#ebedf0",
     "#c6e48b",
@@ -1736,8 +1736,8 @@
         },
         {
           "date": "2026-03-10",
-          "count": 1,
-          "color": "#40c463",
+          "count": 0,
+          "color": "#ebedf0",
           "weekday": 2
         },
         {
@@ -1760,8 +1760,8 @@
         },
         {
           "date": "2026-03-14",
-          "count": 1,
-          "color": "#40c463",
+          "count": 0,
+          "color": "#ebedf0",
           "weekday": 6
         }
       ]
@@ -1908,8 +1908,8 @@
       "contributionDays": [
         {
           "date": "2026-04-05",
-          "count": 3,
-          "color": "#216e39",
+          "count": 2,
+          "color": "#30a14e",
           "weekday": 0
         },
         {
@@ -2340,20 +2340,20 @@
         },
         {
           "date": "2026-06-10",
-          "count": 4,
-          "color": "#216e39",
+          "count": 2,
+          "color": "#30a14e",
           "weekday": 3
         },
         {
           "date": "2026-06-11",
-          "count": 17,
-          "color": "#216e39",
+          "count": 2,
+          "color": "#30a14e",
           "weekday": 4
         },
         {
           "date": "2026-06-12",
-          "count": 4,
-          "color": "#216e39",
+          "count": 0,
+          "color": "#ebedf0",
           "weekday": 5
         },
         {
@@ -2368,8 +2368,8 @@
       "contributionDays": [
         {
           "date": "2026-06-14",
-          "count": 3,
-          "color": "#216e39",
+          "count": 0,
+          "color": "#ebedf0",
           "weekday": 0
         },
         {
@@ -2398,14 +2398,14 @@
         },
         {
           "date": "2026-06-19",
-          "count": 1,
-          "color": "#40c463",
+          "count": 0,
+          "color": "#ebedf0",
           "weekday": 5
         },
         {
           "date": "2026-06-20",
-          "count": 1,
-          "color": "#40c463",
+          "count": 0,
+          "color": "#ebedf0",
           "weekday": 6
         }
       ]
@@ -2414,8 +2414,8 @@
       "contributionDays": [
         {
           "date": "2026-06-21",
-          "count": 0,
-          "color": "#ebedf0",
+          "count": 3,
+          "color": "#216e39",
           "weekday": 0
         }
       ]
