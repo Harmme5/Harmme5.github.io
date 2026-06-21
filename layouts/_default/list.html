@@ -1,11 +1,20 @@
 {{ define "main" }}
     {{ if eq .Section "post" }}
-    <div id="contribution-graph" style="background:var(--card-background);padding:30px;border-radius:var(--card-border-radius);margin-bottom:20px;box-shadow:var(--shadow-l1);">
+    <div id="contribution-graph" class="contribution-card">
     </div>
 
     <style>
+    .contribution-card {
+        background: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        margin-bottom: 20px;
+        padding: 30px;
+    }
     .graph-container {
         max-width: 100%;
+        --cell-size: 10px;
+        --cell-gap: 4px;
     }
     .graph-title {
         font-size: 18px;
@@ -14,23 +23,43 @@
         margin-bottom: 20px;
     }
     .graph-stats {
-        display: flex;
-        gap: 30px;
-        margin-bottom: 30px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(160px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
     }
     .graph-stat {
+        align-items: center;
+        border: 1px solid var(--card-separator-color);
+        border-radius: 8px;
+        box-shadow: var(--shadow-l1);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 108px;
+        padding: 16px 18px;
         text-align: center;
     }
     .graph-stat-icon {
-        font-size: 20px;
+        align-items: center;
+        color: var(--card-text-color-secondary);
+        display: inline-flex;
+        height: 22px;
+        justify-content: center;
         margin-bottom: 8px;
-        opacity: 0.5;
+        width: 22px;
+    }
+    .graph-stat-icon svg {
+        height: 20px;
+        stroke-width: 1.8;
+        width: 20px;
     }
     .graph-stat-value {
-        font-size: 28px;
+        font-size: 26px;
         font-weight: 700;
         color: var(--card-text-color-main);
-        margin-bottom: 5px;
+        line-height: 1.15;
+        margin-bottom: 4px;
     }
     .graph-stat-label {
         font-size: 12px;
@@ -38,53 +67,50 @@
     }
     .graph-header {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-start;
         align-items: center;
-        margin-bottom: 15px;
+        border-top: 1px solid var(--card-separator-color);
+        margin-bottom: 28px;
+        padding-top: 16px;
     }
     .graph-total {
         font-size: 13px;
-        color: var(--card-text-color-tertiary);
+        color: var(--card-text-color-secondary);
+    }
+    .graph-scroll {
+        overflow-x: auto;
+        padding-bottom: 4px;
     }
     .graph-months {
-        display: flex;
-        gap: 14px;
+        display: grid;
+        grid-template-columns: repeat(53, var(--cell-size));
+        column-gap: var(--cell-gap);
         margin-bottom: 8px;
-        padding-left: 22px;
+        min-width: max-content;
     }
     .graph-month {
         font-size: 11px;
         color: var(--card-text-color-tertiary);
-        width: 56px;
+        line-height: 1;
+        white-space: nowrap;
     }
     .graph-content {
         display: flex;
         gap: 8px;
-    }
-    .graph-days {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        padding-top: 2px;
-    }
-    .graph-day-label {
-        height: 10px;
-        font-size: 10px;
-        color: var(--card-text-color-tertiary);
-        line-height: 10px;
+        min-width: max-content;
     }
     .graph-weeks {
         display: flex;
-        gap: 4px;
+        gap: var(--cell-gap);
     }
     .graph-week {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: var(--cell-gap);
     }
     .graph-cell {
-        width: 10px;
-        height: 10px;
+        width: var(--cell-size);
+        height: var(--cell-size);
         border-radius: 2px;
         position: relative;
         cursor: pointer;
@@ -94,137 +120,265 @@
         outline: 2px solid var(--card-text-color-tertiary);
         outline-offset: 1px;
     }
-    .graph-cell.level-0 { background: #ebedf0; }
-    .graph-cell.level-1 { background: #9be9a8; }
-    .graph-cell.level-2 { background: #40c463; }
-    .graph-cell.level-3 { background: #30a14e; }
-    .graph-cell.level-4 { background: #216e39; }
+    .graph-cell.level-0,
+    .graph-legend-item.level-0 { background: #ebedf0; }
+    .graph-cell.level-1,
+    .graph-legend-item.level-1 { background: #c6e48b; }
+    .graph-cell.level-2,
+    .graph-legend-item.level-2 { background: #7bc96f; }
+    .graph-cell.level-3,
+    .graph-legend-item.level-3 { background: #239a3b; }
+    .graph-cell.level-4,
+    .graph-legend-item.level-4 { background: #196127; }
     [data-scheme="dark"] .graph-cell.level-0 { background: #161b22; }
-    .graph-cell:hover::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 6px 10px;
-        background: rgba(0,0,0,0.9);
-        color: white;
+    .graph-tooltip {
+        background: rgba(17, 24, 39, 0.94);
+        border-radius: 6px;
+        color: #fff;
         font-size: 12px;
+        left: 0;
+        line-height: 1;
+        opacity: 0;
+        padding: 7px 9px;
+        pointer-events: none;
+        position: fixed;
+        top: 0;
+        transform: translate(-50%, -100%);
+        transition: opacity 0.12s ease;
         white-space: nowrap;
-        border-radius: 4px;
-        margin-bottom: 8px;
-        z-index: 1000;
+        z-index: 9999;
+    }
+    .graph-tooltip.is-visible {
+        opacity: 1;
     }
     .graph-footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 15px;
-        font-size: 12px;
-        color: var(--card-text-color-tertiary);
+        margin-top: 18px;
+        min-width: max-content;
+        font-size: 13px;
+        color: var(--card-text-color-secondary);
     }
     .graph-legend {
         display: flex;
         align-items: center;
         gap: 5px;
+        margin-left: 24px;
     }
     .graph-legend-item {
         width: 10px;
         height: 10px;
         border-radius: 2px;
+        flex: 0 0 auto;
+    }
+    .graph-empty {
+        color: var(--card-text-color-tertiary);
+        font-size: 13px;
+        line-height: 1.6;
+        padding: 6px 0 2px;
+    }
+    @media (max-width: 700px) {
+        .contribution-card {
+            padding: 22px;
+        }
+        .graph-stats {
+            grid-template-columns: 1fr;
+        }
     }
     </style>
 
     <script>
     (async function() {
-        const response = await fetch('/index.json');
-        const posts = await response.json();
-
-        const postDates = {};
-        let totalWords = 0;
-        posts.forEach(post => {
-            const date = post.date.split('T')[0];
-            postDates[date] = (postDates[date] || 0) + 1;
-            totalWords += post.wordcount || 0;
-        });
-
         const container = document.getElementById('contribution-graph');
-        const today = new Date();
-        const startDate = new Date(today);
-        startDate.setDate(today.getDate() - 364);
+        const icons = {
+            clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>',
+            calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>',
+            edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>'
+        };
 
-        const daysSinceStart = Math.floor((today - new Date(posts[posts.length - 1].date)) / 86400000);
-        const lastUpdate = posts[0].date.split('T')[0];
+        try {
+            const postsResponse = await fetch('/index.json');
+            if (!postsResponse.ok) {
+                throw new Error('Article statistics data is not available.');
+            }
+
+            const posts = await postsResponse.json();
+            const postDates = {};
+            let totalWords = 0;
+
+            posts.forEach(post => {
+                const date = post.date.split('T')[0];
+                postDates[date] = (postDates[date] || 0) + 1;
+                totalWords += post.wordcount || 0;
+            });
+
+            const today = new Date();
+            const firstPostDate = posts.length ? new Date(posts[posts.length - 1].date) : today;
+            const daysSinceStart = Math.floor((today - firstPostDate) / 86400000);
+            const lastUpdate = posts[0]?.date?.split('T')[0] || 'No data';
+            const totalWordsText = `${(totalWords / 10000).toFixed(1)}w`;
+
+            let githubData = null;
+            let githubError = '';
+            try {
+                const githubResponse = await fetch('/data/github-contributions.json', { cache: 'no-store' });
+                if (!githubResponse.ok) {
+                    throw new Error('GitHub contribution data is not available.');
+                }
+                githubData = await githubResponse.json();
+            } catch (error) {
+                githubError = error.message;
+            }
+
+            const weeks = Array.isArray(githubData?.weeks) ? githubData.weeks : [];
+            const allDays = weeks.flatMap(week => week.contributionDays || []);
+            const firstDate = allDays[0]?.date || githubData?.from?.slice(0, 10);
+            const lastDate = allDays[allDays.length - 1]?.date || githubData?.to?.slice(0, 10);
+            const firstYear = firstDate ? new Date(`${firstDate}T00:00:00`).getFullYear() : today.getFullYear();
+            const lastYear = lastDate ? new Date(`${lastDate}T00:00:00`).getFullYear() : today.getFullYear();
+            const totalContributions = Number(githubData?.totalContributions || 0);
+            const colors = Array.isArray(githubData?.colors) && githubData.colors.length ? githubData.colors : ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127'];
 
         let html = '<div class="graph-container">';
         html += '<div class="graph-title">Statistics</div>';
         html += '<div class="graph-stats">';
-        html += `<div class="graph-stat"><div class="graph-stat-icon">⏱</div><div class="graph-stat-value">${daysSinceStart}</div><div class="graph-stat-label">Days Online</div></div>`;
-        html += `<div class="graph-stat"><div class="graph-stat-icon">📅</div><div class="graph-stat-value">${lastUpdate}</div><div class="graph-stat-label">Last Updated</div></div>`;
-        html += `<div class="graph-stat"><div class="graph-stat-icon">📝</div><div class="graph-stat-value">${(totalWords/10000).toFixed(1)}w</div><div class="graph-stat-label">Total Words</div></div>`;
+        html += `<div class="graph-stat"><div class="graph-stat-icon">${icons.clock}</div><div class="graph-stat-value">${daysSinceStart}</div><div class="graph-stat-label">Days Online</div></div>`;
+        html += `<div class="graph-stat"><div class="graph-stat-icon">${icons.calendar}</div><div class="graph-stat-value">${lastUpdate}</div><div class="graph-stat-label">Last Updated</div></div>`;
+        html += `<div class="graph-stat"><div class="graph-stat-icon">${icons.edit}</div><div class="graph-stat-value">${totalWordsText}</div><div class="graph-stat-label">Total Words</div></div>`;
         html += '</div>';
 
         html += '<div class="graph-header"><span class="graph-total">Total Posts: ' + posts.length + '</span></div>';
 
-        html += '<div class="graph-months">';
+        if (!weeks.length) {
+            html += `<div class="graph-empty">${githubError || 'GitHub contribution data is empty. Run the sync script to populate this chart.'}</div>`;
+            container.innerHTML = html + '</div>';
+            return;
+        }
+
+        html += `<div class="graph-months" style="grid-template-columns: repeat(${weeks.length}, var(--cell-size));">`;
         const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        for (let i = 0; i < 12; i++) {
-            const d = new Date(startDate);
-            d.setMonth(startDate.getMonth() + i);
-            html += `<div class="graph-month">${monthNames[d.getMonth()]}</div>`;
+        let previousMonth = -1;
+        for (let week = 0; week < weeks.length; week++) {
+            const firstDay = weeks[week].contributionDays?.[0];
+            if (!firstDay) continue;
+            const weekDate = new Date(`${firstDay.date}T00:00:00`);
+            const month = weekDate.getMonth();
+            if (month !== previousMonth) {
+                html += `<div class="graph-month" style="grid-column:${week + 1}">${monthNames[month]}</div>`;
+                previousMonth = month;
+            }
         }
         html += '</div>';
 
+        html += '<div class="graph-scroll">';
         html += '<div class="graph-content">';
-        html += '<div class="graph-days">';
-        ['Mon','','Wed','','Fri','',''].forEach(day => {
-            html += `<div class="graph-day-label">${day}</div>`;
-        });
-        html += '</div>';
-
         html += '<div class="graph-weeks">';
-        for (let week = 0; week < 53; week++) {
+        for (let week = 0; week < weeks.length; week++) {
             html += '<div class="graph-week">';
+            const days = weeks[week].contributionDays || [];
             for (let day = 0; day < 7; day++) {
-                const currentDate = new Date(startDate);
-                currentDate.setDate(startDate.getDate() + week * 7 + day);
-
-                if (currentDate > today) {
+                const contributionDay = days[day];
+                if (!contributionDay) {
                     html += '<div class="graph-cell level-0"></div>';
                     continue;
                 }
 
-                const dateStr = currentDate.toISOString().split('T')[0];
-                const count = postDates[dateStr] || 0;
-                const level = count === 0 ? 0 : Math.min(count, 4);
-                const tooltip = `${dateStr}: ${count} posts`;
+                const count = Number(contributionDay.count || 0);
+                const color = contributionDay.color || colors[0];
+                const tooltip = `${contributionDay.date}: ${count} contributions`;
 
-                html += `<div class="graph-cell level-${level}" data-tooltip="${tooltip}"></div>`;
+                html += `<div class="graph-cell" style="background:${color}" data-tooltip="${tooltip}"></div>`;
             }
             html += '</div>';
         }
         html += '</div></div>';
 
         html += '<div class="graph-footer">';
-        html += `<span>${Object.keys(postDates).length} contributions in 2025 - 2026</span>`;
+        html += `<span>${totalContributions} contributions in ${firstYear} ~ ${lastYear}</span>`;
         html += '<div class="graph-legend"><span>Less</span>';
-        for (let i = 0; i <= 4; i++) {
-            html += `<div class="graph-legend-item level-${i}"></div>`;
+        for (const color of colors) {
+            html += `<div class="graph-legend-item" style="background:${color}"></div>`;
         }
-        html += '<span>More</span></div>';
+        html += '<span>More</span></div></div>';
         html += '</div></div>';
 
         container.innerHTML = html;
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'graph-tooltip';
+        document.body.appendChild(tooltip);
+
+        container.querySelectorAll('.graph-cell[data-tooltip]').forEach(cell => {
+            cell.addEventListener('mouseenter', () => {
+                tooltip.textContent = cell.dataset.tooltip;
+                tooltip.classList.add('is-visible');
+            });
+            cell.addEventListener('mousemove', event => {
+                const offset = 12;
+                const rect = tooltip.getBoundingClientRect();
+                let left = event.clientX;
+                let top = event.clientY - offset;
+
+                if (left - rect.width / 2 < 8) {
+                    left = rect.width / 2 + 8;
+                } else if (left + rect.width / 2 > window.innerWidth - 8) {
+                    left = window.innerWidth - rect.width / 2 - 8;
+                }
+
+                if (top - rect.height < 8) {
+                    top = event.clientY + offset;
+                    tooltip.style.transform = 'translate(-50%, 0)';
+                } else {
+                    tooltip.style.transform = 'translate(-50%, -100%)';
+                }
+
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = top + 'px';
+            });
+            cell.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('is-visible');
+            });
+        });
+        } catch (error) {
+            container.innerHTML = [
+                '<div class="graph-container">',
+                '<div class="graph-title">Statistics</div>',
+                `<div class="graph-empty">${error.message}</div>`,
+                '</div>'
+            ].join('');
+        }
     })();
     </script>
     {{ end }}
 
     <div class="section-card" style="{{ if eq .Section "post" }}display:none;{{ end }}{{ if eq .Section "links" }}display:none;{{ end }}">
         <div class="section-details">
-            <h3 class="section-count">{{ T "list.page" (len .Pages) }}</h3>
+            {{ if or (eq .Data.Plural "categories") (eq .Data.Plural "tags") }}
+                <div class="taxonomy-type taxonomy-type--{{ .Data.Plural }}">
+                    {{ if eq .Data.Plural "categories" }}
+                        {{ partial "helper/icon" "archives" }}
+                        <span>categories</span>
+                    {{ else }}
+                        {{ partial "helper/icon" "tag" }}
+                        <span>tags</span>
+                    {{ end }}
+                </div>
+            {{ end }}
+            {{ if or (eq .Data.Plural "categories") (eq .Data.Plural "tags") }}
+                <h3 class="section-count">{{ len .Pages }} 篇文章</h3>
+            {{ else }}
+                <h3 class="section-count">{{ T "list.page" (len .Pages) }}</h3>
+            {{ end }}
             <h1 class="section-term">{{ .Title }}</h1>
-            {{ with .Params.description }}
-                <h2 class="section-description">{{ . }}</h2>
+            {{ if eq .Data.Plural "categories" }}
+                <h2 class="section-description">该分类下的所有文章</h2>
+            {{ else if eq .Data.Plural "tags" }}
+                <h2 class="section-description">带有该标签的所有文章</h2>
+            {{ else }}
+                {{ with .Params.description }}
+                    <h2 class="section-description">{{ . }}</h2>
+                {{ end }}
             {{ end }}
         </div>
 
