@@ -1,23 +1,35 @@
 <!DOCTYPE html>
 <html lang="zh-cn">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='如何让大语言模型稳定输出JSON格式固定内容如何让大语言模型稳定输出JSON格式固定内容？#大模型 #人工智能 #AI大模型 #AI #Agent - 抖音
-笔记记录自抖音视频，关于控制大模型稳定输出JSON格式这个问题，之前在做六足机器人项目时，我最多尝试到了本视频描述到的第二步，即设置response_format​参数为{&quot;type&quot;: &quot;json_object&quot;}​，使用该模式同时需要确保提示词中包含“JSON”关键词。该模式在，一共跑过478次调用大模型(qwen-vl-flash系列)，这478次全部稳定输出JSON格式，并无其他冗余文案，但该场景下，无需极致稳定，也就没有了后续的校验优化。
-'><title>如何让大语言模型稳定输出JSON格式固定内容</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='哈希表哈希要能想到三个数据结构：数组、set、map
+大体性判断使用时机：
+数组：哈希值小、范围可控
+set：数值很大
+map：k对应value
+1.两数之和题目描述给定一个整数数组 nums​ 和一个整数目标值 target​，请你在该数组中找出 和为目标值 target​ 的那 两个 整数，并返回它们的数组下标。
+'><title>LeetCode Hot100</title>
 
-<link rel='canonical' href='https://Harmme5.github.io/post/how-to-make-a-large-language-model-stably-output-fixed-content-in-json-format-znoxqp.html'>
+<link rel='canonical' href='https://Harmme5.github.io/post/leetcode-hot100-z2vo5oe.html'>
 
 <link rel="stylesheet" href="/scss/style.min.f7ab8fd3a48249eff32ea01ac947cc729326bd01ebd58d04e3cf70ee3f766531.css">
-<meta property='og:title' content='如何让大语言模型稳定输出JSON格式固定内容'>
-<meta property='og:description' content='如何让大语言模型稳定输出JSON格式固定内容如何让大语言模型稳定输出JSON格式固定内容？#大模型 #人工智能 #AI大模型 #AI #Agent - 抖音
-笔记记录自抖音视频，关于控制大模型稳定输出JSON格式这个问题，之前在做六足机器人项目时，我最多尝试到了本视频描述到的第二步，即设置response_format​参数为{&quot;type&quot;: &quot;json_object&quot;}​，使用该模式同时需要确保提示词中包含“JSON”关键词。该模式在，一共跑过478次调用大模型(qwen-vl-flash系列)，这478次全部稳定输出JSON格式，并无其他冗余文案，但该场景下，无需极致稳定，也就没有了后续的校验优化。
+<meta property='og:title' content='LeetCode Hot100'>
+<meta property='og:description' content='哈希表哈希要能想到三个数据结构：数组、set、map
+大体性判断使用时机：
+数组：哈希值小、范围可控
+set：数值很大
+map：k对应value
+1.两数之和题目描述给定一个整数数组 nums​ 和一个整数目标值 target​，请你在该数组中找出 和为目标值 target​ 的那 两个 整数，并返回它们的数组下标。
 '>
-<meta property='og:url' content='https://Harmme5.github.io/post/how-to-make-a-large-language-model-stably-output-fixed-content-in-json-format-znoxqp.html'>
+<meta property='og:url' content='https://Harmme5.github.io/post/leetcode-hot100-z2vo5oe.html'>
 <meta property='og:site_name' content='竹雨落的博客'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2026-06-20T15:56:24&#43;08:00'/><meta property='article:modified_time' content='2026-06-20T15:56:24&#43;08:00'/>
-<meta name="twitter:title" content="如何让大语言模型稳定输出JSON格式固定内容">
-<meta name="twitter:description" content="如何让大语言模型稳定输出JSON格式固定内容如何让大语言模型稳定输出JSON格式固定内容？#大模型 #人工智能 #AI大模型 #AI #Agent - 抖音
-笔记记录自抖音视频，关于控制大模型稳定输出JSON格式这个问题，之前在做六足机器人项目时，我最多尝试到了本视频描述到的第二步，即设置response_format​参数为{&quot;type&quot;: &quot;json_object&quot;}​，使用该模式同时需要确保提示词中包含“JSON”关键词。该模式在，一共跑过478次调用大模型(qwen-vl-flash系列)，这478次全部稳定输出JSON格式，并无其他冗余文案，但该场景下，无需极致稳定，也就没有了后续的校验优化。
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Leetcode' /><meta property='article:published_time' content='2026-06-20T20:57:20&#43;08:00'/><meta property='article:modified_time' content='2026-06-21T17:26:26&#43;08:00'/>
+<meta name="twitter:title" content="LeetCode Hot100">
+<meta name="twitter:description" content="哈希表哈希要能想到三个数据结构：数组、set、map
+大体性判断使用时机：
+数组：哈希值小、范围可控
+set：数值很大
+map：k对应value
+1.两数之和题目描述给定一个整数数组 nums​ 和一个整数目标值 target​，请你在该数组中找出 和为目标值 target​ 的那 两个 整数，并返回它们的数组下标。
 "><link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap">
@@ -509,10 +521,31 @@ document.addEventListener('DOMContentLoaded', function() {
     <header class="article-header">
 
     <div class="article-details">
-    
+    <div class="article-taxonomy"><a class="term-badge term-badge--category" href="/categories/leetcode/" aria-label="Category: Leetcode">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+            <span>Leetcode</span>
+        </a><a class="term-badge term-badge--tag" href="/tags/leetcode/" aria-label="Tag: Leetcode">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-tag" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11 3L20 12a1.5 1.5 0 0 1 0 2L14 20a1.5 1.5 0 0 1 -2 0L3 11v-4a4 4 0 0 1 4 -4h4" />
+  <circle cx="9" cy="9" r="2" />
+</svg>
+
+
+
+            <span>Leetcode</span>
+        </a></div>
 
     <h2 class="article-title">
-        <a href="/post/how-to-make-a-large-language-model-stably-output-fixed-content-in-json-format-znoxqp.html">如何让大语言模型稳定输出JSON格式固定内容</a>
+        <a href="/post/leetcode-hot100-z2vo5oe.html">LeetCode Hot100</a>
     </h2>
 
     
@@ -545,7 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
                 <time class="article-time--reading">
-                    1069 &#23383; &middot; 3 &#20998;&#38047;
+                    1402 &#23383; &middot; 4 &#20998;&#38047;
                 </time>
             </div>
         
@@ -558,115 +591,92 @@ document.addEventListener('DOMContentLoaded', function() {
     <section class="article-content">
     
     
-    <h1 id="如何让大语言模型稳定输出json格式固定内容">如何让大语言模型稳定输出JSON格式固定内容
-</h1><p><a class="link" href="https://www.douyin.com/video/7624851375507439098"  target="_blank" rel="noopener"
-    >如何让大语言模型稳定输出JSON格式固定内容？#大模型 #人工智能 #AI大模型 #AI #Agent - 抖音</a></p>
-<p>笔记记录自抖音视频，关于<strong>控制大模型稳定输出JSON格式</strong>这个问题，之前在做六足机器人项目时，我最多尝试到了本视频描述到的第二步，即设置<code>response_format</code>​参数为<code>{&quot;type&quot;: &quot;json_object&quot;}</code>​，使用该模式同时需要确保提示词中包含“JSON”关键词。该模式在，一共跑过478次调用大模型(<code>qwen-vl-flash</code>系列)，这478次全部稳定输出JSON格式，并无其他冗余文案，但该场景下，无需极致稳定，也就没有了后续的校验优化。</p>
-<hr>
-<p>工业级开发需要绝对的确定性，而模型天生自带“随机性”，是追求稳定性的障碍，不可控即不可用。</p>
-<h1 id="第一道防线提示词控制schema注入近因效应">第一道防线：提示词控制（Schema注入+近因效应）
-</h1><blockquote class="alert alert-caution">
-        <div class="alert-header">
-            <span class="alert-icon">🚨</span>
-            <span class="alert-title">传统Prompt痛点</span>
-        </div>
-        <div class="alert-body">
-            <p>仅有在提示词中加入&quot;输出JSON&quot;时，模型常添加多余文字或解释，导致程序解析失败。</p>
-        </div>
-    </blockquote>
-
-<h2 id="schema注入few-shot">Schema注入+Few-shot
-</h2><p>明确提供TypeScript接口或JSON Schema定义，并给出2-3个真实范例，强制模型对齐格式。</p>
-<h2 id="近因效应">近因效应
-</h2><p>将“禁止废话，仅输出JSON”指令置于末尾，并用定界符框定输出区域，避免长上下文模型遗忘格式要求</p>
-<hr>
-<p>经过以上措施，如果还是翻车，就上第二道防线</p>
-<h1 id="第二道防线生成控制层">第二道防线：生成控制层
-</h1><h2 id="针对闭源apistructured-outputs">针对闭源API：Structured Outputs
-</h2><p>在模型解码时将Schema预编译到引擎中，以<a class="link" href="https://help.aliyun.com/zh/model-studio/qwen-structured-output#f39f3c9e1a03"  target="_blank" rel="noopener"
-    >千问设置结构化输出</a>为例</p>
-<p><figure 
-	>
-	<a href="http://127.0.0.1:10803/assets/image-20260620124931-8waypks.png" >
-		<img src="http://127.0.0.1:10803/assets/image-20260620124931-8waypks.png"
-			
-			
-			
-			loading="lazy"
-			alt="image">
-	</a>
-	
-	<figcaption>image</figcaption>
-	
-</figure></p>
-<h2 id="针对开源模型logit-masking">针对开源模型：Logit Masking
-</h2><blockquote class="alert alert-note">
-        <div class="alert-header">
-            <span class="alert-icon">✏️</span>
-            <span class="alert-title">Logit Masking</span>
-        </div>
-        <div class="alert-body">
-            <p>Logit Masking（概率掩码）技术</p>
-<p>基于有限状态机或正则约束，把不符合阶层语法的字符概率直接设为负无穷，从物理层面彻底杜绝格式错误。</p>
-        </div>
-    </blockquote>
-
-<hr>
-<p>前面两道防线都做好了，还要留好兜底方案</p>
-<h1 id="第三道防线工程校验与自修复的闭环逻辑">第三道防线：工程校验与自修复的闭环逻辑
-</h1><blockquote class="alert alert-note">
-        <div class="alert-header">
-            <span class="alert-icon">✏️</span>
-            <span class="alert-title">强校验框架</span>
-        </div>
-        <div class="alert-body">
-            <p>引入Pydantic等工具，对模型输出进行字段完整性和类型正确性检查，杜绝脏数据。</p>
-        </div>
-    </blockquote>
-
-<blockquote class="alert alert-note">
-        <div class="alert-header">
-            <span class="alert-icon">✏️</span>
-            <span class="alert-title">闭环自修复机制</span>
-        </div>
-        <div class="alert-body">
-            <p>将校验报错信息（如“字段缺失”）反馈给模型，指导其修正错误，利用LLM能力完成自我修复</p>
-        </div>
-    </blockquote>
-
-<blockquote class="alert alert-note">
-        <div class="alert-header">
-            <span class="alert-icon">✏️</span>
-            <span class="alert-title">流式解析优化</span>
-        </div>
-        <div class="alert-body">
-            <p>针对超长JSON输出，采用边生成边检查的流式方式，及时发现错误并中断，节省计算资源，</p>
-        </div>
-    </blockquote>
-
-<h1 id="总结">总结
-</h1><blockquote class="alert alert-important">
-        <div class="alert-header">
-            <span class="alert-icon">❗</span>
-            <span class="alert-title">总体思路</span>
-        </div>
-        <div class="alert-body">
-            <p>让模型稳定输出，不能靠“灵光一闪”，而要靠确定的<strong>软件工程防线</strong>去包裹非确定的生成模型。</p>
-        </div>
-    </blockquote>
-
-<blockquote class="alert alert-note">
-        <div class="alert-header">
-            <span class="alert-icon">✏️</span>
-            <span class="alert-title">工程组合拳</span>
-        </div>
-        <div class="alert-body">
-            <p>提示词给样例 + API开约束 + 推理端加掩码 + 工程端自修复重试。将格式错误率降至0.1%以下</p>
-        </div>
-    </blockquote>
-
-<h2 id="进阶方案">进阶方案
-</h2><p>对于极致稳定性要求的场景，采用<strong>SFT监督微调</strong><span data-type="text">，让模型形成“肌肉记忆”，实现条件反射式的正确输出。</span></p>
+    <h1 id="哈希表">哈希表
+</h1><p>哈希要能想到三个数据结构：数组、set、map</p>
+<p>大体性判断使用时机：</p>
+<ul>
+<li>
+<p>数组：哈希值小、范围可控</p>
+</li>
+<li>
+<p>set：数值很大</p>
+</li>
+<li>
+<p>map：k对应value</p>
+</li>
+</ul>
+<h2 id="1两数之和">1.两数之和
+</h2><h3 id="题目描述">题目描述
+</h3><p>给定一个整数数组 <code>nums</code>​ 和一个整数目标值 <code>target</code>​，请你在该数组中找出 <strong>和为目标值</strong>   <code>target</code>​  的那 <strong>两个</strong> 整数，并返回它们的数组下标。</p>
+<p>你可以假设每种输入只会对应一个答案，并且你不能使用两次相同的元素。</p>
+<p>你可以按任意顺序返回答案。</p>
+<p><strong>示例 1：</strong></p>
+<pre tabindex="0"><code>输入：nums = [2,7,11,15], target = 9
+输出：[0,1]
+解释：因为 nums[0] + nums[1] == 9 ，返回 [0, 1] 。
+</code></pre><h3 id="解题思路">解题思路
+</h3><p>每当我们遇到要判断元素是否出现过，第一反应就是可以用哈希法。</p>
+<p>这道题目是需要判断一个元素是否遍历过，那如何判断它是否遍历过呢，我们就把我们遍历过的元素加到一个集合里，然后我们每次遍历一个新的位置之后，就判断我们想要寻找的这个元素是否在这个集合里出现过，如果在这个集合中出现过，就说我们之前遍历过，这个集合用一种哈希表的结构</p>
+<p>因为要存放2个元素：元素和下标，所以用map数据结构，在python中对应的也就是<strong>字典</strong>​<code>dict</code>，字典在本题目中的作用：存放遍历过的元素</p>
+<p>那为什么元素作为<code>key</code>​，下标作为<code>value</code>​呢，因为要查找的是“元素”，所以元素作为<code>key</code></p>
+<h3 id="代码">代码
+</h3><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">twoSum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nums</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">target</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">nums</span> <span class="o">=</span> <span class="n">nums</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+</span></span><span class="line"><span class="cl">        <span class="n">records</span><span class="o">=</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">index</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nums</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">target</span><span class="o">-</span><span class="n">value</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="p">[</span><span class="n">records</span><span class="p">[</span><span class="n">target</span><span class="o">-</span><span class="n">value</span><span class="p">],</span><span class="n">index</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="n">records</span><span class="p">[</span><span class="n">value</span><span class="p">]</span><span class="o">=</span><span class="n">index</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="p">[]</span>
+</span></span></code></pre></div><h3 id="复杂度分析">复杂度分析
+</h3><ul>
+<li>
+<p>时间复杂度：O(n)</p>
+<p>只有一层 <code>for</code> 循环，遍历数组一次，循环执行 n 次；</p>
+<p>字典 <code>in</code> 查询、字典赋值都是哈希表操作，单次 (O(1))；</p>
+<p>总操作次数是常数倍 n，去掉系数后时间复杂度为 (O(n))。</p>
+</li>
+<li>
+<p>空间复杂度：O(n)</p>
+</li>
+</ul>
+<h2 id="242有效的字母异位词">242.有效的字母异位词
+</h2><h3 id="题目描述-1">题目描述
+</h3><p>给定两个字符串 <code>s</code>​ 和 <code>t</code>​ ，编写一个函数来判断 <code>t</code>​ 是否是 <code>s</code> 的 字母异位词。</p>
+<p>字母异位词是通过重新排列不同单词或短语的字母而形成的单词或短语，并使用所有原字母一次。</p>
+<p><strong>示例 1:</strong></p>
+<pre tabindex="0"><code>输入: s = &#34;anagram&#34;, t = &#34;nagaram&#34;
+输出: true
+</code></pre><p><strong>示例 2:</strong></p>
+<pre tabindex="0"><code>输入: s = &#34;rat&#34;, t = &#34;car&#34;
+输出: ​false
+</code></pre><h3 id="解题思路-1">解题思路
+</h3><p>    数组就是一个简单哈希表**，在python中对应就是列表<code>List</code>​，而本题中只有小写字母，小写字母有26个，它们的ASCII码值为连续的。可以定义一个列表，列表大小为26，下标范围为0~25，该列表用来存储每个字母出现的次数，同时需要把字母映射到列表的下标上，比如<code>record[0]=1</code>​，<code>record[0]</code>​代表字母&rsquo;a&rsquo;，<code>=1</code>就代表字母&rsquo;a&rsquo;出现了1次。</p>
+<p>接下来需要统计字符串s和t中每个字母出现的次数，因此需要逐个遍历，遍历的时候，以字符串s为例，<strong>只需要将</strong> <code>s[i] - ‘a’</code>​ ​ <strong>所在的元素做+1 操作即可，并不需要记住字符a的ASCII，只要求出一个相对数值就可以了。</strong> 这样就把字符串s中字符出现的次数，统计出来了。</p>
+<p>下一步是如何检查字符串t中是否出现了这些字符，只需要在遍历字符串t的时候，对t中出现的字符映射到哈希表索引上的数值做-1操作就可以了。</p>
+<p>最后检查一下，如果<strong>record列表有元素不为0</strong>，说明字符串s和字符串t一定是谁多字符或者少字符，此时<code>return false</code>​，如果record列表所有元素为0，说明字符串s和t是字母异位词，<code>return true</code></p>
+<h3 id="代码-1">代码
+</h3><p>​<code>ord(单个字符)</code>​：返回这个字符对应的 <strong>ASCII 码（数字）</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">isAnagram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">record</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">26</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">record</span><span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="nb">ord</span><span class="p">(</span><span class="s2">&#34;a&#34;</span><span class="p">)]</span><span class="o">+=</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">record</span><span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="nb">ord</span><span class="p">(</span><span class="s2">&#34;a&#34;</span><span class="p">)]</span><span class="o">-=</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">26</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">record</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="kc">False</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">True</span>
+</span></span></code></pre></div><h3 id="复杂度分析-1">复杂度分析
+</h3><ul>
+<li>时间复杂度：三次for循环均为有限次数，为O(n)</li>
+<li>空间复杂度：定义的数组为常量大小，所以空间复杂度为O(1)</li>
+</ul>
+<p>‍</p>
+<p>‍</p>
 
 </section>
 
@@ -684,7 +694,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         <span>Licensed under CC BY-NC-SA 4.0</span>
     </section>
-    </footer>
+    <section class="article-lastmod">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+        <span>
+             Jun 21, 2026 17:26 CST
+        </span>
+    </section></footer>
 
     
 </article>
@@ -864,7 +886,7 @@ document.getElementById('days').innerHTML = number_of_days;
                     
                     
                     
-                        <nav id="TableOfContents"><ul><li><a href="#如何让大语言模型稳定输出json格式固定内容">如何让大语言模型稳定输出JSON格式固定内容</a></li><li><a href="#第一道防线提示词控制schema注入近因效应">第一道防线：提示词控制（Schema注入+近因效应）</a><ul><li><a href="#schema注入few-shot">Schema注入+Few-shot</a></li><li><a href="#近因效应">近因效应</a></li></ul></li><li><a href="#第二道防线生成控制层">第二道防线：生成控制层</a><ul><li><a href="#针对闭源apistructured-outputs">针对闭源API：Structured Outputs</a></li><li><a href="#针对开源模型logit-masking">针对开源模型：Logit Masking</a></li></ul></li><li><a href="#第三道防线工程校验与自修复的闭环逻辑">第三道防线：工程校验与自修复的闭环逻辑</a></li><li><a href="#总结">总结</a><ul><li><a href="#进阶方案">进阶方案</a></li></ul></li></ul></nav>
+                        <nav id="TableOfContents"><ul><li><a href="#哈希表">哈希表</a><ul><li><a href="#1两数之和">1.两数之和</a></li><li><a href="#242有效的字母异位词">242.有效的字母异位词</a></li></ul></li></ul></nav>
                     
                 </div>
             </section>
