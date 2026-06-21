@@ -80,6 +80,7 @@
     .graph-scroll {
         overflow-x: auto;
         padding-bottom: 4px;
+        width: 100%;
     }
     .graph-months {
         display: grid;
@@ -98,6 +99,7 @@
         display: flex;
         gap: 8px;
         min-width: max-content;
+        width: max-content;
     }
     .graph-weeks {
         display: flex;
@@ -156,9 +158,9 @@
         justify-content: space-between;
         align-items: center;
         margin-top: 18px;
-        min-width: max-content;
         font-size: 13px;
         color: var(--card-text-color-secondary);
+        gap: 16px;
     }
     .graph-legend {
         display: flex;
@@ -184,6 +186,13 @@
         }
         .graph-stats {
             grid-template-columns: 1fr;
+        }
+        .graph-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .graph-legend {
+            margin-left: 0;
         }
     }
     </style>
@@ -256,6 +265,7 @@
             return;
         }
 
+        html += '<div class="graph-scroll">';
         html += `<div class="graph-months" style="grid-template-columns: repeat(${weeks.length}, var(--cell-size));">`;
         const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         let previousMonth = -1;
@@ -271,7 +281,6 @@
         }
         html += '</div>';
 
-        html += '<div class="graph-scroll">';
         html += '<div class="graph-content">';
         html += '<div class="graph-weeks">';
         for (let week = 0; week < weeks.length; week++) {
@@ -304,6 +313,27 @@
         html += '</div></div>';
 
         container.innerHTML = html;
+
+        const fitHeatmapToContainer = () => {
+            const graphContainer = container.querySelector('.graph-container');
+            const graphScroll = container.querySelector('.graph-scroll');
+            if (!graphContainer || !graphScroll || !weeks.length) return;
+
+            const styles = window.getComputedStyle(graphContainer);
+            const gap = Number.parseFloat(styles.getPropertyValue('--cell-gap')) || 4;
+            const availableWidth = graphScroll.clientWidth;
+            const fittedCellSize = Math.floor((availableWidth - gap * (weeks.length - 1)) / weeks.length);
+            const cellSize = Math.max(10, Math.min(14, fittedCellSize));
+
+            graphContainer.style.setProperty('--cell-size', `${cellSize}px`);
+        };
+
+        fitHeatmapToContainer();
+        if ('ResizeObserver' in window) {
+            new ResizeObserver(fitHeatmapToContainer).observe(container);
+        } else {
+            window.addEventListener('resize', fitHeatmapToContainer);
+        }
 
         const tooltip = document.createElement('div');
         tooltip.className = 'graph-tooltip';
