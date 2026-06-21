@@ -12,4 +12,7 @@ resources/_gen/
 
 # Local-only helper/debug files
 push.bat
+本地运行.bat
+problems.md
+README.md
 toc-debug.png
