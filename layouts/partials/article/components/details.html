@@ -1,0 +1,37 @@
+<div class="article-details">
+    {{ partial "article/components/terms" . }}
+
+    <h2 class="article-title">
+        <a href="{{ .RelPermalink }}">
+            {{- .Title -}}
+        </a>
+    </h2>
+
+    {{ with .Params.description }}
+    <h3 class="article-subtitle">
+        {{ . }}
+    </h3>
+    {{ end }}
+
+    {{ if or (not .Date.IsZero) (.Site.Params.article.readingTime) }}
+    <footer class="article-time">
+        {{ if not .Date.IsZero }}
+            <div>
+                {{ partial "helper/icon" "date" }}
+                <time class="article-time--published">
+                    {{- .Date.Format (or .Site.Params.dateFormat.published "Jan 02, 2006") -}}
+                </time>
+            </div>
+        {{ end }}
+
+        {{ if .Site.Params.article.readingTime }}
+            <div>
+                {{ partial "helper/icon" "clock" }}
+                <time class="article-time--reading">
+                    {{ .WordCount }} &#23383; &middot; {{ div .WordCount 300 }} &#20998;&#38047;
+                </time>
+            </div>
+        {{ end }}
+    </footer>
+    {{ end }}
+</div>

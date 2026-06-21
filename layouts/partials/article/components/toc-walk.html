@@ -1,0 +1,28 @@
+{{- $headings := .headings -}}
+{{- $startLevel := .startLevel -}}
+{{- $endLevel := .endLevel -}}
+{{- $ordered := .ordered -}}
+{{- $tag := cond $ordered "ol" "ul" -}}
+{{- $items := slice -}}
+
+{{- range $headings -}}
+    {{- if lt .Level $startLevel -}}
+        {{- $childItems := partial "article/components/toc-walk" (dict "headings" .Headings "startLevel" $startLevel "endLevel" $endLevel "ordered" $ordered) -}}
+        {{- with $childItems -}}
+            {{- $items = $items | append . -}}
+        {{- end -}}
+    {{- else if le .Level $endLevel -}}
+        {{- $childItems := partial "article/components/toc-walk" (dict "headings" .Headings "startLevel" $startLevel "endLevel" $endLevel "ordered" $ordered) -}}
+        {{- $children := "" -}}
+        {{- with $childItems -}}
+            {{- $children = printf "<%s>%s</%s>" $tag . $tag -}}
+        {{- end -}}
+        {{- $title := .Title | plainify | htmlEscape -}}
+        {{- $item := printf `<li><a href="#%s">%s</a>%s</li>` .ID $title $children -}}
+        {{- $items = $items | append $item -}}
+    {{- end -}}
+{{- end -}}
+
+{{- if gt (len $items) 0 -}}
+    {{- delimit $items "" | safeHTML -}}
+{{- end -}}

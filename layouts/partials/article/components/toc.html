@@ -1,0 +1,12 @@
+{{- $page := .Page -}}
+{{- $startLevel := .startLevel -}}
+{{- $endLevel := .endLevel -}}
+{{- $ordered := .ordered -}}
+
+{{- if and (le $startLevel $endLevel) $page.Fragments.Headings -}}
+    {{- $tag := cond $ordered "ol" "ul" -}}
+    {{- $items := partial "article/components/toc-walk" (dict "headings" $page.Fragments.Headings "startLevel" $startLevel "endLevel" $endLevel "ordered" $ordered) -}}
+    {{- with $items -}}
+        {{- printf `<nav id="TableOfContents"><%s>%s</%s></nav>` $tag . $tag | safeHTML -}}
+    {{- end -}}
+{{- end -}}

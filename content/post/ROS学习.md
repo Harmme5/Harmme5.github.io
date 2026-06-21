@@ -1,11 +1,12 @@
 ---
-title: ROS1 noetic学习
+title: ROS学习
 slug: ros-study-1p5djp
 url: /post/ros-study-1p5djp.html
-date: '2026-03-06 20:58:44+08:00'
-lastmod: '2026-03-29 15:39:40+08:00'
+date: '2026-03-03 10:10:41+08:00'
+lastmod: '2026-03-27 23:10:41+08:00'
 toc: true
 isCJKLanguage: true
+image: /img/covers/ros-cover.png
 ---
 
 # ROS学习
@@ -20,13 +21,13 @@ ROS:An Open-Source Robot Operating System
 
 单片机可以控制的东西，Ros都可以控制，Ros和安卓一样，**本质由很多功能不同的APP组成**，通过不同APP组合，得到不同效果,ROS+GMapping=扫描建图机器人，Ros+Movebase=自主导航机器人
 
-![](http://127.0.0.1:7319/assets/2-20260210205844-rosntqy.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/2-20260210205844-rosntqy.png)
 
 Ros个launch相当于乐高房子，每个Node相当于乐高砖块，比如雷达_node,机械臂-node
 
-![](http://127.0.0.1:7319/assets/1-20260210205844-gxwj6e9.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/1-20260210205844-gxwj6e9.png)
 
-![](http://127.0.0.1:7319/assets/3-20260210205844-jv4smh0.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/3-20260210205844-jv4smh0.png)
 
 # 2.如何学习Ros
 
@@ -75,7 +76,7 @@ roscore
 > 
 > rosout_agg :  统一的聚合日志
 
-![image](http://127.0.0.1:7319/assets/image-20260303154534-66wprhf.png)
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303154534-66wprhf.png)
 
 **两个话题的核心区别**
 
@@ -113,7 +114,7 @@ rosrun turtlesim turtlesim_node
 
 # 5.Github下载包
 
-## **Step1 设置工作空间**
+## Step1 设置工作空间
 
 以软件包wpr_simulation为例
 
@@ -129,7 +130,7 @@ mkdir src && cd src
 git clone https://github.com/6-robot/wpr_simulation.git
 ```
 
-在scripts文件夹里找到.***.sh，这个是依赖安装脚本文件，运行即可自动安装所需要的依赖![](http://127.0.0.1:7319/assets/4-20260210205844-rbp27s6.png)
+在scripts文件夹里找到.***.sh，这个是依赖安装脚本文件，运行即可自动安装所需要的依赖![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/4-20260210205844-rbp27s6.png)
 
 安装完依赖，可以开始编译
 
@@ -147,7 +148,7 @@ source ~/catkin_ws/devel/setup.bash
 roslaunch wpr_simulation wpb_simple.launch
 ```
 
-![](http://127.0.0.1:7319/assets/5-20260210205844-liocbgl.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/5-20260210205844-liocbgl.png)
 
 可以用速度控制软件控制其移动
 
@@ -159,7 +160,7 @@ roslaunch wpr_simulation wpb_simple.launch
 
 2.git clone得来的小乌龟，默认是ros2.0，这样可以切换为ros1.0
 
-![](http://127.0.0.1:7319/assets/6-20260210205844-mjx7ktx.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/6-20260210205844-mjx7ktx.png)
 
 **Github搜索引擎的强大，学习如何过滤**
 
@@ -214,7 +215,7 @@ roscd roscpp或rospy
 
 ros包里都是可执行程序，而catkin里的是源码文件，需要编译为可执行程序才能运行
 
-![](http://127.0.0.1:7319/assets/7-20260210205844-zrgintp.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/7-20260210205844-zrgintp.jpg)
 
 上图是./bashrc文件，第一条指令代表apt下载的软件包地址，第二条指令是catkin工作空间的软件地址
 
@@ -226,7 +227,7 @@ ros包里都是可执行程序，而catkin里的是源码文件，需要编译�
 
 以超声波节点为例子，在ssr_pkg/ssr中新建chao_node.cpp
 
-![](http://127.0.0.1:7319/assets/8-20260210205844-3jraa3m.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/8-20260210205844-3jraa3m.jpg)
 
 # 8.Topic话题与Message消息
 
@@ -234,15 +235,15 @@ ros包里都是可执行程序，而catkin里的是源码文件，需要编译�
 
 ## 常用工具
 
-![](http://127.0.0.1:7319/assets/13-20260210205844-scqwao7.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/13-20260210205844-scqwao7.jpg)
 
-![](http://127.0.0.1:7319/assets/9-20260210205844-ytxc3zd.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/9-20260210205844-ytxc3zd.jpg)
 
 主动发布话题：Publisher（左边）        被刷屏的右边：订阅者Subscriber
 
-![](http://127.0.0.1:7319/assets/10-20260210205844-0otes7u.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/10-20260210205844-0otes7u.jpg)
 
-![](http://127.0.0.1:7319/assets/11-20260210205844-s3d6edc.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/11-20260210205844-s3d6edc.jpg)
 
 ## std_msgs
 
@@ -252,17 +253,17 @@ ros包里都是可执行程序，而catkin里的是源码文件，需要编译�
 
 ### Publisher和subscriber的C++实现结构图
 
-![](http://127.0.0.1:7319/assets/14-20260210205844-yt7wk9a.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/14-20260210205844-yt7wk9a.jpg)
 
 ### Publisher的C++实现
 
-![](http://127.0.0.1:7319/assets/12-20260210205844-j4wuw9w.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/12-20260210205844-j4wuw9w.jpg)
 
-![image](http://127.0.0.1:7319/assets/image-20260303145755-sqqqmua.png)
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303145755-sqqqmua.png)
 
 ### Subscriber的C++实现
 
-![image](http://127.0.0.1:7319/assets/image-20260303155157-2aj13gi.png)
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303155157-2aj13gi.png)
 
 ```c++
 sub = nh.subscribe("话题名称" , 缓存长度 , 回调函数);
@@ -277,7 +278,7 @@ sub = nh.subscribe("话题名称" , 缓存长度 , 回调函数);
 > 
 > 后续都无需再编译 **（这是与C++不同的地方）**
 
-1. ![image](http://127.0.0.1:7319/assets/image-20260303145832-4e6bp0d.png)
+1. ![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303145832-4e6bp0d.png)
    
    ‍
 
@@ -294,7 +295,7 @@ sub = nh.subscribe("话题名称" , 缓存长度 , 回调函数);
 
 ### Subscriber的PY实现
 
-![image](http://127.0.0.1:7319/assets/image-20260303155235-yf505ah.png)
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260303155235-yf505ah.png)
 
 ## 话题不只属于发布者或订阅者
 
@@ -302,7 +303,7 @@ sub = nh.subscribe("话题名称" , 缓存长度 , 回调函数);
 
 ## 话题的订阅步骤/查看节点网络
 
-![](http://127.0.0.1:7319/assets/15-20260210205844-9oze4um.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/15-20260210205844-9oze4um.jpg)
 
 [^spinonce函数]: 不局限于while函数内，必要时即可调用，回头看一眼消息
 [^rqt_graph]: 图形化显示正在运行的节点间，通讯话题关系
@@ -313,7 +314,7 @@ sub = nh.subscribe("话题名称" , 缓存长度 , 回调函数);
 
 launch文件是一种遵循XML语法的描述文件
 
-![](http://127.0.0.1:7319/assets/16-20260210205844-ykh7ku8.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/16-20260210205844-ykh7ku8.jpg)
 
 如上图，上下分行，是为了方便阅读，但第二个小纸盒是空的，就可以写成
 
@@ -332,11 +333,11 @@ launch文件是一种遵循XML语法的描述文件
 </大纸盒>
 ```
 
-![](http://127.0.0.1:7319/assets/17-20260210205844-vhk5cjl.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/17-20260210205844-vhk5cjl.jpg)
 
-![](http://127.0.0.1:7319/assets/18-20260210205844-2wix9wh.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/18-20260210205844-2wix9wh.jpg)
 
-![](http://127.0.0.1:7319/assets/19-20260210205844-95ap5rm.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/19-20260210205844-95ap5rm.jpg)
 
 [^roscore]: launch文件没有roscore的描述，因为其不是独立节点，而launch文件的机制：只要包含了节点的描述，都会自动启动roscore
 
@@ -397,7 +398,7 @@ roslaunch atr_pkg kai_hei.launch
 
 ## 小结
 
-![](http://127.0.0.1:7319/assets/20-20260210205844-7kb3djz.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/20-20260210205844-7kb3djz.jpg)
 
 用途：阅读新包时，可以通过launch文件入手，看里面要运行哪些节点
 
@@ -405,9 +406,9 @@ roslaunch atr_pkg kai_hei.launch
 
 ## 坐标系正方向
 
-![](http://127.0.0.1:7319/assets/21-20260210205844-mff95lg.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/21-20260210205844-mff95lg.jpg)
 
-![](http://127.0.0.1:7319/assets/22-20260210205844-rs1npjw.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/22-20260210205844-rs1npjw.jpg)
 
 ## 速度量纲
 
@@ -415,13 +416,13 @@ roslaunch atr_pkg kai_hei.launch
 
 旋转运动：rad/s ，弧度每秒
 
-![](http://127.0.0.1:7319/assets/23-20260210205844-7c6x9q5.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/23-20260210205844-7c6x9q5.jpg)
 
 ## 软件包示例-geometey_msgs
 
 ​    当拿到一个机器人，其配套程序源码中会有一个机器人的核心节点，该核心节点能直接驱动机器人的底层硬件，同时该节点会向上订阅一个**速度话题**，只需要编写一个新的节点，向速度话题(/cmd_vel)发送消息包，即可实现对机器人的速度控制
 
-![](http://127.0.0.1:7319/assets/24-20260210205844-s561aj2.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/24-20260210205844-s561aj2.jpg)
 
 ## C++实现
 
@@ -439,7 +440,7 @@ rosrun wpr_simulation demo_vel_ctrl
 
 借助wpr_simulation来仿真
 
-![](http://127.0.0.1:7319/assets/25-20260210205844-qdqrqg6.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/25-20260210205844-qdqrqg6.jpg)
 
 # 10.Rviz观测传感器数据
 
@@ -475,7 +476,7 @@ rostopic echo /scan --noarr
 
 ## sensor_msgs数据格式说明
 
-![](http://127.0.0.1:7319/assets/26-20260210205844-qa3ge0x.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/26-20260210205844-qa3ge0x.jpg)
 
 [^相邻两次测距]: 激光射出去再回来，完成一次测距行为，然后雷达旋转一个角度，再来一次测距
 [^angle_increment、time_increment]: 在无人机、赛车上用的多，主要用来修正运动过程中雷达测距点阵的形变，低速运动的机器人来说，可以不考虑该形变的影响
@@ -501,17 +502,17 @@ rosrun wpr_simulation demo_lidar_data
 
     激光雷达节点（通常由雷达厂商提供），雷达测距数值从电路系统传递到雷达节点，被封装为一个消息包，发布到一个topic话题（/scan）中
 
-![](http://127.0.0.1:7319/assets/27-20260210205844-p2teny0.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/27-20260210205844-p2teny0.jpg)
 
 ### 步骤
 
-![](http://127.0.0.1:7319/assets/28-20260210205844-qtzvqov.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/28-20260210205844-qtzvqov.jpg)
 
 ```bash
 catkin_create_pkg lidar_pkg roscpp rospy sensor_msgs
 ```
 
-![](http://127.0.0.1:7319/assets/29-20260210205844-75y80d7.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/29-20260210205844-75y80d7.jpg)
 
 [^正前方]: ranges[180]
 
@@ -523,11 +524,11 @@ catkin_create_pkg lidar_pkg roscpp rospy sensor_msgs
 
 ## 目前已经实现的效果
 
-![](http://127.0.0.1:7319/assets/30-20260210205844-m2nxhof.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/30-20260210205844-m2nxhof.jpg)
 
 ## 实现步骤
 
-![](http://127.0.0.1:7319/assets/31-20260210205844-v7xjfd7.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/31-20260210205844-v7xjfd7.jpg)
 
 ## 运行
 
@@ -541,13 +542,13 @@ rosrun lidar_pkg lidar_node
 
 # 14.IMU惯性测量单元消息包sensor_msgs
 
-![](http://127.0.0.1:7319/assets/32-20260210205844-xeqh1i7.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/32-20260210205844-xeqh1i7.jpg)
 
 [^orientation]: 数值融合得到的空间姿态描述，若不满意，可以自行融合，描述的是yaw、roll、pitch角
 [^angular_velocity]: 角速度
 [^linear_acceleration]: 线性加速度
 
-![](http://127.0.0.1:7319/assets/33-20260210205844-1dclg76.jpeg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/33-20260210205844-1dclg76.jpeg)
 
 [^Quaternion类型]:
 [^x，y，z，w]: 四元数描述法，只有xyz会出现万向锁问题
@@ -556,7 +557,7 @@ rosrun lidar_pkg lidar_node
 
 ## IMU的三个话题
 
-![](http://127.0.0.1:7319/assets/34-20260210205844-j5r2ct0.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/34-20260210205844-j5r2ct0.jpg)
 
 [^imu/data_raw]: 裸数据消息
 [^imu/data]: 用的较多
@@ -564,11 +565,11 @@ rosrun lidar_pkg lidar_node
 
 ## 实现思路
 
-![](http://127.0.0.1:7319/assets/35-20260210205844-ql6rov4.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/35-20260210205844-ql6rov4.jpg)
 
 ## 步骤
 
-![](http://127.0.0.1:7319/assets/36-20260210205844-vcvcn6z.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/36-20260210205844-vcvcn6z.jpg)
 
 # 16.IMU航向锁定的C++节点
 
@@ -580,17 +581,17 @@ rosrun lidar_pkg lidar_node
 
 ## 思路
 
-![](http://127.0.0.1:7319/assets/37-20260210205844-0nxf6k5.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/37-20260210205844-0nxf6k5.jpg)
 
 ## 步骤
 
-![](http://127.0.0.1:7319/assets/38-20260210205844-wnwtd0u.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/38-20260210205844-wnwtd0u.jpg)
 
 # 17.标准消息包std_msgs
 
 ## 标准消息包分类
 
-![](http://127.0.0.1:7319/assets/39-20260210205844-4kcz55x.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/39-20260210205844-4kcz55x.jpg)
 
 [^基础类型Empty]: 不传输任何数据，只把消息包当作一个信号来使用
 [^结构体类型]: 把一些互相关联的数据整合在一起，放置到一些比较复杂的消息格式里，起到简化消息结构的作用
@@ -604,19 +605,19 @@ rosrun lidar_pkg lidar_node
 
 ## 常用消息包类型
 
-![](http://127.0.0.1:7319/assets/40-20260210205844-8jewwl2.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/40-20260210205844-8jewwl2.jpg)
 
 最常用：geometry_msgs、sensor_msgs
 
 ## 几何消息包
 
-![](http://127.0.0.1:7319/assets/41-20260210205844-vctxnxl.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/41-20260210205844-vctxnxl.jpg)
 
 [^Stamped]: S这些消息包带有“Header”，多了时间和坐标系ID
 
 ## 传感消息包
 
-![](http://127.0.0.1:7319/assets/42-20260210205844-0lu67hc.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/42-20260210205844-0lu67hc.jpg)
 
 [^激光雷达]: 单线、多线
 [^单点测距]: 超声、红外测距传感器
@@ -649,35 +650,35 @@ int64 star     //星数
 string data  //消息
 ```
 
-![](http://127.0.0.1:7319/assets/43-20260210205844-5091t55.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/43-20260210205844-5091t55.jpg)
 
 ### 编译文件构建
 
-![](http://127.0.0.1:7319/assets/44-20260210205844-rxjs1tg.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/44-20260210205844-rxjs1tg.png)
 
 改为
 
-![](http://127.0.0.1:7319/assets/46-20260210205844-lbef1cb.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/46-20260210205844-lbef1cb.png)
 
 若有多的消息类型，往下排列即可
 
 ---
 
-![](http://127.0.0.1:7319/assets/45-20260210205844-s44x3cg.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/45-20260210205844-s44x3cg.png)
 
 改为
 
-![](http://127.0.0.1:7319/assets/47-20260210205844-tiym3xd.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/47-20260210205844-tiym3xd.png)
 
 表明新的消息类型需要依赖的其他消息包列表，因为只用了std_msgs的string和int类型，所以只写了std_msgs
 
 ---
 
-![](http://127.0.0.1:7319/assets/48-20260210205844-mq1jhzb.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/48-20260210205844-mq1jhzb.png)
 
 改为
 
-![](http://127.0.0.1:7319/assets/49-20260210205844-u5y8ekk.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/49-20260210205844-u5y8ekk.png)
 
 确认“message_runtime”的存在，是为了让依赖咱们这个新建消息包的其他软件包，能够在运行时使用新定义的消息类型
 
@@ -685,11 +686,11 @@ string data  //消息
 
 ### 检验package.xml文件
 
-![](http://127.0.0.1:7319/assets/50-20260210205844-wbifqsa.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/50-20260210205844-wbifqsa.png)
 
 确保“build_depend"和”exec_depend“都列出了"**message_generation**"和"**message_runtime**"，缺失的话就补全，如图
 
-![](http://127.0.0.1:7319/assets/51-20260210205844-v2yuzon.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/51-20260210205844-v2yuzon.png)
 
 ### 编译
 
@@ -704,13 +705,13 @@ catkin_make
 rosmsg show qq_msgs/Carry
 ```
 
-![](http://127.0.0.1:7319/assets/52-20260210205844-rmzu1ul.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/52-20260210205844-rmzu1ul.png)
 
 和自定义的一模一样，至此，新的消息类型诞生。
 
 ### 步骤小结
 
-![](http://127.0.0.1:7319/assets/53-20260210205844-x11jqhb.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/53-20260210205844-x11jqhb.jpg)
 
 # 20.在ROS中使用自定义消息类型-C++实现（视频36.）
 
@@ -720,23 +721,23 @@ rosmsg show qq_msgs/Carry
 
 ### 步骤一：更改chao_node.cpp
 
-![](http://127.0.0.1:7319/assets/53-20260210205844-szjayjy.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/53-20260210205844-szjayjy.png)
 
 ### 步骤二：修改编译规则
 
-![](http://127.0.0.1:7319/assets/54-20260210205844-2nmpwv7.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/54-20260210205844-2nmpwv7.png)
 
 表明编译顺序：先编译qq_msgs，再编译ssr_pkg
 
 ### 步骤三：添加add_dependencies
 
-![](http://127.0.0.1:7319/assets/55-20260210205844-q9b9pje.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/55-20260210205844-q9b9pje.png)
 
 解释：先让qq_msgs创建好新的消息类型，再来编译chao_node
 
 ### 步骤四：package.xml文件修改
 
-![](http://127.0.0.1:7319/assets/56-20260210205844-ndc5wra.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/56-20260210205844-ndc5wra.png)
 
 添加两行代码
 
@@ -750,11 +751,11 @@ catkin_make
 
 ### 步骤一：修改ma_node.cpp
 
-![](http://127.0.0.1:7319/assets/57-20260210205844-kmez3w7.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/57-20260210205844-kmez3w7.png)
 
 ### 步骤二：修改编译规则
 
-![](http://127.0.0.1:7319/assets/58-20260210205844-r7zvxam.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/58-20260210205844-r7zvxam.png)
 
 文件末尾添加
 
@@ -775,22 +776,22 @@ add_dependencies(ma_node qq_msgs_generate_messages_cpp)
 
 ## 小结
 
-![](http://127.0.0.1:7319/assets/59-20260210205845-rkx2x29.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/59-20260210205845-rkx2x29.jpg)
 
 # 21.ROS中的地图数据格式（视频38.）
 
 机器人导航使用的地图数据，是ROS导航软件包里的map_server节点在话题/map中发布的消息数据，消息类型是nav_msgs::OccupancyGrid
 
-![](http://127.0.0.1:7319/assets/60-20260210205845-ig3yo45.jpg)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/60-20260210205845-ig3yo45.jpg)
 
 [^OccupancyGrid]: 占据栅格，就是由正方形小格子组成的地图，每个格子填入一个数值，表示障碍物占据情况
 [^栅格尺寸]: 一个小格子的单边尺寸，体现了地图的精细程度，常被用来表示**栅格地图的分辨率**，**ros系统里，栅格地图的默认分辨率是0.05米**
 
 ## 理解
 
-![](http://127.0.0.1:7319/assets/63-20260210205845-494b51m.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/63-20260210205845-494b51m.png)
 
-![](http://127.0.0.1:7319/assets/64-20260210205845-uc7r423.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/64-20260210205845-uc7r423.png)
 
 **有了该数组，再+上栅格的行列数等信息，就能够通过具体数值，描述清楚这个地图**
 
@@ -798,13 +799,13 @@ add_dependencies(ma_node qq_msgs_generate_messages_cpp)
 
 ### nav_msgs/OccupancyGrid Message
 
-![](http://127.0.0.1:7319/assets/61-20260210205845-gchefhh.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/61-20260210205845-gchefhh.png)
 
 [^行优先]:
 
 ### nav_msgs/MapMetaData Message
 
-![](http://127.0.0.1:7319/assets/62-20260210205845-i00kxki.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/62-20260210205845-i00kxki.png)
 
 [^地图原点（0,0）]: 地图左下角
 
@@ -818,11 +819,11 @@ add_dependencies(ma_node qq_msgs_generate_messages_cpp)
 
 两行四列4*2的地图    ;    只对第一行赋值，第二行空白
 
-![](http://127.0.0.1:7319/assets/66-20260210205845-s1mkeku.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/66-20260210205845-s1mkeku.png)
 
 ## 实现步骤
 
-![](http://127.0.0.1:7319/assets/65-20260210205845-dc57y7v.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/65-20260210205845-dc57y7v.png)
 
 1.构建软件包
 
@@ -849,11 +850,11 @@ int main()
 
 先添加坐标系
 
-![](http://127.0.0.1:7319/assets/67-20260210205845-p7zzdxp.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/67-20260210205845-p7zzdxp.png)
 
 添加地图
 
-![](http://127.0.0.1:7319/assets/68-20260210205845-m0bum4n.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/68-20260210205845-m0bum4n.png)
 
 设置地图 Topic为/map
 
@@ -883,13 +884,13 @@ ROS中，地图是通过SLAM生成的
 
 ## 规划需要的节点
 
-![](http://127.0.0.1:7319/assets/69-20260210205845-149swm3.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/69-20260210205845-149swm3.png)
 
 框选部分，在前面的实验已经实现
 
 ## ROSAPI
 
-![](http://127.0.0.1:7319/assets/70-20260210205845-stbal8t.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/70-20260210205845-stbal8t.png)
 
 [^输入]: scan话题
 [^输出]: map话题
@@ -932,11 +933,11 @@ rosrun rviz rviz
 
 ## 复习launch文件实验
 
-![](http://127.0.0.1:7319/assets/71-20260210205845-4bqpn4y.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/71-20260210205845-4bqpn4y.png)
 
 ## 实操
 
-![](http://127.0.0.1:7319/assets/72-20260210205845-rf89v9s.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/72-20260210205845-rf89v9s.png)
 
 ### 新建软件包slam_pkg
 
@@ -975,7 +976,7 @@ rosrun rviz rviz -d /home/zyl/catkin_ws/src/slam_pkg/rviz/slam.rviz
 
 更改launch文件
 
-![](http://127.0.0.1:7319/assets/73-20260210205845-at2ad62.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/73-20260210205845-at2ad62.png)
 
 # 26.Hector_Mapping的参数设置
 
@@ -983,17 +984,17 @@ rosrun rviz rviz -d /home/zyl/catkin_ws/src/slam_pkg/rviz/slam.rviz
 
 [参数说明传送门](https://wiki.ros.org/hector_mapping#ROS_API)，本实验挑几个容易看出差别的参数来设置
 
-![](http://127.0.0.1:7319/assets/74-20260210205845-tsxcg5i.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/74-20260210205845-tsxcg5i.png)
 
 ## launch文件编写
 
-![](http://127.0.0.1:7319/assets/75-20260210205845-gpzfuis.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/75-20260210205845-gpzfuis.png)
 
 ## 体会各个参数的作用
 
 wpr_simulation/launch/wpb_hector_comparison.launch
 
-![](http://127.0.0.1:7319/assets/76-20260210205845-qumii2q.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/76-20260210205845-qumii2q.png)
 
 更改上述框内参数，并观察rviz内的变化即可
 
@@ -1005,7 +1006,7 @@ roslaunch wpr_simulation wpb_hector_comparison.launch
 
 抛出问题：上一节中，通过ROS的SLAM节点，得到了栅格地图，**那么机器人的定位信息，该如何获得呢？**
 
-![](http://127.0.0.1:7319/assets/77-20260210205845-sj268dg.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/77-20260210205845-sj268dg.png)
 
 ---
 
@@ -1019,13 +1020,13 @@ roslaunch wpr_simulation wpb_hector_comparison.launch
 
 原点在机器人建图的初始位置，坐标轴方向遵循ROS的右手法则
 
-![](http://127.0.0.1:7319/assets/78-20260210205845-86jhhv2.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/78-20260210205845-86jhhv2.png)
 
 ### 机器人坐标系：base_footprint
 
-![](http://127.0.0.1:7319/assets/79-20260210205845-vc2tlvc.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/79-20260210205845-vc2tlvc.png)
 
-![](http://127.0.0.1:7319/assets/80-20260210205845-qdi8ezd.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/80-20260210205845-qdi8ezd.png)
 
 ## 如何获取具体的定位数值呢？
 
@@ -1037,9 +1038,9 @@ TF是TransForm的缩写，主要描述的是两个坐标系的空间关系，可
 
 在[Ros Index](https://index.ros.org/p/tf2_msgs/#noetic)中查询消息结构
 
-![](http://127.0.0.1:7319/assets/83-20260210205845-xtm0367.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/83-20260210205845-xtm0367.png)
 
-![](http://127.0.0.1:7319/assets/84-20260210205845-2e8rnb9.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/84-20260210205845-2e8rnb9.png)
 
 ### 示例
 
@@ -1053,19 +1054,19 @@ roslaunch wpr_simulation wpb_hector_comparison.launch
 rostopic list
 ```
 
-![](http://127.0.0.1:7319/assets/81-20260210205845-tlbuisu.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/81-20260210205845-tlbuisu.png)
 
 ```bash
 rostopic type /tf
 ```
 
-![](http://127.0.0.1:7319/assets/82-20260210205845-6c87hkz.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/82-20260210205845-6c87hkz.png)
 
 ```bash
 rostopic echo /tf
 ```
 
-![](http://127.0.0.1:7319/assets/85-20260210205845-yz7k6rw.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/85-20260210205845-yz7k6rw.png)
 
 上图中，除了/base_footprint和/map，还夹杂了很多TF关系，如何理清楚呢？
 
@@ -1083,7 +1084,7 @@ roslaunch wpr_simulation wpb_corridor_hector.launch
 
 直接将雷达点云贴合障碍物轮廓，所得出的机器人位置，作为最终的定位结果，在TF树中，体现为map到scanmatcher_frame
 
-![](http://127.0.0.1:7319/assets/87-20260210205845-ka50fo8.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/87-20260210205845-ka50fo8.png)
 
 ```bash
 roslaunch wpr_simulation wpb_corridor_gmapping.launch
@@ -1124,7 +1125,7 @@ Hector_Mapping
 > 
 > 运行在机器人的驱动节点中
 
-![](http://127.0.0.1:7319/assets/86-20260210205845-zee0h2h.png)
+![](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/86-20260210205845-zee0h2h.png)
 
 激光雷达SLAM输出的是map到base_footprint的TF，靠的是map-odom的TF，再加上odom-base_footprint的TF
 

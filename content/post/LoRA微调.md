@@ -2,8 +2,10 @@
 title: LoRA微调
 slug: lora-finetuning-z1zm5w7
 url: /post/lora-finetuning-z1zm5w7.html
-date: '2026-06-11 19:32:06+08:00'
-lastmod: '2026-06-11 19:32:06+08:00'
+date: '2026-03-03 19:32:06+08:00'
+lastmod: '2026-03-04 19:32:06+08:00'
+
+tocOrdered: false
 toc: true
 isCJKLanguage: true
 ---

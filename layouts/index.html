@@ -64,6 +64,16 @@
             font-size: 1.5rem;
             margin-bottom: 3rem;
             opacity: 0.9;
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .subtitle.typing {
+            border-right: 2px solid white;
+            animation: blink 0.7s step-end infinite;
+        }
+        @keyframes blink {
+            50% { border-color: transparent; }
         }
         .button {
             display: inline-block;
@@ -150,6 +160,23 @@
             setTimeout(() => sakura.remove(), 9000);
         }
         setInterval(createSakura, 400);
+
+        // 打字机效果
+        const subtitle = document.querySelector('.subtitle');
+        const text = '知行合一';
+        subtitle.textContent = '';
+        subtitle.classList.add('typing');
+        let i = 0;
+        function type() {
+            if (i < text.length) {
+                subtitle.textContent += text[i];
+                i++;
+                setTimeout(type, 150);
+            } else {
+                subtitle.classList.remove('typing');
+            }
+        }
+        type();
     </script>
 </body>
 </html>

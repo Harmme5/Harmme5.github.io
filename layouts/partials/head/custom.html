@@ -1,77 +1,78 @@
-<style>
-.site-avatar .emoji {
-    display: none !important;
-}
-/* 隐藏友链页面的文章头部 */
-body[data-template="links"] .article-header,
-.links + .article-header,
-.article-list--compact.links ~ .article-header {
-    display: none !important;
-}
-
-/* 目录进度条样式 */
-.widget--toc {
-    position: relative;
-    padding-left: 20px;
-}
-.widget--toc::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: var(--card-separator-color);
-    border-radius: 2px;
-}
-.toc-progress-bar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 3px;
-    height: 0%;
-    background: var(--accent-color);
-    border-radius: 2px;
-    transition: height 0.3s ease;
-    z-index: 1;
-}
-.widget--toc a {
-    transition: color 0.2s;
-}
-.widget--toc a.active {
-    color: var(--accent-color);
-    font-weight: 600;
-}
-/* 图片灯箱样式 */
-.lightbox-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 9999;
-    cursor: zoom-out;
-    align-items: center;
-    justify-content: center;
-}
-.lightbox-overlay.active {
-    display: flex;
-}
-.lightbox-overlay img {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-    animation: zoomIn 0.3s ease;
-}
-@keyframes zoomIn {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap">
 
 <script>
+// 页面顶部阅读进度条
+document.addEventListener('DOMContentLoaded', function() {
+    // 滚动淡入动画
+    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.article-list--compact article, .article-list--tile .article-list__item').forEach(el => {
+        observer.observe(el);
+    });
+
+    const progressBar = document.createElement('div');
+    progressBar.className = 'reading-progress-bar';
+    document.body.appendChild(progressBar);
+
+    function updateReadingProgress() {
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.scrollY;
+        const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+        progressBar.style.width = Math.min(scrollPercent, 100) + '%';
+    }
+
+    window.addEventListener('scroll', updateReadingProgress, { passive: true });
+    updateReadingProgress();
+});
+
+// 列表页卡片点击
+document.addEventListener('DOMContentLoaded', function() {
+    // 让列表页文章卡片整个可点击
+    document.querySelectorAll('.article-list--compact article').forEach(function(article) {
+        article.addEventListener('click', function(e) {
+            if (e.target.closest('a')) return;
+
+            const url = article.dataset.url;
+            if (url) {
+                window.location.href = url;
+            }
+        });
+    });
+
+});
+
+// 回到顶部按钮
+document.addEventListener('DOMContentLoaded', function() {
+    const backToTop = document.createElement('div');
+    backToTop.className = 'back-to-top';
+    backToTop.innerHTML = '↑';
+    backToTop.title = '回到顶部';
+    document.body.appendChild(backToTop);
+
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+            backToTop.classList.add('show');
+        } else {
+            backToTop.classList.remove('show');
+        }
+    }, { passive: true });
+
+    backToTop.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+});
+
 // 图片灯箱功能
 document.addEventListener('DOMContentLoaded', function() {
     // 创建灯箱容器
@@ -85,8 +86,8 @@ document.addEventListener('DOMContentLoaded', function() {
         this.innerHTML = '';
     });
 
-    // 为文章中的图片添加点击放大
-    const articleImages = document.querySelectorAll('article img');
+    // 为文章中的图片添加点击放大（排除列表页封面图）
+    const articleImages = document.querySelectorAll('.article-content img, .article-page img');
     articleImages.forEach(img => {
         img.style.cursor = 'zoom-in';
         img.addEventListener('click', function(e) {

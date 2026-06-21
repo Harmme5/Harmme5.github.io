@@ -1,0 +1,31 @@
+{{ if eq .Type "alert" }}
+    {{- $type := .AlertType -}}
+    {{- $icons := site.Params.article.alertIcon -}}
+    {{- $icon := index $icons $type -}}
+    {{- $title := "" -}}
+    {{- with .AlertTitle -}}
+        {{- $title = . -}}
+    {{- else -}}
+        {{- $title = or (i18n (printf "article.alert.%s" $type)) (title $type) -}}
+    {{- end -}}
+    {{- with $icon -}}
+        {{- $title = replaceRE (printf "^\\s*%s\\s*" .) "" $title -}}
+    {{- end -}}
+    <blockquote class="alert alert-{{ $type }}">
+        <div class="alert-header">
+            <span class="alert-icon">
+                {{- $icon -}}
+            </span>
+            <span class="alert-title">
+                {{- $title -}}
+            </span>
+        </div>
+        <div class="alert-body">
+            {{ .Text }}
+        </div>
+    </blockquote>
+{{ else }}
+    <blockquote>
+        {{ .Text }}
+    </blockquote>
+{{ end }}

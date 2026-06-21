@@ -1,0 +1,15 @@
+CLAUDE.md
+Hugo Stack 主题使用教程.md
+AGENTS.md
+
+# Hugo build output and caches
+public/
+resources/_gen/
+.hugo_build.lock
+
+# Local agent/editor state
+.claude/
+
+# Local-only helper/debug files
+push.bat
+toc-debug.png

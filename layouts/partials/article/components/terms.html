@@ -1,0 +1,18 @@
+{{- $categories := .GetTerms "categories" -}}
+{{- $tags := .GetTerms "tags" -}}
+{{- if or $categories $tags -}}
+<div class="article-taxonomy">
+    {{- range $categories -}}
+        <a class="term-badge term-badge--category" href="{{ .RelPermalink }}" aria-label="Category: {{ .LinkTitle }}">
+            {{ partial "helper/icon" "archives" }}
+            <span>{{ .LinkTitle }}</span>
+        </a>
+    {{- end -}}
+    {{- range $tags -}}
+        <a class="term-badge term-badge--tag" href="{{ .RelPermalink }}" aria-label="Tag: {{ .LinkTitle }}">
+            {{ partial "helper/icon" "tag" }}
+            <span>{{ .LinkTitle }}</span>
+        </a>
+    {{- end -}}
+</div>
+{{- end -}}

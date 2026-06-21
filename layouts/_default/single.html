@@ -1,5 +1,23 @@
 {{ define "body-class" }}
-    {{ $TOCEnabled := default (default false .Site.Params.article.toc) .Params.toc }}
+    {{ $TOCEnabled := false }}
+    {{ if isset .Site.Params.article "toc" }}
+        {{ $TOCEnabled = .Site.Params.article.toc }}
+    {{ end }}
+    {{ if isset .Params "toc" }}
+        {{ $TOCEnabled = .Params.toc }}
+    {{ end }}
+    {{ $tocStartLevel := int (default (default 1 .Site.Params.article.tocStartLevel) .Params.tocStartLevel) }}
+    {{ $tocEndLevel := int (default (default 6 .Site.Params.article.tocEndLevel) .Params.tocEndLevel) }}
+    {{ $tocOrdered := true }}
+    {{ if isset .Site.Params.article "tocordered" }}
+        {{ $tocOrdered = .Site.Params.article.tocOrdered }}
+    {{ end }}
+    {{ if isset .Params "tocordered" }}
+        {{ $tocOrdered = .Params.tocOrdered }}
+    {{ end }}
+    {{- .Scratch.Set "tocStartLevel" $tocStartLevel -}}
+    {{- .Scratch.Set "tocEndLevel" $tocEndLevel -}}
+    {{- .Scratch.Set "tocOrdered" $tocOrdered -}}
     {{- .Scratch.Set "hasTOC" (and (ge (len .TableOfContents) 100) $TOCEnabled) -}}
     article-page
 {{ end }}
@@ -56,7 +74,17 @@
                 <h2 class="widget-title section-title">目录</h2>
                 
                 <div class="widget--toc">
-                    {{ .TableOfContents }}
+                    {{ $tocStartLevel := .Scratch.Get "tocStartLevel" }}
+                    {{ $tocEndLevel := .Scratch.Get "tocEndLevel" }}
+                    {{ $tocOrdered := .Scratch.Get "tocOrdered" }}
+                    {{ $tocHTML := partial "article/components/toc" (dict "Page" . "startLevel" $tocStartLevel "endLevel" $tocEndLevel "ordered" $tocOrdered) }}
+                    {{ if $tocHTML }}
+                        {{ $tocHTML }}
+                    {{ else if $tocOrdered }}
+                        {{ replace (replace .TableOfContents "<ul>" "<ol>") "</ul>" "</ol>" | safeHTML }}
+                    {{ else }}
+                        {{ replace (replace .TableOfContents "<ol>" "<ul>") "</ol>" "</ul>" | safeHTML }}
+                    {{ end }}
                 </div>
             </section>
         </aside>
