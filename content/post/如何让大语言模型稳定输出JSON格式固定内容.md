@@ -4,12 +4,13 @@ slug: >-
   how-to-make-a-large-language-model-stably-output-fixed-content-in-json-format-znoxqp
 url: >-
   /post/how-to-make-a-large-language-model-stably-output-fixed-content-in-json-format-znoxqp.html
-date: '2026-06-20 15:56:24+08:00'
-lastmod: '2026-06-20 15:56:24+08:00'
-tocOrdered: false
+date: '2026-06-20 12:04:49+08:00'
+lastmod: '2026-06-24 10:18:47+08:00'
 toc: true
 isCJKLanguage: true
 ---
+
+
 
 # 如何让大语言模型稳定输出JSON格式固定内容
 
@@ -44,13 +45,13 @@ isCJKLanguage: true
 
 在模型解码时将Schema预编译到引擎中，以[千问设置结构化输出](https://help.aliyun.com/zh/model-studio/qwen-structured-output#f39f3c9e1a03)为例
 
-![image](http://127.0.0.1:10803/assets/image-20260620124931-8waypks.png)
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260620124931-8waypks.png)
 
 ## 针对开源模型：Logit Masking
 
 > [!NOTE] ✏️ Logit Masking
 > Logit Masking（概率掩码）技术
-> 
+>
 > 基于有限状态机或正则约束，把不符合阶层语法的字符概率直接设为负无穷，从物理层面彻底杜绝格式错误。
 
 ---
