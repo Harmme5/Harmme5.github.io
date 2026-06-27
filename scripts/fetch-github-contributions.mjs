@@ -30,6 +30,7 @@ query($userName: String!, $from: DateTime!, $to: DateTime!) {
           }
         }
       }
+      restrictedContributionsCount
     }
   }
 }
@@ -63,6 +64,7 @@ if (!user) {
 }
 
 const calendar = user.contributionsCollection.contributionCalendar;
+const restrictedCount = user.contributionsCollection.restrictedContributionsCount || 0;
 const days = calendar.weeks.flatMap((week) => week.contributionDays);
 const latestContribution = [...days]
   .reverse()
@@ -81,6 +83,8 @@ const result = {
   from,
   to,
   totalContributions: calendar.totalContributions,
+  restrictedContributions: restrictedCount,
+  totalIncludingPrivate: calendar.totalContributions + restrictedCount,
   daysOnline,
   lastContributionDate: latestContribution?.date || null,
   colors: ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"],
