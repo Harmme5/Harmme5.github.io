@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 为文章中的图片添加点击放大（排除列表页封面图）
-    const articleImages = document.querySelectorAll('.article-content img, .article-page img');
+    const articleImages = document.querySelectorAll('.article-content img');
     articleImages.forEach(img => {
         img.style.cursor = 'zoom-in';
         img.addEventListener('click', function(e) {
@@ -105,13 +105,16 @@ document.addEventListener('DOMContentLoaded', function() {
 // 阻止文章中图片链接的默认行为
 document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
-    if (link && link.querySelector('img')) {
+    if (link && link.closest('.article-content') && link.querySelector('img')) {
         e.preventDefault();
         return false;
     }
 
     // 排除目录链接的点击
     if (e.target.closest('.widget--toc a')) return;
+
+    const shouldSkipParticleEffect = window.matchMedia('(hover: none), (max-width: 768px)').matches;
+    if (shouldSkipParticleEffect) return;
 
     const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b731', '#5f27cd', '#ff9ff3'];
     const particleCount = 12;

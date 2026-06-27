@@ -8,8 +8,9 @@
             </a>
         </h2>
         <footer class="article-time">
-            <time datetime='{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}'>
-                {{- .Date.Format (or .Site.Params.dateFormat.published "Jan 02, 2006") -}}
+            {{ $cardDate := cond (not .Lastmod.IsZero) .Lastmod .Date }}
+            <time datetime='{{ $cardDate.Format "2006-01-02T15:04:05Z07:00" }}'>
+                {{- $cardDate.Format "Jan 2, 2006" -}}
             </time>
             {{ if .Site.Params.article.readingTime }}
                 <span> &middot; {{ .WordCount }} &#23383; &middot; {{ div .WordCount 300 }} &#20998;&#38047;</span>

@@ -23,11 +23,7 @@
 {{ end }}
 
 {{ define "container-class" }}
-    {{ if (.Scratch.Get "hasTOC") }}
-        extended
-    {{ else }}
-        on-phone--column {{ if .Site.Params.widgets.enabled }}extended{{ else }}compact{{ end }}
-    {{ end }}
+    on-phone--column {{ if (.Scratch.Get "hasTOC") }}extended{{ else }}{{ if .Site.Params.widgets.enabled }}extended{{ else }}compact{{ end }}{{ end }}
 {{ end }}
 
 {{ define "main" }}
@@ -56,9 +52,9 @@
         {{ partial "sidebar/left.html" . }}
     {{ end }} -->
 <div id="article-toolbar">
-    <a href="{{ .Site.BaseURL }}" class="back-home">
+    <a href="{{ "/post/" | relLangURL }}" class="back-home">
         {{ (resources.Get "icons/back.svg").Content | safeHTML }}
-        <span>{{ T "article.back" }}</span>
+        <span>返回文章列表</span>
     </a>
 </div>
     {{ partial "sidebar/left.html" . }}

@@ -696,6 +696,17 @@ body[data-template="links"] .article-header,
     padding: 0;
 }
 
+.article-time--date-range {
+    display: inline;
+    font-size: 1.4rem;
+    white-space: nowrap;
+}
+
+.article-time--date-range time,
+.article-time--date-separator {
+    font-size: inherit;
+}
+
 .article-content a.link {
     color: #1d74d8;
     font-weight: 600;
@@ -909,5 +920,221 @@ body[data-template="links"] .article-header,
 
     .top-search-form input {
         width: 130px;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --section-separation: 24px;
+        --card-padding: 18px;
+        --small-card-padding: 18px;
+        --article-font-size: 1.58rem;
+        --article-line-height: 1.72;
+    }
+
+    .main-container {
+        padding-left: 12px;
+        padding-right: 12px;
+        gap: 24px;
+    }
+
+    main.main {
+        gap: 24px;
+        width: 100%;
+    }
+
+    .left-sidebar {
+        width: 100%;
+    }
+
+    body.article-page .left-sidebar {
+        display: none;
+    }
+
+    body.article-page #article-toolbar {
+        display: flex;
+        margin: 0 0 12px;
+        width: 100%;
+    }
+
+    body.article-page #article-toolbar .back-home {
+        min-height: 40px;
+        margin-right: 0;
+        padding: 9px 14px 9px 12px;
+    }
+
+    .left-sidebar {
+        padding-top: 16px;
+        padding-bottom: 10px;
+    }
+
+    .left-sidebar .site-info {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+
+    .left-sidebar .site-avatar {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 12px;
+    }
+
+    .left-sidebar .site-avatar .site-logo {
+        display: block;
+        width: 72px;
+        height: 72px;
+    }
+
+    .left-sidebar .site-name {
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+
+    .left-sidebar .site-description {
+        margin-top: 6px;
+        margin-bottom: 8px;
+    }
+
+    .left-sidebar .social-menu {
+        margin-top: 10px;
+        margin-bottom: 8px;
+    }
+
+    .article-page .main-article {
+        border-radius: 12px;
+    }
+
+    .article-header .article-title {
+        font-size: 2.2rem;
+        line-height: 1.3;
+    }
+
+    .article-content {
+        overflow-wrap: break-word;
+        word-break: break-word;
+    }
+
+    .article-content h1 {
+        font-size: 2.1rem;
+        line-height: 1.35;
+    }
+
+    .article-content h2 {
+        font-size: 1.85rem;
+        line-height: 1.4;
+    }
+
+    .article-content h3 {
+        font-size: 1.65rem;
+        line-height: 1.45;
+    }
+
+    .article-content p,
+    .article-content li {
+        line-height: 1.78;
+    }
+
+    .article-content img,
+    .article-content video,
+    .article-content iframe {
+        max-width: 100%;
+    }
+
+    .article-content img,
+    .article-content video {
+        height: auto;
+    }
+
+    .article-content pre {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .article-content table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+
+    .article-content blockquote:not(.alert),
+    .article-content blockquote.alert {
+        margin: 1.2em 0;
+        padding: 12px 14px;
+    }
+
+    .article-content blockquote:not(.alert)::before {
+        font-size: 2.4em;
+        left: 8px;
+        top: -6px;
+    }
+
+    .article-taxonomy {
+        gap: 7px;
+    }
+
+    .term-badge {
+        min-height: 36px;
+        padding: 8px 10px;
+    }
+
+    .article-list--compact article {
+        align-items: flex-start;
+        border-radius: 12px;
+    }
+
+    .article-list--compact article:hover,
+    .article-list--tile .article-list__item:hover,
+    .back-to-top:hover {
+        transform: none;
+    }
+
+    .back-to-top {
+        right: 16px;
+        bottom: 18px;
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+    }
+
+    .lightbox-overlay img {
+        max-width: calc(100% - 24px);
+        max-height: calc(100% - 72px);
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --card-padding: 16px;
+        --small-card-padding: 16px;
+    }
+
+    .main-container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .article-header .article-title {
+        font-size: 2rem;
+    }
+
+    .article-content h1 {
+        font-size: 1.9rem;
+    }
+
+    .article-content h2 {
+        font-size: 1.72rem;
+    }
+
+    .article-content blockquote:not(.alert),
+    .article-content blockquote.alert {
+        padding: 11px 12px;
+    }
+
+    .term-badge {
+        font-size: 1.22rem;
+        padding: 7px 9px;
     }
 }

@@ -1,8 +1,5 @@
 {{ define "main" }}
     {{ if eq .Section "post" }}
-    <div id="contribution-graph" class="contribution-card">
-    </div>
-
     <style>
     .contribution-card {
         background: var(--card-background);
@@ -198,8 +195,10 @@
     </style>
 
     <script>
+    document.addEventListener('DOMContentLoaded', function() {
     (async function() {
         const container = document.getElementById('contribution-graph');
+        if (!container) return;
         const icons = {
             clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>',
             calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>',
@@ -379,6 +378,7 @@
             ].join('');
         }
     })();
+    });
     </script>
     {{ end }}
 
@@ -468,6 +468,11 @@
     </section>
 
     {{- partial "pagination.html" . -}}
+
+    {{ if eq .Section "post" }}
+    <div id="contribution-graph" class="contribution-card">
+    </div>
+    {{ end }}
 
     {{ partialCached "footer/footer" . }}
 {{ end }}
