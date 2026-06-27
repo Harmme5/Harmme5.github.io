@@ -18,8 +18,6 @@ toc: true
 isCJKLanguage: true
 ---
 
-# LeetCode Hot100
-
 # 哈希表
 
 哈希要能想到三个数据结构：数组、set、map
@@ -298,3 +296,101 @@ class Solution(object):
 
 - 时间复杂度：O(n<sup>2</sup>)，两个for循环，时间复杂度为n<sup>2</sup>
 - 空间复杂度：O(n<sup>2</sup>)，代码里唯一额外占用大量内存的是哈希字典 `ab`​，用来存 `nums1 + nums2`​ 所有两数之和。设每个数组长度为 `n`​（题目四个数组长度相同，都是 n）。最坏情况是所有两数之和都不重复，此时总共有`n*n`​种不同的和，字典要存n<sup>2</sup>个键值对。
+
+## 15.三数之和
+
+### 题目描述
+
+给你一个整数数组 `nums`​ ，判断是否存在三元组 `[nums[i], nums[j], nums[k]]`​ 满足 `i != j`​、`i != k`​ 且 `j != k`​ ，同时还满足 `nums[i] + nums[j] + nums[k] == 0`​ 。请你返回所有和为 `0` 且不重复的三元组。
+
+**注意：** 答案中不可以包含重复的三元组。
+
+**示例 1：**
+
+```
+输入：nums = [-1,0,1,2,-1,-4]
+输出：[[-1,-1,2],[-1,0,1]]
+解释：
+nums[0] + nums[1] + nums[2] = (-1) + 0 + 1 = 0 。
+nums[1] + nums[2] + nums[4] = 0 + 1 + (-1) = 0 。
+nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0 。
+不同的三元组是 [-1,0,1] 和 [-1,-1,2] 。
+注意，输出的顺序和三元组的顺序并不重要。
+```
+
+**示例 2：**
+
+```
+输入：nums = [0,1,1]
+输出：[]
+解释：唯一可能的三元组和不为 0 。
+```
+
+**示例 3：**
+
+```
+输入：nums = [0,0,0]
+输出：[[0,0,0]]
+解释：唯一可能的三元组和为 0 。
+```
+
+**提示：**
+
+- 3 <= nums.length <= 3000
+- -10<sup>5</sup> \<\= nums[i] \<\= 10<sup>5</sup>
+
+### 解题思路
+
+最直接的方法就是暴力三重循环，三层循环枚举 i \< j \< k，遍历所有三元组合，求和判断是否等于 0。
+
+- 时间复杂度：(O(n<sup>3</sup>))，n 很大时直接超时
+- 额外问题：会产出大量重复三元组，去重成本极高
+
+缺陷：n\=1000 时，循环次数上亿，完全无法通过测试用例，必须优化。
+
+另一种方法是降维：把三数之和转为两数之和，这里就很容易想到用哈希法，但是无序数组去重困难，因此用有序数组，也就是先对数组排序。
+
+什么时候不能用双指针：双指针求解两数之和的**前提条件**：数组有序。如果数组不能排序（需要保留原下标，如 LeetCode 1 两数之和），则只能用哈希表，无法双指针。而三数之和不要求下标、只要求数值组合，排序无副作用，因此双指针是最优解。
+
+### 代码
+
+```python
+class Solution:
+    def threeSum(self, nums: list[int]) -> list[list[int]]:
+        result = []
+        # 数组排序（从小到大）
+        nums.sort()
+        for i in range(len(nums)):
+            if nums[i]>0:
+                return result
+            # 跳过相同的元素以避免重复
+            if i>0 and nums[i]==nums[i-1]:
+                continue
+            # 双指针
+            left = i+1
+            right= len(nums)-1
+            while right > left:
+                sum_ = nums[i]+nums[left]+nums[right]
+                if sum_>0:
+                    right-=1
+                elif sum_<0:
+                    left +=1
+                else:
+                    result.append([nums[i],nums[left],nums[right]])
+
+                     # 跳过相同的元素以避免重复
+                    while right > left and nums[right] == nums[right - 1]:
+                        right -= 1
+                    while right > left and nums[left] == nums[left + 1]:
+                        left += 1
+
+                    right -= 1
+                    left  += 1
+
+        return result
+```
+
+### 复杂度分析
+
+- 时间复杂度：O(n<sup>2</sup>)
+- 空间复杂度：O(1)
