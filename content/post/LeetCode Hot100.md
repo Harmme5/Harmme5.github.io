@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-06-25 09:45:11+08:00'
+lastmod: '2026-06-27 09:45:11+08:00'
 tags:
   - Leetcode
 categories:
@@ -350,6 +350,10 @@ nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0 。
 
 另一种方法是降维：把三数之和转为两数之和，这里就很容易想到用哈希法，但是无序数组去重困难，因此用有序数组，也就是先对数组排序。
 
+思路上，三数之和是用一个for循环来控制i，接着在for循环里控制left和right双指针
+
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260627232743-sl0cs5n.png)
+
 什么时候不能用双指针：双指针求解两数之和的**前提条件**：数组有序。如果数组不能排序（需要保留原下标，如 LeetCode 1 两数之和），则只能用哈希表，无法双指针。而三数之和不要求下标、只要求数值组合，排序无副作用，因此双指针是最优解。
 
 ### 代码
@@ -394,3 +398,111 @@ class Solution:
 
 - 时间复杂度：O(n<sup>2</sup>)
 - 空间复杂度：O(1)
+
+## 18.四数之和
+
+### 题目描述
+
+给你一个由 `n`​ 个整数组成的数组 `nums`​ ，和一个目标值 `target`​ 。请你找出并返回满足下述全部条件且**不重复**的四元组 `[nums[a], nums[b], nums[c], nums[d]]` （若两个四元组元素一一对应，则认为两个四元组重复）：
+
+- ​`0 <= a, b, c, d < n`
+- ​`a`​、`b`​、`c`​ 和 `d`​ **互不相同**
+- ​`nums[a] + nums[b] + nums[c] + nums[d] == target`
+
+你可以按 **任意顺序** 返回答案 。
+
+**示例 1：**
+
+```
+输入：nums = [1,0,-1,0,-2,2], target = 0
+输出：[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
+```
+
+**示例 2：**
+
+```
+输入：nums = [2,2,2,2,2], target = 8
+输出：[[2,2,2,2]]
+```
+
+**提示：**
+
+- 1 <= nums.length <= 200
+- -10<sup>9</sup> \<\= nums[i] \<\= 10<sup>9</sup>
+- -10<sup>9</sup> \<\= target \<\= 10<sup>9</sup>
+
+### 解题思路
+
+大体思路与15.三数之和一致，不同之处在于，三数之和这道题，和为0，而本题和为`target`，也就是本题中target可以为负数，并且主要细节在剪枝和去重的部分。
+
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260627232941-ms02mac.png)
+
+如图，与三数之和不同的是，三数之和只有一个for循环来控制i，而四数之和，我们还需要在这个for循环外再加一层for循环来控制
+
+### 代码
+
+```python
+class Solution:
+    def fourSum(self, nums: List[int], target: int) -> List[List[int]]:
+        result = []
+        n = len(nums)
+        nums.sort()
+        for k in range(n):
+            if nums[k] > target and nums[k] > 0 and target > 0:# 剪枝（可省）
+                break
+            # sum_不可能等于target的情况
+            if nums[k]>target and nums[k]>0:
+                continue
+            # 跳过相同的元素以避免重复
+            if k>0 and nums[k]==nums[k-1]:
+                continue
+            for i in range(k+1,n):
+                if nums[k] + nums[i] > target and target > 0: #剪枝（可省）
+                    break
+                # 跳过相同的元素以避免重复
+                if i>k+1 and nums[i]==nums[i-1]:#i>0防止数组越界
+                    continue
+                left=i+1
+                right = n-1
+                while right>left:
+                    sum_=nums[k]+nums[i]+nums[left]+nums[right]
+                    if sum_<target:
+                        left +=1
+                    elif sum_>target:
+                        right-=1
+                    else:
+                        result.append([nums[k],nums[i],nums[left],nums[right]])
+                        # 跳过相同的元素以避免重复
+                        while right > left and nums[right] == nums[right - 1]:
+                            right -= 1
+                        while right > left and nums[left] == nums[left + 1]:
+                            left += 1
+
+                        right -= 1
+                        left  += 1
+        return result
+```
+
+#### 去重逻辑
+
+```python
+if i>0 and nums[i]==nums[i-1]:
+    continue
+```
+
+为什么要用`nums[i]==nums[i-1]`​而不是`nums[i+1]==nums[i]`​呢，因为当遍历到数组最后一个元素时，此时用`i+1`，数组就越界了
+
+#### 剪枝
+
+**这条分支往下走不可能得到合法答案**，就直接 `break`​/`continue`​ 终止这条分支，不用继续循环遍历，减少无效计算，这个操作就叫**剪枝**。
+
+#### 踩坑点
+
+- 9-10行去重没加，仅有该处错误的情况下，会导致当输入`nums =[2,2,2,2,2]`​时，输出为空列表`[[2,2,2,2],[2,2,2,2]]`
+- 13行`i>k+1`​才是正确的，而我写成了`i>0`​，导致当输入`nums =[2,2,2,2,2]`​时，输出为空列表`[]`
+- 26-32行少缩进一次
+
+### 复杂度分析
+
+- 时间复杂度：
+- 空间复杂度：
