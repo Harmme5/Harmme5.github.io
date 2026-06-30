@@ -3,13 +3,12 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-06-27 09:45:11+08:00'
+lastmod: '2026-06-30 23:22:35+08:00'
 tags:
   - Leetcode
 categories:
   - Leetcode
 keywords: Leetcode
-
 tocStartLevel: 1
 tocEndLevel: 2
 tocOrdered: false
@@ -119,7 +118,7 @@ class Solution:
 
 ### 代码
 
-​`ord(单个字符)`​：返回这个字符对应的 **ASCII 码（数字）**
+`ord(单个字符)`​：返回这个字符对应的 **ASCII 码（数字）**
 
 ```python
 class Solution:
@@ -166,8 +165,8 @@ class Solution:
 
 **提示：**
 
-- ​`1 <= nums1.length, nums2.length <= 1000`
-- ​`0 <= nums1[i], nums2[i] <= 1000`
+- `1 <= nums1.length, nums2.length <= 1000`
+- `0 <= nums1[i], nums2[i] <= 1000`
 
 ### 解题思路
 
@@ -236,8 +235,8 @@ class Solution:
 
 给你四个整数数组 `nums1`​、`nums2`​、`nums3`​ 和 `nums4`​ ，数组长度都是 `n`​ ，请你计算有多少个元组 `(i, j, k, l)` 能满足：
 
-- ​`0 <= i, j, k, l < n`
-- ​`nums1[i] + nums2[j] + nums3[k] + nums4[l] == 0`
+- `0 <= i, j, k, l < n`
+- `nums1[i] + nums2[j] + nums3[k] + nums4[l] == 0`
 
 **示例 1：**
 
@@ -259,11 +258,11 @@ class Solution:
 
   **提示：**
 
-- ​`n == nums1.length`
-- ​`n == nums2.length`
-- ​`n == nums3.length`
-- ​`n == nums4.length`
-- ​`1 <= n <= 200`
+- `n == nums1.length`
+- `n == nums2.length`
+- `n == nums3.length`
+- `n == nums4.length`
+- `1 <= n <= 200`
 
 ### 解题思路
 
@@ -405,9 +404,9 @@ class Solution:
 
 给你一个由 `n`​ 个整数组成的数组 `nums`​ ，和一个目标值 `target`​ 。请你找出并返回满足下述全部条件且**不重复**的四元组 `[nums[a], nums[b], nums[c], nums[d]]` （若两个四元组元素一一对应，则认为两个四元组重复）：
 
-- ​`0 <= a, b, c, d < n`
-- ​`a`​、`b`​、`c`​ 和 `d`​ **互不相同**
-- ​`nums[a] + nums[b] + nums[c] + nums[d] == target`
+- `0 <= a, b, c, d < n`
+- `a`​、`b`​、`c`​ 和 `d`​ **互不相同**
+- `nums[a] + nums[b] + nums[c] + nums[d] == target`
 
 你可以按 **任意顺序** 返回答案 。
 
@@ -504,5 +503,86 @@ if i>0 and nums[i]==nums[i-1]:
 
 ### 复杂度分析
 
-- 时间复杂度：
-- 空间复杂度：
+- 时间复杂度：O(n<sup>3</sup>)
+- 空间复杂度：O(1)
+
+# 数组
+
+## 704.二分查找法
+
+### 题目描述
+
+给定一个 `n`​ 个元素有序的（升序）整型数组 `nums`​ 和一个目标值 `target`​  ，写一个函数搜索 `nums`​ 中的 `target`​，如果 `target`​ 存在返回下标，否则返回 `-1`。
+
+你必须编写一个具有 `O(log n)` 时间复杂度的算法。
+
+**示例 1:**
+
+```
+nums = [-1,0,3,5,9,12], target = 9
+输出: 4
+解释: 9 出现在 nums 中并且下标为 4
+```
+
+**示例 2:**
+
+```
+nums = [-1,0,3,5,9,12], target = 2
+输出: -1
+解释: 2 不存在 nums 中因此返回 -1
+```
+
+**提示：**
+
+1. 你可以假设 `nums` 中的所有元素是不重复的。
+2. `n`​ 将在 `[1, 10000]`之间。
+3. `nums`​ 的每个元素都将在 `[-9999, 9999]`之间。
+
+### 解题思路
+
+二分法，要注意对区间的定义，不同区间定义会有不同的写法
+
+- 左闭右闭，[left,right]
+- 左闭右开，[left,right)
+
+### 代码
+
+#### 常规解法
+
+```python
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:
+        n=range(len(nums))
+        for i in n:
+            if nums[i]==target:
+                return i
+        return -1
+```
+
+- 时间复杂度：O(n)
+- 空间复杂度：O(1)
+
+#### 二分法
+
+```python
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:
+        left = 0
+        right = len(nums) -1
+        while left<=right:
+            middle = left + (right-left) // 2
+            if nums[middle] < target:# 在右区间
+                left = middle + 1
+            elif nums[middle] > target:# 在左区间
+                right = middle - 1
+            else :
+                return middle
+        return -1
+```
+
+- 时间复杂度：O(log<sub>2</sub>n)
+- 空间复杂度：O(1)
+
+‍
+
+‍
