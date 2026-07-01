@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-06-30 23:22:35+08:00'
+lastmod: '2026-07-01 23:08:48+08:00'
 tags:
   - Leetcode
 categories:
@@ -508,6 +508,8 @@ if i>0 and nums[i]==nums[i-1]:
 
 # 数组
 
+数组的内存地址是连续的，数组中的元素不能删除，只能覆盖，删除一个元素，就要把后面的元素向前移动进行覆盖。
+
 ## 704.二分查找法
 
 ### 题目描述
@@ -583,6 +585,114 @@ class Solution:
 - 时间复杂度：O(log<sub>2</sub>n)
 - 空间复杂度：O(1)
 
-‍
+## 27.移除元素
+
+### 题目描述
+
+给你一个数组 `nums`​  和一个值 `val`​，你需要**原地**移除所有数值等于 `val`​  的元素。元素的顺序可能发生改变。然后返回 `nums`​ 中与 `val` 不同的元素的数量。
+
+假设 `nums`​ 中不等于 `val`​ 的元素数量为 `k`，要通过此题，您需要执行以下操作：
+
+- 更改 `nums`​ 数组，使 `nums`​ 的前 `k`​ 个元素包含不等于 `val`​ 的元素。`nums`​ 的其余元素和 `nums` 的大小并不重要。
+- 返回 `k`。
+
+**示例 1：**
+
+```
+输入：nums = [3,2,2,3], val = 3
+输出：2, nums = [2,2,_,_]
+解释：你的函数应该返回 k = 2, 并且 nums​ ​中的前两个元素均为 2。
+你在返回的 k 个元素之外留下了什么并不重要（因此它们并不计入评测）。
+```
+
+**示例 2：**
+
+```
+输入：nums = [0,1,2,2,3,0,4,2], val = 2
+输出：5, nums = [0,1,4,0,3,_,_,_]
+解释：你的函数应该返回 k = 5，并且 nums 中的前五个元素为 0,0,1,3,4。
+注意这五个元素可以任意顺序返回。
+你在返回的 k 个元素之外留下了什么并不重要（因此它们并不计入评测）。
+```
+
+**提示：**
+
+- `0 <= nums.length <= 100`
+- `0 <= nums[i] <= 50`
+- `0 <= val <= 100`
+
+### 解题思路
+
+双指针
+
+用一层for循环做到了暴力解法中两个for循环做的事
+
+快指针：新数组所需要的元素
+
+慢指针：新数组的下标值，用于获取新数组中需要更新的位置
+
+### 代码
+
+#### 库函数
+
+```python
+ class Solution:
+    def removeElement(self, nums: List[int], val: int) -> int:
+        i = 0
+        while i < len(nums):
+            if nums[i] == val:
+                del nums[i]
+            else:
+                i += 1
+        return len(nums)
+```
+
+#### 暴力循环
+
+```python
+class Solution:
+    def removeElement(self, nums: List[int], val: int) -> int:
+        k=0
+        i=0
+        n =len(nums)
+        while i<n:
+            if nums[i]==val:
+                k+=1
+                # 元素前移
+                for j in range(i+1,n):
+                    if nums[j]==nums[j-1]:# 出现连续目标值
+                        i-=1 # 循环次数-1
+                    nums[j-1]=nums[j]
+                n-=1
+                i+=1
+        return n    
+```
+
+#### 双指针思路
+
+```python
+class Solution:
+    def removeElement(self, nums: List[int], val: int) -> int:
+        slow =0
+        fast =0
+        for fast in range(len(nums)):
+            if nums[fast]!=val:
+                nums[slow]=nums[fast]
+                slow +=1
+        return slow
+```
+
+#### 踩坑点
+
+写库函数和暴力循环解法时候，首先想到的都是for循环，这就导致在使用暴力循环解法的时候，for 循环 i 不能手动回退，想重复检查必须用 while；
+
+内层循环不要随便修改外层循环变量，极易下标越界；
+
+### 复杂度分析
+
+双指针思路
+
+- 时间复杂度：O(n)
+- 空间复杂度：O(1)
 
 ‍
