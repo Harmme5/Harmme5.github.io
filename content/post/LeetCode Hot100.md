@@ -1,9 +1,9 @@
 ---
-title: LeetCode Hot100
+title: ''
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
-date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-01 23:08:48+08:00'
+date: '2026-07-02 23:20:10+08:00'
+lastmod: '2026-07-02 23:20:10+08:00'
 tags:
   - Leetcode
 categories:
@@ -12,10 +12,11 @@ keywords: Leetcode
 tocStartLevel: 1
 tocEndLevel: 2
 tocOrdered: false
-
 toc: true
 isCJKLanguage: true
 ---
+
+
 
 # 哈希表
 
@@ -75,13 +76,12 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O(n)
-  
-  只有一层 `for` 循环，遍历数组一次，循环执行 n 次；
-  
-  字典 `in` 查询、字典赋值都是哈希表操作，单次 (O(1))；
-  
-  总操作次数是常数倍 n，去掉系数后时间复杂度为 (O(n))。
 
+  只有一层 `for` 循环，遍历数组一次，循环执行 n 次；
+
+  字典 `in` 查询、字典赋值都是哈希表操作，单次 (O(1))；
+
+  总操作次数是常数倍 n，去掉系数后时间复杂度为 (O(n))。
 - 空间复杂度：O(n)
 
 ## 242.有效的字母异位词
@@ -181,12 +181,12 @@ c++中set结构有三种：set、unordered set、multi set，其中底层由哈�
 ```python
 class Solution:
     def intersection(self, nums1: List[int], nums2: List[int]) -> List[int]:
-        #定义字典，作为哈希表，存储一个数组的所有元素
+		#定义字典，作为哈希表，存储一个数组的所有元素
         table={}
-        #将nums1数组中的元素存到哈希表中，key为数组的元素，value为出现的次数
+		#将nums1数组中的元素存到哈希表中，key为数组的元素，value为出现的次数
         for num in nums1:
             table[num]=table.get(num,0)+1
-        #定义集合，用于存储结果
+		#定义集合，用于存储结果
         res = set()
         for num in nums2:
             if num in table:
@@ -280,7 +280,7 @@ class Solution(object):
         for n1 in nums1:
             for n2 in nums2:
                 hashmap[n1+n2] = hashmap.get(n1+n2, 0) + 1
-
+        
         # 如果 -(n1+n2) 存在于nums3和nums4, 存入结果
         count = 0
         for n3 in nums3:
@@ -386,7 +386,7 @@ class Solution:
                         right -= 1
                     while right > left and nums[left] == nums[left + 1]:
                         left += 1
-
+                        
                     right -= 1
                     left  += 1
 
@@ -476,7 +476,7 @@ class Solution:
                             right -= 1
                         while right > left and nums[left] == nums[left + 1]:
                             left += 1
-
+                            
                         right -= 1
                         left  += 1
         return result
@@ -486,7 +486,7 @@ class Solution:
 
 ```python
 if i>0 and nums[i]==nums[i-1]:
-    continue
+	continue
 ```
 
 为什么要用`nums[i]==nums[i-1]`​而不是`nums[i+1]==nums[i]`​呢，因为当遍历到数组最后一个元素时，此时用`i+1`，数组就越界了
@@ -695,4 +695,74 @@ class Solution:
 - 时间复杂度：O(n)
 - 空间复杂度：O(1)
 
-‍
+## 977.有序数组的平方
+
+### 题目描述
+
+给你一个按 **非递减顺序** 排序的整数数组 nums，返回 每个数字的平方 组成的新数组，要求也按 **非递减顺序** 排序。
+
+示例 1：
+
+- 输入：nums \= [-4,-1,0,3,10]
+- 输出：[0,1,9,16,100]
+- 解释：平方后，数组变为 [16,1,0,9,100]，排序后，数组变为 [0,1,9,16,100]
+
+示例 2：
+
+- 输入：nums \= [-7,-3,2,3,11]
+- 输出：[4,9,9,49,121]
+
+### 解题思路
+
+- 暴力解法
+
+所有元素平方之后，再排序；时间复杂度为O(nlogn)
+
+- 双指针思路
+
+由于是非递减顺序，平方之后的最大元素一定在两边，不可能在中间，可以定义双指针，从数组两边向中间合拢，以下图数组为例，第一次循环，判断`-5`​和`3`的平方大小，-5大，把-5的平方存到新数组的末尾，接着i++。
+
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260702231403-x1vdtya.png)
+
+### 代码
+
+```python
+class Solution:
+    def sortedSquares(self, nums: List[int]) -> List[int]:
+        k = len(nums) -1
+        result = [0] * len(nums)
+        i = 0
+        j = k
+        while i<=j:
+            if nums[i]*nums[i]>nums[j]*nums[j]:
+                result[k] = nums[i]*nums[i]
+                k-=1
+                i+=1
+            else:
+                result[k] = nums[j]*nums[j]
+                k-=1
+                j-=1
+        return result
+```
+
+### 踩坑点
+
+1. ```python
+   k = len(nums)
+   result = [0] * (k-1)  # 错
+   ```
+
+原数组有 `k`​ 个元素，结果也要存 `k`​ 个数，只开辟 `k-1` 个位置，数组少一格，后续下标直接越界。
+
+2. 只定义了空列表
+
+```python
+result = []
+result[3] = 16  # 直接报错 IndexError
+```
+
+空列表没有预先分配下标空间，不能直接给指定下标赋值，必须先创建固定长度数组 `[0]*n`。
+
+### 复杂度分析
+
+- 时间复杂度：O(n)
