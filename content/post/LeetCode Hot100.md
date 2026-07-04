@@ -1,9 +1,9 @@
 ---
-title: ''
+title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
-date: '2026-07-02 23:20:10+08:00'
-lastmod: '2026-07-02 23:20:10+08:00'
+date: '2026-06-20 20:57:20+08:00'
+lastmod: '2026-07-04 23:38:38+08:00'
 tags:
   - Leetcode
 categories:
@@ -766,3 +766,72 @@ result[3] = 16  # 直接报错 IndexError
 ### 复杂度分析
 
 - 时间复杂度：O(n)
+
+## 209.长度最小的子数组
+
+### 题目描述
+
+给定一个含有 `n`​  个正整数的数组和一个正整数 `target`​   **。**
+
+  找出该数组中满足其总和大于等于`target`​的长度最小的**子数组**并返回其长度 **。** 如果不存在符合条件的子数组，返回 `0` 。
+
+> 子数组：是数组中 **连续** 的 **非空** 元素序列。
+
+ **示例 1：**
+
+```
+输入：target = 7, nums = [2,3,1,2,4,3]
+输出：2
+解释：子数组 [4,3] 是该条件下的长度最小的子数组。
+```
+
+**示例 2：**
+
+```
+输入：target = 4, nums = [1,4,4]
+输出：1
+```
+
+**示例 3：**
+
+```
+输入：target = 11, nums = [1,1,1,1,1,1,1,1]
+输出：0
+```
+
+### 解题思路
+
+用滑动窗口的思想，结合双指针
+
+窗口：满足其总和大于等于`target`​的长度最小的**子数组**
+
+如何移动窗口的起始位置：如果当前窗口的值大于等于`target`了，窗口就要向前移动了（也就是该缩小了）。
+
+如何移动窗口的结束位置：窗口的结束位置就是遍历数组的指针，也就是for循环里的索引。
+
+### 代码
+
+```python
+class Solution:
+    def minSubArrayLen(self, target: int, nums: List[int]) -> int:
+        n = len(nums)
+        left = 0 
+        right = 0
+        min_len = float("inf")
+        cur_sum = 0
+        for right in range(n):
+            cur_sum += nums[right]
+            while cur_sum>=target:
+                cur_len = right-left + 1
+                min_len = min(min_len,cur_len)
+                cur_sum -= nums[left]
+                left +=1
+        return min_len if min_len != float('inf') else 0
+```
+
+### 复杂度分析
+
+- 时间复杂度：O(n)
+
+  看每一个元素被操作的次数，每个元素在滑动窗后进来操作一次，出去操作一次，每个元素都是被操作两次，所以时间复杂度是 2 × n 也就是O(n)。
+- 空间复杂度：O(1)
