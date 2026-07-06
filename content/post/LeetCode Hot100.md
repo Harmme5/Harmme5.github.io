@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-04 23:38:38+08:00'
+lastmod: '2026-07-06 23:14:04+08:00'
 tags:
   - Leetcode
 categories:
@@ -15,8 +15,6 @@ tocOrdered: false
 toc: true
 isCJKLanguage: true
 ---
-
-
 
 # 哈希表
 
@@ -76,12 +74,13 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O(n)
-
+  
   只有一层 `for` 循环，遍历数组一次，循环执行 n 次；
-
+  
   字典 `in` 查询、字典赋值都是哈希表操作，单次 (O(1))；
-
+  
   总操作次数是常数倍 n，去掉系数后时间复杂度为 (O(n))。
+
 - 空间复杂度：O(n)
 
 ## 242.有效的字母异位词
@@ -181,12 +180,12 @@ c++中set结构有三种：set、unordered set、multi set，其中底层由哈�
 ```python
 class Solution:
     def intersection(self, nums1: List[int], nums2: List[int]) -> List[int]:
-		#定义字典，作为哈希表，存储一个数组的所有元素
+        #定义字典，作为哈希表，存储一个数组的所有元素
         table={}
-		#将nums1数组中的元素存到哈希表中，key为数组的元素，value为出现的次数
+        #将nums1数组中的元素存到哈希表中，key为数组的元素，value为出现的次数
         for num in nums1:
             table[num]=table.get(num,0)+1
-		#定义集合，用于存储结果
+        #定义集合，用于存储结果
         res = set()
         for num in nums2:
             if num in table:
@@ -280,7 +279,7 @@ class Solution(object):
         for n1 in nums1:
             for n2 in nums2:
                 hashmap[n1+n2] = hashmap.get(n1+n2, 0) + 1
-        
+
         # 如果 -(n1+n2) 存在于nums3和nums4, 存入结果
         count = 0
         for n3 in nums3:
@@ -386,7 +385,7 @@ class Solution:
                         right -= 1
                     while right > left and nums[left] == nums[left + 1]:
                         left += 1
-                        
+
                     right -= 1
                     left  += 1
 
@@ -476,7 +475,7 @@ class Solution:
                             right -= 1
                         while right > left and nums[left] == nums[left + 1]:
                             left += 1
-                            
+
                         right -= 1
                         left  += 1
         return result
@@ -486,7 +485,7 @@ class Solution:
 
 ```python
 if i>0 and nums[i]==nums[i-1]:
-	continue
+    continue
 ```
 
 为什么要用`nums[i]==nums[i-1]`​而不是`nums[i+1]==nums[i]`​呢，因为当遍历到数组最后一个元素时，此时用`i+1`，数组就越界了
@@ -832,6 +831,58 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O(n)
-
+  
   看每一个元素被操作的次数，每个元素在滑动窗后进来操作一次，出去操作一次，每个元素都是被操作两次，所以时间复杂度是 2 × n 也就是O(n)。
+
+- 空间复杂度：O(1)
+
+## 59.螺旋矩阵II
+
+### 题目描述
+
+给你一个正整数 `n`​ ，生成一个包含 1 到n<sup>2</sup>所有元素，且元素按顺时针顺序螺旋排列的 `n x n`​ 正方形矩阵 `matrix` 。
+
+- `1 <= n <= 20`
+
+### 解题思路
+
+用循环不变量的原则
+
+不变量：对每条边的处理规则，要坚持一个规则处理每条边，如：左闭右开、左闭右闭
+
+### 代码
+
+```python
+from typing import List
+class Solution:
+    def generateMatrix(self, n: int) -> List[List[int]]:
+        nums = [[0] * n for _ in range(n)]
+        startx, starty = 0, 0               # 起始点
+        loop, mid = n // 2, n // 2          # 迭代次数、n为奇数时，矩阵的中心点
+        count = 1                           # 计数
+
+        for offset in range(1, loop + 1) :      # 每循环一层偏移量加1，偏移量从1开始
+            for i in range(starty, n - offset) :    # 从左至右，左闭右开
+                nums[startx][i] = count
+                count += 1
+            for i in range(startx, n - offset) :    # 从上至下
+                nums[i][n - offset] = count
+                count += 1
+            for i in range(n - offset, starty, -1) : # 从右至左
+                nums[n - offset][i] = count
+                count += 1
+            for i in range(n - offset, startx, -1) : # 从下至上
+                nums[i][starty] = count
+                count += 1
+            startx += 1         # 更新起始点
+            starty += 1
+
+        if n % 2 != 0 :            # n为奇数时，填充中心点
+            nums[mid][mid] = count
+        return nums
+```
+
+### 复杂度分析
+
+- 时间复杂度：O(n<sup>2</sup>)
 - 空间复杂度：O(1)
