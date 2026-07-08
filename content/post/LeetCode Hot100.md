@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-06 23:14:04+08:00'
+lastmod: '2026-07-08 23:47:39+08:00'
 tags:
   - Leetcode
 categories:
@@ -16,7 +16,11 @@ toc: true
 isCJKLanguage: true
 ---
 
+
+
 # 哈希表
+
+## 哈希理论基础
 
 哈希要能想到三个数据结构：数组、set、map
 
@@ -74,13 +78,12 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O(n)
-  
-  只有一层 `for` 循环，遍历数组一次，循环执行 n 次；
-  
-  字典 `in` 查询、字典赋值都是哈希表操作，单次 (O(1))；
-  
-  总操作次数是常数倍 n，去掉系数后时间复杂度为 (O(n))。
 
+  只有一层 `for` 循环，遍历数组一次，循环执行 n 次；
+
+  字典 `in` 查询、字典赋值都是哈希表操作，单次 (O(1))；
+
+  总操作次数是常数倍 n，去掉系数后时间复杂度为 (O(n))。
 - 空间复杂度：O(n)
 
 ## 242.有效的字母异位词
@@ -180,12 +183,12 @@ c++中set结构有三种：set、unordered set、multi set，其中底层由哈�
 ```python
 class Solution:
     def intersection(self, nums1: List[int], nums2: List[int]) -> List[int]:
-        #定义字典，作为哈希表，存储一个数组的所有元素
+		#定义字典，作为哈希表，存储一个数组的所有元素
         table={}
-        #将nums1数组中的元素存到哈希表中，key为数组的元素，value为出现的次数
+		#将nums1数组中的元素存到哈希表中，key为数组的元素，value为出现的次数
         for num in nums1:
             table[num]=table.get(num,0)+1
-        #定义集合，用于存储结果
+		#定义集合，用于存储结果
         res = set()
         for num in nums2:
             if num in table:
@@ -279,7 +282,7 @@ class Solution(object):
         for n1 in nums1:
             for n2 in nums2:
                 hashmap[n1+n2] = hashmap.get(n1+n2, 0) + 1
-
+        
         # 如果 -(n1+n2) 存在于nums3和nums4, 存入结果
         count = 0
         for n3 in nums3:
@@ -385,7 +388,7 @@ class Solution:
                         right -= 1
                     while right > left and nums[left] == nums[left + 1]:
                         left += 1
-
+                        
                     right -= 1
                     left  += 1
 
@@ -475,7 +478,7 @@ class Solution:
                             right -= 1
                         while right > left and nums[left] == nums[left + 1]:
                             left += 1
-
+                            
                         right -= 1
                         left  += 1
         return result
@@ -485,7 +488,7 @@ class Solution:
 
 ```python
 if i>0 and nums[i]==nums[i-1]:
-    continue
+	continue
 ```
 
 为什么要用`nums[i]==nums[i-1]`​而不是`nums[i+1]==nums[i]`​呢，因为当遍历到数组最后一个元素时，此时用`i+1`，数组就越界了
@@ -831,9 +834,8 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O(n)
-  
-  看每一个元素被操作的次数，每个元素在滑动窗后进来操作一次，出去操作一次，每个元素都是被操作两次，所以时间复杂度是 2 × n 也就是O(n)。
 
+  看每一个元素被操作的次数，每个元素在滑动窗后进来操作一次，出去操作一次，每个元素都是被操作两次，所以时间复杂度是 2 × n 也就是O(n)。
 - 空间复杂度：O(1)
 
 ## 59.螺旋矩阵II
@@ -877,7 +879,7 @@ class Solution:
             startx += 1         # 更新起始点
             starty += 1
 
-        if n % 2 != 0 :            # n为奇数时，填充中心点
+        if n % 2 != 0 :			# n为奇数时，填充中心点
             nums[mid][mid] = count
         return nums
 ```
@@ -885,4 +887,65 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O(n<sup>2</sup>)
+- 空间复杂度：O(1)
+
+# 链表
+
+## 链表理论基础
+
+链表是一种通过指针串联在一起的线性结构，每一个节点由两部分组成，一个是数据域一个是指针域（存放指向下一个节点的指针），最后一个节点的指针域指向null（空指针的意思）。
+
+链表的入口节点称为链表的头结点也就是head。
+
+## 203.移除链表元素
+
+### 题目描述
+
+给你一个链表的头节点 `head`​ 和一个整数 `val`​ ，请你删除链表中所有满足 `Node.val == val`​ 的节点，并返回 **新的头节点** 。
+
+### 解题思路
+
+针对头节点和非头节点的方法是不一样的
+
+- 删除头节点：把头节点的head移动到下一个节点，**并释放内存**
+- 删除非头节点：把上一个节点的指针指向下一个节点的指针，并**释放内存**
+
+但是这样的话，删除节点的方式不统一，有没有一种统一的方式呢？
+
+就是**虚拟头节点**的方法，其实就是在链表的头节点前加入一个虚拟头节点(dummy head)，这样的话，如果删除的是头节点，就可以直接把虚拟头节点的指针指向第二个节点，和删除非头节点的方法就一致了
+
+### 代码
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def removeElements(self, head: Optional[ListNode], val: int) -> Optional[ListNode]:
+		# 创建虚拟头节点
+        dummy_head = ListNode(next = head)
+
+		# 遍历并删除值为val的节点
+        current = dummy_head
+        while current.next:
+            if current.next.val == val:
+                current.next = current.next.next
+            else:
+                current = current.next
+        return dummy_head.next
+```
+
+### 踩坑点
+
+- 创建虚拟头节点时，混淆 `ListNode(next=head)`​ 和 `ListNode(head)`：后者是把 head 赋值给 val，next 为空，无法生成前置虚拟节点；前者关键字传参才是正确写法。
+- 混淆节点赋值逻辑：`current = dummy_head` 只是指针指向同一个节点，不是复制新节点，修改指针只会改变链表结构，不会生成副本。
+- 分不清 dummy\_head 和 current 的区别：dummy\_head 全程固定不变，用来记录链表起点；current 是移动遍历指针，循环中持续后移。
+- 搞混返回值，想写 `return current.next`​：循环结束时 current 停在链表末尾，`current.next`​ 恒为 None，会丢失整条链表，只能返回固定不动的 `dummy_head.next`。
+- 循环判断条件写错：用 `current.val == val`​，而非 `current.next.val == val`。current 是前驱节点，待删除的是下一个节点，判断自身值完全无法正常删除目标节点。
+
+### 复杂度分析
+
+- 时间复杂度：O(n)
 - 空间复杂度：O(1)
