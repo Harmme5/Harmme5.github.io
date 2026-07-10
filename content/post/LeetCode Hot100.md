@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-08 23:47:39+08:00'
+lastmod: '2026-07-10 23:43:03+08:00'
 tags:
   - Leetcode
 categories:
@@ -949,3 +949,102 @@ class Solution:
 
 - 时间复杂度：O(n)
 - 空间复杂度：O(1)
+
+## 707.设计链表
+
+### 题目描述
+
+在链表类中实现这些功能：
+
+- get(index)：获取链表中第 index 个节点的值。如果索引无效，则返回-1。
+- addAtHead(val)：在链表的第一个元素之前添加一个值为 val 的节点。插入后，新节点将成为链表的第一个节点。
+- addAtTail(val)：将值为 val 的节点追加到链表的最后一个元素。
+- addAtIndex(index,val)：在链表中的第 index 个节点之前添加值为 val  的节点。如果 index 等于链表的长度，则该节点将附加到链表的末尾。如果 index 大于链表长度，则不会插入节点。如果index小于0，则在头部插入节点。
+- deleteAtIndex(index)：如果索引 index 有效，则删除链表中的第 index 个节点。
+
+### 解题思路
+
+使用虚拟头节点，方便对链表的增删改操作，
+
+第0个节点就是链表的头节点
+
+- 获取第n个节点的数值
+
+  遍历操作，要注意不合法情况
+- 头部插入节点
+
+  这里有坑，要注意顺序问题
+
+  先让插入的节点尾部指向下一个节点，再处理虚拟头节点指向该节点
+- 尾部插入节点
+
+  什么是尾部：下一个节点指向为`null`
+
+  这样就可以明确终止条件
+- 第n个节点前插入节点
+
+  要先寻找第n个节点，通过第n-1个节点的指针来插入节点
+- 删除节点
+
+  与203.链表元素思路相同
+
+### 代码
+
+```python
+# 单链表法
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+        
+class MyLinkedList:
+    def __init__(self):
+        self.dummy_head = ListNode()
+        self.size = 0
+
+    def get(self, index: int) -> int:
+        if index < 0 or index >= self.size:
+            return -1
+        
+        current = self.dummy_head.next
+        for i in range(index):
+            current = current.next
+            
+        return current.val
+
+    def addAtHead(self, val: int) -> None:
+        self.dummy_head.next = ListNode(val, self.dummy_head.next)
+        self.size += 1
+
+    def addAtTail(self, val: int) -> None:
+        current = self.dummy_head
+        while current.next:
+            current = current.next
+        current.next = ListNode(val)
+        self.size += 1
+
+    def addAtIndex(self, index: int, val: int) -> None:
+        if index < 0 or index > self.size:
+            return
+        
+        current = self.dummy_head
+        for i in range(index):
+            current = current.next
+        current.next = ListNode(val, current.next)
+        self.size += 1
+
+    def deleteAtIndex(self, index: int) -> None:
+        if index < 0 or index >= self.size:
+            return
+        
+        current = self.dummy_head
+        for i in range(index):
+            current = current.next
+        current.next = current.next.next
+        self.size -= 1
+```
+
+### 复杂度分析
+
+- 时间复杂度：涉及 `index` 的相关操作为 O(index), 其余为 O(1)
+- 空间复杂度：O(n)
