@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-10 23:43:03+08:00'
+lastmod: '2026-07-12 23:40:49+08:00'
 tags:
   - Leetcode
 categories:
@@ -980,7 +980,7 @@ class Solution:
 
   什么是尾部：下一个节点指向为`null`
 
-  这样就可以明确终止条件
+  这样就可以明确遍历终止条件：`while(current.next != NULL)`
 - 第n个节点前插入节点
 
   要先寻找第n个节点，通过第n-1个节点的指针来插入节点
@@ -1043,6 +1043,29 @@ class MyLinkedList:
         current.next = current.next.next
         self.size -= 1
 ```
+
+### 踩坑点
+
+- get 查询核心翻车坑
+
+  遍历起点错误：初始 `current = self.dummyhead`（虚拟头），循环 index 次会停在虚拟节点，返回默认 0，取不到真实数据
+- deleteAtIndex 删除函数坑
+
+  曾误写循环 `range(index-1)`，少走一步，删除节点下标错位
+
+  删除节点后忘记执行 `self.size -= 1`，长度数值失真，后续越界判断全部失效
+- addAtIndex 插入边界坑
+
+  插入允许 `index == self.size`（等价尾插）
+
+  非法拦截条件只能写 `index > self.size`​，不能写 `index >= self.size`，否则无法尾部插入
+- 统一维护长度变量 size
+
+  每一次头插、尾插、中间插入执行 `self.size += 1`
+
+  每一次有效删除执行 `self.size -= 1`
+
+  size 用于快速判断 index 是否越界，避免重复遍历统计链表长度
 
 ### 复杂度分析
 
