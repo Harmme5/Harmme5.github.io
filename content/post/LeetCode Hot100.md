@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-12 23:40:49+08:00'
+lastmod: '2026-07-14 23:38:14+08:00'
 tags:
   - Leetcode
 categories:
@@ -1070,4 +1070,44 @@ class MyLinkedList:
 ### 复杂度分析
 
 - 时间复杂度：涉及 `index` 的相关操作为 O(index), 其余为 O(1)
+- 空间复杂度：O(n)
+
+## 206.反转链表
+
+### 题目描述
+
+题意：反转一个单链表。
+
+示例: 输入: `1->2->3->4->5->NULL`
+
+	  输出: `5->4->3->2->1->NULL`
+
+### 解题思路
+
+双指针法
+
+### 代码
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        cur = head
+        pre = None
+        while cur:
+            temp = cur.next
+            cur.next = pre # 反转指针
+
+            pre = cur 
+            cur = temp
+        return pre
+```
+
+### 复杂度分析
+
+- 时间复杂度：O(n)
 - 空间复杂度：O(n)
