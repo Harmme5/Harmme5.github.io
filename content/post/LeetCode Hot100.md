@@ -3,15 +3,12 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-14 23:38:14+08:00'
+lastmod: '2026-07-16 20:51:33+08:00'
 tags:
   - Leetcode
 categories:
   - Leetcode
 keywords: Leetcode
-tocStartLevel: 1
-tocEndLevel: 2
-tocOrdered: false
 toc: true
 isCJKLanguage: true
 ---
@@ -1111,3 +1108,81 @@ class Solution:
 
 - 时间复杂度：O(n)
 - 空间复杂度：O(n)
+
+## 24.两两交换链表中的节点
+
+### 题目描述
+
+给你一个链表，两两交换其中相邻的节点，并返回**交换后链表的头节点**。你必须在不修改节点内部的值的情况下完成本题（即，只能进行节点交换）。
+
+**示例 1：**
+
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260715210625-usn9nn4.png)
+
+```
+输入：head = [1,2,3,4]
+输出：[2,1,4,3]
+```
+
+**示例 2：**
+
+```
+输入：head = []
+输出：[]
+```
+
+**示例 3：**
+
+```
+输入：head = [1]
+输出：[1]
+```
+
+**提示：**
+
+- 链表中节点的数目在范围 `[0, 100]` 内
+- `0 <= Node.val <= 100`
+
+### 解题思路
+
+虚拟头节点，会方便很多，这样每次针对头节点处理时，就不用单独处理，可以用统一的方法
+
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260716202726-46cbmun.png)
+
+结合代码来看，如上图
+
+1. 步骤一：`current.next = current.next.next`，使cur的next直接指向节点2，也就是使cur指向2
+2. 步骤二：`current.next.next = temp`​，`current.next.next`代表节点2，使2指向1
+3. 步骤三：`temp.next=temp1`，使1指向3
+
+### 代码
+
+```python
+class Solution:
+    def swapPairs(self, head: ListNode) -> ListNode:
+        dummy_head = ListNode(next=head)
+        current = dummy_head
+        
+        # 必须有cur的下一个和下下个才能交换，否则说明已经交换结束了
+        while current.next and current.next.next:
+            temp = current.next # 防止节点修改
+            temp1 = current.next.next.next
+            
+            current.next = current.next.next # 步骤一
+            current.next.next = temp # 步骤二
+            temp.next = temp1 # 步骤三
+            current = current.next.next
+        return dummy_head.next
+```
+
+### 踩坑点
+
+- 执行完步骤1，此时cur指向2，以为原来的2指向1是自动断开
+
+  实际上是，`cur.next=1`​变成`cur.next=2`​，`1.next`​ 仍然为`2`
+- 认为执行步骤二时，`current.next.next`代表的是节点1
+
+### 复杂度分析
+
+- 时间复杂度：O(n)
+- 空间复杂度：O(1)
