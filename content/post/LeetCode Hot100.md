@@ -3,19 +3,20 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-19 23:08:20+08:00'
+lastmod: '2026-07-22 23:15:26+08:00'
 tags:
   - Leetcode
 categories:
   - Leetcode
 keywords: Leetcode
-
 tocStartLevel: 1
 tocEndLevel: 2
 tocOrdered: false
 toc: true
 isCJKLanguage: true
 ---
+
+
 
 # 哈希表
 
@@ -77,13 +78,12 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O(n)
-  
-  只有一层 `for` 循环，遍历数组一次，循环执行 n 次；
-  
-  字典 `in` 查询、字典赋值都是哈希表操作，单次 (O(1))；
-  
-  总操作次数是常数倍 n，去掉系数后时间复杂度为 (O(n))。
 
+  只有一层 `for` 循环，遍历数组一次，循环执行 n 次；
+
+  字典 `in` 查询、字典赋值都是哈希表操作，单次 (O(1))；
+
+  总操作次数是常数倍 n，去掉系数后时间复杂度为 (O(n))。
 - 空间复杂度：O(n)
 
 ## 242.有效的字母异位词
@@ -183,12 +183,12 @@ c++中set结构有三种：set、unordered set、multi set，其中底层由哈�
 ```python
 class Solution:
     def intersection(self, nums1: List[int], nums2: List[int]) -> List[int]:
-        #定义字典，作为哈希表，存储一个数组的所有元素
+		#定义字典，作为哈希表，存储一个数组的所有元素
         table={}
-        #将nums1数组中的元素存到哈希表中，key为数组的元素，value为出现的次数
+		#将nums1数组中的元素存到哈希表中，key为数组的元素，value为出现的次数
         for num in nums1:
             table[num]=table.get(num,0)+1
-        #定义集合，用于存储结果
+		#定义集合，用于存储结果
         res = set()
         for num in nums2:
             if num in table:
@@ -282,7 +282,7 @@ class Solution(object):
         for n1 in nums1:
             for n2 in nums2:
                 hashmap[n1+n2] = hashmap.get(n1+n2, 0) + 1
-
+        
         # 如果 -(n1+n2) 存在于nums3和nums4, 存入结果
         count = 0
         for n3 in nums3:
@@ -388,7 +388,7 @@ class Solution:
                         right -= 1
                     while right > left and nums[left] == nums[left + 1]:
                         left += 1
-
+                        
                     right -= 1
                     left  += 1
 
@@ -478,7 +478,7 @@ class Solution:
                             right -= 1
                         while right > left and nums[left] == nums[left + 1]:
                             left += 1
-
+                            
                         right -= 1
                         left  += 1
         return result
@@ -488,7 +488,7 @@ class Solution:
 
 ```python
 if i>0 and nums[i]==nums[i-1]:
-    continue
+	continue
 ```
 
 为什么要用`nums[i]==nums[i-1]`​而不是`nums[i+1]==nums[i]`​呢，因为当遍历到数组最后一个元素时，此时用`i+1`，数组就越界了
@@ -834,9 +834,8 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O(n)
-  
-  看每一个元素被操作的次数，每个元素在滑动窗后进来操作一次，出去操作一次，每个元素都是被操作两次，所以时间复杂度是 2 × n 也就是O(n)。
 
+  看每一个元素被操作的次数，每个元素在滑动窗后进来操作一次，出去操作一次，每个元素都是被操作两次，所以时间复杂度是 2 × n 也就是O(n)。
 - 空间复杂度：O(1)
 
 ## 59.螺旋矩阵II
@@ -880,7 +879,7 @@ class Solution:
             startx += 1         # 更新起始点
             starty += 1
 
-        if n % 2 != 0 :            # n为奇数时，填充中心点
+        if n % 2 != 0 :			# n为奇数时，填充中心点
             nums[mid][mid] = count
         return nums
 ```
@@ -925,10 +924,10 @@ class Solution:
 #         self.next = next
 class Solution:
     def removeElements(self, head: Optional[ListNode], val: int) -> Optional[ListNode]:
-        # 创建虚拟头节点
+		# 创建虚拟头节点
         dummy_head = ListNode(next = head)
 
-        # 遍历并删除值为val的节点
+		# 遍历并删除值为val的节点
         current = dummy_head
         while current.next:
             if current.next.val == val:
@@ -970,27 +969,23 @@ class Solution:
 第0个节点就是链表的头节点
 
 - 获取第n个节点的数值
-  
+
   遍历操作，要注意不合法情况
-
 - 头部插入节点
-  
+
   这里有坑，要注意顺序问题
-  
+
   先让插入的节点尾部指向下一个节点，再处理虚拟头节点指向该节点
-
 - 尾部插入节点
-  
+
   什么是尾部：下一个节点指向为`null`
-  
+
   这样就可以明确遍历终止条件：`while(current.next != NULL)`
-
 - 第n个节点前插入节点
-  
-  要先寻找第n个节点，通过第n-1个节点的指针来插入节点
 
+  要先寻找第n个节点，通过第n-1个节点的指针来插入节点
 - 删除节点
-  
+
   与203.链表元素思路相同
 
 ### 代码
@@ -1001,7 +996,7 @@ class ListNode:
     def __init__(self, val=0, next=None):
         self.val = val
         self.next = next
-
+        
 class MyLinkedList:
     def __init__(self):
         self.dummy_head = ListNode()
@@ -1010,11 +1005,11 @@ class MyLinkedList:
     def get(self, index: int) -> int:
         if index < 0 or index >= self.size:
             return -1
-
+        
         current = self.dummy_head.next
         for i in range(index):
             current = current.next
-
+            
         return current.val
 
     def addAtHead(self, val: int) -> None:
@@ -1031,7 +1026,7 @@ class MyLinkedList:
     def addAtIndex(self, index: int, val: int) -> None:
         if index < 0 or index > self.size:
             return
-
+        
         current = self.dummy_head
         for i in range(index):
             current = current.next
@@ -1041,7 +1036,7 @@ class MyLinkedList:
     def deleteAtIndex(self, index: int) -> None:
         if index < 0 or index >= self.size:
             return
-
+        
         current = self.dummy_head
         for i in range(index):
             current = current.next
@@ -1052,27 +1047,24 @@ class MyLinkedList:
 ### 踩坑点
 
 - get 查询核心翻车坑
-  
+
   遍历起点错误：初始 `current = self.dummyhead`（虚拟头），循环 index 次会停在虚拟节点，返回默认 0，取不到真实数据
-
 - deleteAtIndex 删除函数坑
-  
+
   曾误写循环 `range(index-1)`，少走一步，删除节点下标错位
-  
+
   删除节点后忘记执行 `self.size -= 1`，长度数值失真，后续越界判断全部失效
-
 - addAtIndex 插入边界坑
-  
-  插入允许 `index == self.size`（等价尾插）
-  
-  非法拦截条件只能写 `index > self.size`​，不能写 `index >= self.size`，否则无法尾部插入
 
+  插入允许 `index == self.size`（等价尾插）
+
+  非法拦截条件只能写 `index > self.size`​，不能写 `index >= self.size`，否则无法尾部插入
 - 统一维护长度变量 size
-  
+
   每一次头插、尾插、中间插入执行 `self.size += 1`
-  
+
   每一次有效删除执行 `self.size -= 1`
-  
+
   size 用于快速判断 index 是否越界，避免重复遍历统计链表长度
 
 ### 复杂度分析
@@ -1088,7 +1080,7 @@ class MyLinkedList:
 
 示例: 输入: `1->2->3->4->5->NULL`
 
-      输出: `5->4->3->2->1->NULL`
+	  输出: `5->4->3->2->1->NULL`
 
 ### 解题思路
 
@@ -1173,12 +1165,12 @@ class Solution:
     def swapPairs(self, head: ListNode) -> ListNode:
         dummy_head = ListNode(next=head)
         current = dummy_head
-
+        
         # 必须有cur的下一个和下下个才能交换，否则说明已经交换结束了
         while current.next and current.next.next:
             temp = current.next # 防止节点修改
             temp1 = current.next.next.next
-
+            
             current.next = current.next.next # 步骤一
             current.next.next = temp # 步骤二
             temp.next = temp1 # 步骤三
@@ -1189,9 +1181,8 @@ class Solution:
 ### 踩坑点
 
 - 执行完步骤1，此时cur指向2，以为原来的2指向1是自动断开
-  
-  实际上是，`cur.next=1`​变成`cur.next=2`​，`1.next`​ 仍然为`2`
 
+  实际上是，`cur.next=1`​变成`cur.next=2`​，`1.next`​ 仍然为`2`
 - 认为执行步骤二时，`current.next.next`代表的是节点1
 
 ### 复杂度分析
@@ -1261,12 +1252,88 @@ class Solution:
         while fast.next:
             fast = fast.next
             slow = slow.next
-
+            
         slow.next = slow.next.next
         return dummy.next
+
 ```
 
 ### 复杂度分析
 
 - 时间复杂度：O(n)
 - 空间复杂度：O(1)
+
+## 142.环形链表 II
+
+### 题目描述
+
+给定一个链表的头节点  `head`​ ，返回链表开始入环的第一个节点。 *如果链表无环，则返回* *​`null`​*​ *。*
+
+如果链表中有某个节点，可以通过连续跟踪 `next`​ 指针再次到达，则链表中存在环。 为了表示给定链表中的环，评测系统内部使用整数 `pos`​ 来表示链表尾连接到链表中的位置（​**索引从 0 开始**​）。如果 `pos`​ 是 `-1`​，则在该链表中没有环。​**注意：**​**​`pos`​**​  **不作为参数进行传递**，仅仅是为了标识链表的实际情况。
+
+**不允许修改**   链表。
+
+### 解题思路
+
+用快慢指针的方法，定义fast和slow指针
+
+fast  快指针：每次走2步
+
+slow慢指针：每次走1步
+
+这道题分为两问：
+
+1. 判断是否有环
+
+   假设有环：`fast`​会永远兜圈子，也就是`fast.next`​不存在为`none`的情况
+
+   假设无环：随着指针持续移动，`fast`​最终将为`none`
+
+   所以判断是否有环的条件，就是看`fast`​会不会出现`none`
+2. 判断有环后，找到环的入口
+
+   slow与fast相遇后，令slow=head，并使slow和fast的步进都为1，下次slow与fast相遇的节点，就是环的入口
+
+### 代码
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.next = None
+
+class Solution:
+    def detectCycle(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        fast = head
+        slow = head
+        while fast and fast.next:
+            fast = fast.next.next
+            slow = slow.next
+            if fast == slow:
+                slow = head
+                while fast != slow:
+                    fast=fast.next
+                    slow=slow.next
+                return slow
+        return None
+```
+
+### 踩坑点
+
+1. **为什么第一次在环中相遇，slow的 步数 是 x+y 而不是 x + 若干环的长度 + y 呢？**
+
+   可以这样理解，由于slow每次只走1步，fast每次走2步，所以在slow进入环后，slow与fast的距离一定小于环的总长度，而且会逐步接近，
+
+   快指针速度是慢指针的两倍，慢指针跑一圈的时间快指针能跑两圈，所以慢指针在跑完一圈之前二者一定会相遇
+
+   **相对于慢指针而言，快指针在一步一步逼近**，所以不会存在快指针超过慢指针却跨过慢指针的情况
+
+2. 判断是否有环的条件写错，应该是`while fast and fast.next:`
+
+   写成了`while fast:`​，这样会导致什么问题呢？假设`fast`​当前是`none`​，再次进入循环，会执行`fast = fast.next.next`，会直接报错
+
+### 复杂度分析
+
+- 时间复杂度：O（n）
+- 空间复杂度：O（1）
