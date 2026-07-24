@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-22 23:15:26+08:00'
+lastmod: '2026-07-24 23:22:21+08:00'
 tags:
   - Leetcode
 categories:
@@ -1337,3 +1337,86 @@ class Solution:
 
 - 时间复杂度：O（n）
 - 空间复杂度：O（1）
+
+# 字符串
+
+## 344.反转字符串
+
+### 题目描述
+
+编写一个函数，其作用是将输入的字符串反转过来。输入字符串以字符数组 `s` 的形式给出。
+
+不要给另外的数组分配额外的空间，你必须 **原地 修改输入数组**、使用 O(1) 的额外空间解决这一问题。
+
+**示例 1：**
+
+```
+输入：s = ["h","e","l","l","o"]
+输出：["o","l","l","e","h"]
+```
+
+**示例 2：**
+
+```
+输入：s = ["H","a","n","n","a","h"]
+输出：["h","a","n","n","a","H"]
+```
+
+### 解题思路
+
+#### 自己想的
+
+由于规定不能定义新的数组，所以需要对字符串直接进行更改，先来模拟一次交换，以示例1为例：
+
+第一次交换：h与o交换，这里是有顺序之分的，如果o覆盖h，那么我们就丢掉了h这个字符，因此需要一个temp来储存这个h，h覆盖o同理
+
+#### 双指针思路
+
+定义两个指针（也可以说是索引下标），一个从字符串前面，一个从字符串后面，两个指针同时向中间移动，并交换元素。
+
+### 代码
+
+```python
+class Solution:
+    def reverseString(self, s: List[str]) -> None:
+        n = len(s)-1
+        for i in range(len(s)):
+            if i<n:
+                temp = s[i]
+                s[i]=s[n]
+                s[n]=temp
+                n=n-1
+```
+
+#### 双指针
+
+```python
+class Solution:
+    def reverseString(self, s: List[str]) -> None:
+        """
+        Do not return anything, modify s in-place instead.
+        """
+        left, right = 0, len(s) - 1
+        
+        # 该方法已经不需要判断奇偶数，经测试后时间空间复杂度比用 for i in range(len(s)//2)更低
+        # 因为while每次循环需要进行条件判断，而range函数不需要，直接生成数字，因此时间复杂度更低。推荐使用range
+        while left < right:
+            s[left], s[right] = s[right], s[left]
+            left += 1
+            right -= 1
+```
+
+### 踩坑点
+
+1. 不理解`s[left], s[right] = s[right], s[left]`
+
+   Python 独有语法，无需临时变量：
+
+   先计算等号右边 `(s[right], s[left])`，生成临时元组
+
+   再依次赋值给左边两个下标，完成原地交换CSDN博...
+
+### 复杂度分析
+
+- 时间复杂度：O（n），n 为列表长度，只交换一半元素，遍历次数正比于 n
+- 空间复杂度：O（1），仅使用 left、right 两个变量，没有新建数组，满足原地修改要求
