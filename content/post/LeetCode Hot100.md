@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-24 23:22:21+08:00'
+lastmod: '2026-07-25 23:23:04+08:00'
 tags:
   - Leetcode
 categories:
@@ -1420,3 +1420,66 @@ class Solution:
 
 - 时间复杂度：O（n），n 为列表长度，只交换一半元素，遍历次数正比于 n
 - 空间复杂度：O（1），仅使用 left、right 两个变量，没有新建数组，满足原地修改要求
+
+## 541.反转字符串 II
+
+### 题目描述
+
+给定一个字符串 `s`​ 和一个整数 `k`​，从字符串开头算起，每计数至 `2k`​ 个字符，就反转这 `2k`​ 字符中的前 `k` 个字符，再重新计数。
+
+- 如果剩余字符少于 `k` 个，则将剩余字符全部反转。
+- 如果剩余字符小于 `2k`​ 但大于或等于 `k`​ 个，则反转前 `k` 个字符，其余字符保持原样。
+
+**示例 1：**
+
+```
+输入：s = "abcdefg", k = 2
+输出："bacdfeg"
+```
+
+**示例 2：**
+
+```
+输入：s = "abcd", k = 2
+输出："bacd"
+```
+
+### 解题思路
+
+题中每种情况都要反转字符，所以我们可以定义一种反转字符串的函数，也就是`reverse_substring`，和344.反转字符串的思路是一样的，需要时调用即可
+
+剩下就是边界条件的处理
+
+### 代码
+
+```python
+class Solution:
+    def reverseStr(self, s: str, k: int) -> str:
+        # 反转任意字符串
+        def reverse_substring(text):
+            left , right  = 0 , len(text)-1
+            while left<right:
+                text[left]  ,   text[right]=text[right],text[left]
+                left +=1
+                right -=1
+            return text
+
+        res = list(s)
+        for cur in range(0,len(s),2*k):
+            res[cur:cur+k]=reverse_substring(res[cur:cur+k])
+        # join() 将字符列表拼接回完整字符串，作为函数返回值。
+        return ''.join(res)
+```
+
+### 踩坑点
+
+- 思路上：刚开始想着先挑出来前2k个字符，再按每个条件单独来写，最后会是一堆逻辑代码，感觉这样不好，应该是封装好一种反转的函数
+- `range(0,len(s),2*k)`，从0开始，每次步进2k，到len(s)终止
+- res[cur:cur+k]的含义不理解
+
+  这是列表切片，截取当前分组**前 k 个字符**（不足 k 个就取到末尾）；
+
+### 复杂度分析
+
+- 时间复杂度：O（n）
+- 空间复杂度：O（n）
