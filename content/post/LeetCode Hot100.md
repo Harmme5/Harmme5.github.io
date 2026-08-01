@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-07-31 23:05:58+08:00'
+lastmod: '2026-08-01 23:08:20+08:00'
 tags:
   - Leetcode
 categories:
@@ -15,6 +15,8 @@ tocOrdered: false
 toc: true
 isCJKLanguage: true
 ---
+
+
 
 # 哈希表
 
@@ -76,13 +78,12 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O(n)
-  
-  只有一层 `for` 循环，遍历数组一次，循环执行 n 次；
-  
-  字典 `in` 查询、字典赋值都是哈希表操作，单次 (O(1))；
-  
-  总操作次数是常数倍 n，去掉系数后时间复杂度为 (O(n))。
 
+  只有一层 `for` 循环，遍历数组一次，循环执行 n 次；
+
+  字典 `in` 查询、字典赋值都是哈希表操作，单次 (O(1))；
+
+  总操作次数是常数倍 n，去掉系数后时间复杂度为 (O(n))。
 - 空间复杂度：O(n)
 
 ## 242.有效的字母异位词
@@ -182,12 +183,12 @@ c++中set结构有三种：set、unordered set、multi set，其中底层由哈�
 ```python
 class Solution:
     def intersection(self, nums1: List[int], nums2: List[int]) -> List[int]:
-        #定义字典，作为哈希表，存储一个数组的所有元素
+		#定义字典，作为哈希表，存储一个数组的所有元素
         table={}
-        #将nums1数组中的元素存到哈希表中，key为数组的元素，value为出现的次数
+		#将nums1数组中的元素存到哈希表中，key为数组的元素，value为出现的次数
         for num in nums1:
             table[num]=table.get(num,0)+1
-        #定义集合，用于存储结果
+		#定义集合，用于存储结果
         res = set()
         for num in nums2:
             if num in table:
@@ -281,7 +282,7 @@ class Solution(object):
         for n1 in nums1:
             for n2 in nums2:
                 hashmap[n1+n2] = hashmap.get(n1+n2, 0) + 1
-
+        
         # 如果 -(n1+n2) 存在于nums3和nums4, 存入结果
         count = 0
         for n3 in nums3:
@@ -387,7 +388,7 @@ class Solution:
                         right -= 1
                     while right > left and nums[left] == nums[left + 1]:
                         left += 1
-
+                        
                     right -= 1
                     left  += 1
 
@@ -477,7 +478,7 @@ class Solution:
                             right -= 1
                         while right > left and nums[left] == nums[left + 1]:
                             left += 1
-
+                            
                         right -= 1
                         left  += 1
         return result
@@ -487,7 +488,7 @@ class Solution:
 
 ```python
 if i>0 and nums[i]==nums[i-1]:
-    continue
+	continue
 ```
 
 为什么要用`nums[i]==nums[i-1]`​而不是`nums[i+1]==nums[i]`​呢，因为当遍历到数组最后一个元素时，此时用`i+1`，数组就越界了
@@ -833,9 +834,8 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O(n)
-  
-  看每一个元素被操作的次数，每个元素在滑动窗后进来操作一次，出去操作一次，每个元素都是被操作两次，所以时间复杂度是 2 × n 也就是O(n)。
 
+  看每一个元素被操作的次数，每个元素在滑动窗后进来操作一次，出去操作一次，每个元素都是被操作两次，所以时间复杂度是 2 × n 也就是O(n)。
 - 空间复杂度：O(1)
 
 ## 59.螺旋矩阵II
@@ -879,7 +879,7 @@ class Solution:
             startx += 1         # 更新起始点
             starty += 1
 
-        if n % 2 != 0 :            # n为奇数时，填充中心点
+        if n % 2 != 0 :			# n为奇数时，填充中心点
             nums[mid][mid] = count
         return nums
 ```
@@ -924,10 +924,10 @@ class Solution:
 #         self.next = next
 class Solution:
     def removeElements(self, head: Optional[ListNode], val: int) -> Optional[ListNode]:
-        # 创建虚拟头节点
+		# 创建虚拟头节点
         dummy_head = ListNode(next = head)
 
-        # 遍历并删除值为val的节点
+		# 遍历并删除值为val的节点
         current = dummy_head
         while current.next:
             if current.next.val == val:
@@ -969,27 +969,23 @@ class Solution:
 第0个节点就是链表的头节点
 
 - 获取第n个节点的数值
-  
+
   遍历操作，要注意不合法情况
-
 - 头部插入节点
-  
+
   这里有坑，要注意顺序问题
-  
+
   先让插入的节点尾部指向下一个节点，再处理虚拟头节点指向该节点
-
 - 尾部插入节点
-  
+
   什么是尾部：下一个节点指向为`null`
-  
+
   这样就可以明确遍历终止条件：`while(current.next != NULL)`
-
 - 第n个节点前插入节点
-  
-  要先寻找第n个节点，通过第n-1个节点的指针来插入节点
 
+  要先寻找第n个节点，通过第n-1个节点的指针来插入节点
 - 删除节点
-  
+
   与203.链表元素思路相同
 
 ### 代码
@@ -1000,7 +996,7 @@ class ListNode:
     def __init__(self, val=0, next=None):
         self.val = val
         self.next = next
-
+        
 class MyLinkedList:
     def __init__(self):
         self.dummy_head = ListNode()
@@ -1009,11 +1005,11 @@ class MyLinkedList:
     def get(self, index: int) -> int:
         if index < 0 or index >= self.size:
             return -1
-
+        
         current = self.dummy_head.next
         for i in range(index):
             current = current.next
-
+            
         return current.val
 
     def addAtHead(self, val: int) -> None:
@@ -1030,7 +1026,7 @@ class MyLinkedList:
     def addAtIndex(self, index: int, val: int) -> None:
         if index < 0 or index > self.size:
             return
-
+        
         current = self.dummy_head
         for i in range(index):
             current = current.next
@@ -1040,7 +1036,7 @@ class MyLinkedList:
     def deleteAtIndex(self, index: int) -> None:
         if index < 0 or index >= self.size:
             return
-
+        
         current = self.dummy_head
         for i in range(index):
             current = current.next
@@ -1051,27 +1047,24 @@ class MyLinkedList:
 ### 踩坑点
 
 - get 查询核心翻车坑
-  
+
   遍历起点错误：初始 `current = self.dummyhead`（虚拟头），循环 index 次会停在虚拟节点，返回默认 0，取不到真实数据
-
 - deleteAtIndex 删除函数坑
-  
+
   曾误写循环 `range(index-1)`，少走一步，删除节点下标错位
-  
+
   删除节点后忘记执行 `self.size -= 1`，长度数值失真，后续越界判断全部失效
-
 - addAtIndex 插入边界坑
-  
-  插入允许 `index == self.size`（等价尾插）
-  
-  非法拦截条件只能写 `index > self.size`​，不能写 `index >= self.size`，否则无法尾部插入
 
+  插入允许 `index == self.size`（等价尾插）
+
+  非法拦截条件只能写 `index > self.size`​，不能写 `index >= self.size`，否则无法尾部插入
 - 统一维护长度变量 size
-  
+
   每一次头插、尾插、中间插入执行 `self.size += 1`
-  
+
   每一次有效删除执行 `self.size -= 1`
-  
+
   size 用于快速判断 index 是否越界，避免重复遍历统计链表长度
 
 ### 复杂度分析
@@ -1087,7 +1080,7 @@ class MyLinkedList:
 
 示例: 输入: `1->2->3->4->5->NULL`
 
-      输出: `5->4->3->2->1->NULL`
+	  输出: `5->4->3->2->1->NULL`
 
 ### 解题思路
 
@@ -1172,12 +1165,12 @@ class Solution:
     def swapPairs(self, head: ListNode) -> ListNode:
         dummy_head = ListNode(next=head)
         current = dummy_head
-
+        
         # 必须有cur的下一个和下下个才能交换，否则说明已经交换结束了
         while current.next and current.next.next:
             temp = current.next # 防止节点修改
             temp1 = current.next.next.next
-
+            
             current.next = current.next.next # 步骤一
             current.next.next = temp # 步骤二
             temp.next = temp1 # 步骤三
@@ -1188,9 +1181,8 @@ class Solution:
 ### 踩坑点
 
 - 执行完步骤1，此时cur指向2，以为原来的2指向1是自动断开
-  
-  实际上是，`cur.next=1`​变成`cur.next=2`​，`1.next`​ 仍然为`2`
 
+  实际上是，`cur.next=1`​变成`cur.next=2`​，`1.next`​ 仍然为`2`
 - 认为执行步骤二时，`current.next.next`代表的是节点1
 
 ### 复杂度分析
@@ -1260,9 +1252,10 @@ class Solution:
         while fast.next:
             fast = fast.next
             slow = slow.next
-
+            
         slow.next = slow.next.next
         return dummy.next
+
 ```
 
 ### 复杂度分析
@@ -1291,15 +1284,14 @@ slow慢指针：每次走1步
 这道题分为两问：
 
 1. 判断是否有环
-   
-   假设有环：`fast`​会永远兜圈子，也就是`fast.next`​不存在为`none`的情况
-   
-   假设无环：随着指针持续移动，`fast`​最终将为`none`
-   
-   所以判断是否有环的条件，就是看`fast`​会不会出现`none`
 
+   假设有环：`fast`​会永远兜圈子，也就是`fast.next`​不存在为`none`的情况
+
+   假设无环：随着指针持续移动，`fast`​最终将为`none`
+
+   所以判断是否有环的条件，就是看`fast`​会不会出现`none`
 2. 判断有环后，找到环的入口
-   
+
    slow与fast相遇后，令slow=head，并使slow和fast的步进都为1，下次slow与fast相遇的节点，就是环的入口
 
 ### 代码
@@ -1330,15 +1322,15 @@ class Solution:
 ### 踩坑点
 
 1. **为什么第一次在环中相遇，slow的 步数 是 x+y 而不是 x + 若干环的长度 + y 呢？**
-   
+
    可以这样理解，由于slow每次只走1步，fast每次走2步，所以在slow进入环后，slow与fast的距离一定小于环的总长度，而且会逐步接近，
-   
+
    快指针速度是慢指针的两倍，慢指针跑一圈的时间快指针能跑两圈，所以慢指针在跑完一圈之前二者一定会相遇
-   
+
    **相对于慢指针而言，快指针在一步一步逼近**，所以不会存在快指针超过慢指针却跨过慢指针的情况
 
 2. 判断是否有环的条件写错，应该是`while fast and fast.next:`
-   
+
    写成了`while fast:`​，这样会导致什么问题呢？假设`fast`​当前是`none`​，再次进入循环，会执行`fast = fast.next.next`，会直接报错
 
 ### 复杂度分析
@@ -1405,7 +1397,7 @@ class Solution:
         Do not return anything, modify s in-place instead.
         """
         left, right = 0, len(s) - 1
-
+        
         # 该方法已经不需要判断奇偶数，经测试后时间空间复杂度比用 for i in range(len(s)//2)更低
         # 因为while每次循环需要进行条件判断，而range函数不需要，直接生成数字，因此时间复杂度更低。推荐使用range
         while left < right:
@@ -1417,11 +1409,11 @@ class Solution:
 ### 踩坑点
 
 1. 不理解`s[left], s[right] = s[right], s[left]`
-   
+
    Python 独有语法，无需临时变量：
-   
+
    先计算等号右边 `(s[right], s[left])`，生成临时元组
-   
+
    再依次赋值给左边两个下标，完成原地交换CSDN博...
 
 ### 复杂度分析
@@ -1482,11 +1474,9 @@ class Solution:
 ### 踩坑点
 
 - 思路上：刚开始想着先挑出来前2k个字符，再按每个条件单独来写，最后会是一堆逻辑代码，感觉这样不好，应该是封装好一种反转的函数
-
 - `range(0,len(s),2*k)`，从0开始，每次步进2k，到len(s)终止
-
 - res[cur:cur+k]的含义不理解
-  
+
   这是列表切片，截取当前分组**前 k 个字符**（不足 k 个就取到末尾）；
 
 ### 复杂度分析
@@ -1542,19 +1532,19 @@ class Solution:
 right找到字母就停止，下一个单词开始时，right先向左移动到left左侧
 
 - s[left]是空格，s[left-1]是空格或者字母或者none；
-  
+
   空格接空格，就继续遍历
-  
+
   空格接字母，就代表是
-  
+
   空格接none，代表这是最后一个单词
 
 - s[left]是字母，s[left-1]是none或者字母或者空格
-  
+
   字母接none，代表这是最后一个单词
-  
+
   字母接字母，接着左移
-  
+
   字母接空格，代表找到一个单词
 
 多个单词：单词与单词之间要有空格，该怎么加呢？用一个变量计数单词的数量？
@@ -1601,13 +1591,12 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O（n）
-  
-  `s.split`分割字符串：O（n），需要完整遍历一遍字符串，识别单词、过滤空格，每个字符只会访问一次。
-  
-  `while `双指针交换单词，：O(m)，m 为单词个数
-  
-  `" ".join(words)`：O（n），需要把所有单词 + 分隔空格全部写入新字符串，总字符长度等于原字符串有效字符数，遍历一次。
 
+  `s.split`分割字符串：O（n），需要完整遍历一遍字符串，识别单词、过滤空格，每个字符只会访问一次。
+
+  `while `双指针交换单词，：O(m)，m 为单词个数
+
+  `" ".join(words)`：O（n），需要把所有单词 + 分隔空格全部写入新字符串，总字符长度等于原字符串有效字符数，遍历一次。
 - 空间复杂度：O（n）
 
 ## KMP算法
@@ -1701,7 +1690,7 @@ class Solution:
         if nxt[-1] != 0 and len(s) % (len(s) - nxt[-1]) == 0:
             return True
         return False
-
+    
     def getNext(self, nxt, s):
         nxt[0] = 0
         j = 0
@@ -1717,4 +1706,96 @@ class Solution:
 ### 复杂度分析
 
 - 时间复杂度：O（n）
+- 空间复杂度：O（n）
+
+# 栈与队列
+
+## 理论基础
+
+队列是先进先出，栈是先进后出。
+
+栈和队列是STL（C++标准库）里面的两个数据结构。
+
+## 232.用栈实现队列
+
+### 题目描述
+
+请你仅使用两个栈实现先入先出队列。队列应当支持一般队列支持的所有操作（`push`​、`pop`​、`peek`​、`empty`）：
+
+实现 `MyQueue` 类：
+
+- `void push(int x)` 将元素 x 推到队列的末尾
+- `int pop()` 从队列的开头移除并返回元素
+- `int peek()` 返回队列开头的元素
+- `boolean empty()`​ 如果队列为空，返回 `true`​ ；否则，返回 `false`
+
+**说明：**
+
+- 你 **只能** 使用标准的栈操作 —— 也就是只有 `push to top`​, `peek/pop from top`​, `size`​, 和 `is empty` 操作是合法的。
+- 你所使用的语言也许不支持栈。你可以使用 list 或者 deque（双端队列）来模拟一个栈，只要是标准的栈操作即可。
+
+### 解题思路
+
+队列是先入先出，栈是先入后出
+
+‍
+
+![image.png](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/20260801230714948.png)
+
+用两个栈来模拟队列
+
+### 代码
+
+```python
+class MyQueue:
+
+    def __init__(self):
+        """
+        in主要负责push，out主要负责pop
+        """
+        self.stack_in = []
+        self.stack_out = []
+
+
+    def push(self, x: int) -> None:
+        """
+        有新元素进来，就往in里面push
+        """
+        self.stack_in.append(x)
+
+
+    def pop(self) -> int:
+        """
+        Removes the element from in front of queue and returns that element.
+        """
+        if self.empty():
+            return None
+        
+        if self.stack_out:
+            return self.stack_out.pop()
+        else:
+            for i in range(len(self.stack_in)):
+                self.stack_out.append(self.stack_in.pop())
+            return self.stack_out.pop()
+
+
+    def peek(self) -> int:
+        """
+        Get the front element.
+        """
+        ans = self.pop()
+        self.stack_out.append(ans)
+        return ans
+
+
+    def empty(self) -> bool:
+        """
+        只要in或者out有元素，说明队列不为空
+        """
+        return not (self.stack_in or self.stack_out)
+```
+
+### 复杂度分析
+
+- 时间复杂度：O（1）
 - 空间复杂度：O（n）
