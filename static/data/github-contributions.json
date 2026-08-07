@@ -4,13 +4,13 @@
     "name": "Harmme",
     "createdAt": "2023-05-08T01:17:35Z"
   },
-  "generatedAt": "2026-08-05T19:52:51.488Z",
-  "from": "2025-07-31T19:52:51.488Z",
-  "to": "2026-08-05T19:52:51.488Z",
+  "generatedAt": "2026-08-07T00:13:53.390Z",
+  "from": "2025-08-02T00:13:53.390Z",
+  "to": "2026-08-07T00:13:53.390Z",
   "totalContributions": 102,
   "restrictedContributions": 0,
   "totalIncludingPrivate": 102,
-  "daysOnline": 1185,
+  "daysOnline": 1186,
   "lastContributionDate": "2026-08-04",
   "colors": [
     "#ebedf0",
@@ -2437,6 +2437,18 @@
           "count": 0,
           "color": "#ebedf0",
           "weekday": 3
+        },
+        {
+          "date": "2026-08-06",
+          "count": 0,
+          "color": "#ebedf0",
+          "weekday": 4
+        },
+        {
+          "date": "2026-08-07",
+          "count": 0,
+          "color": "#ebedf0",
+          "weekday": 5
         }
       ]
     }
