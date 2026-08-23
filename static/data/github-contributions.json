@@ -4,14 +4,14 @@
     "name": "Harmme",
     "createdAt": "2023-05-08T01:17:35Z"
   },
-  "generatedAt": "2026-08-22T18:47:32.335Z",
-  "from": "2025-08-17T18:47:32.335Z",
-  "to": "2026-08-22T18:47:32.335Z",
-  "totalContributions": 104,
+  "generatedAt": "2026-08-23T18:47:16.650Z",
+  "from": "2025-08-18T18:47:16.650Z",
+  "to": "2026-08-23T18:47:16.650Z",
+  "totalContributions": 105,
   "restrictedContributions": 0,
-  "totalIncludingPrivate": 104,
-  "daysOnline": 1202,
-  "lastContributionDate": "2026-08-11",
+  "totalIncludingPrivate": 105,
+  "daysOnline": 1203,
+  "lastContributionDate": "2026-08-23",
   "colors": [
     "#ebedf0",
     "#c6e48b",
@@ -20,52 +20,6 @@
     "#196127"
   ],
   "weeks": [
-    {
-      "contributionDays": [
-        {
-          "date": "2025-08-17",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 0
-        },
-        {
-          "date": "2025-08-18",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 1
-        },
-        {
-          "date": "2025-08-19",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 2
-        },
-        {
-          "date": "2025-08-20",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 3
-        },
-        {
-          "date": "2025-08-21",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 4
-        },
-        {
-          "date": "2025-08-22",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 5
-        },
-        {
-          "date": "2025-08-23",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 6
-        }
-      ]
-    },
     {
       "contributionDays": [
         {
@@ -2455,6 +2409,16 @@
           "count": 0,
           "color": "#ebedf0",
           "weekday": 6
+        }
+      ]
+    },
+    {
+      "contributionDays": [
+        {
+          "date": "2026-08-23",
+          "count": 1,
+          "color": "#9be9a8",
+          "weekday": 0
         }
       ]
     }
