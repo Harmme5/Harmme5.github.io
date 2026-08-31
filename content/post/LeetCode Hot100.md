@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-08-01 23:08:20+08:00'
+lastmod: '2026-08-31 23:28:52+08:00'
 tags:
   - Leetcode
 categories:
@@ -1712,7 +1712,7 @@ class Solution:
 
 ## 理论基础
 
-队列是先进先出，栈是先进后出。
+队列是**先进先出**，栈是**先进后出**。
 
 栈和队列是STL（C++标准库）里面的两个数据结构。
 
@@ -1799,3 +1799,81 @@ class MyQueue:
 
 - 时间复杂度：O（1）
 - 空间复杂度：O（n）
+
+## 225.用队列实现栈
+
+### 题目描述
+
+请你仅使用两个队列实现一个后入先出（LIFO）的栈，并支持普通栈的全部四种操作（`push`​、`top`​、`pop`​ 和 `empty`）。
+
+实现 `MyStack` 类：
+
+- `void push(int x)` 将元素 x 压入栈顶。
+- `int pop()` 移除并返回栈顶元素。
+- `int top()` 返回栈顶元素。
+- `boolean empty()`​ 如果栈是空的，返回 `true`​ ；否则，返回 `false` 。
+
+**注意：**
+
+- 你只能使用队列的标准操作 —— 也就是 `push to back`​、`peek/pop from front`​、`size`​ 和 `is empty` 这些操作。
+- 你所使用的语言也许不支持队列。 你可以使用 list （列表）或者 deque（双端队列）来模拟一个队列 , 只要是标准的队列操作即可。
+
+### 解题思路
+
+两种思路：1.用两个队列实现栈；2.用一个队列实现栈，主要用2的思路，如下图，把元素1取出来，加入队列中，再把元素2取出来，加入队列中，此时再弹出元素，就是元素3 了
+
+![image](https://harme-picgo.oss-cn-beijing.aliyuncs.com/img/image-20260831231339-il6obu0.png)
+
+### 代码
+
+```python
+class MyStack:
+
+    def __init__(self):
+        self.que = deque()
+
+    def push(self, x: int) -> None:
+        self.que.append(x)
+
+    def pop(self) -> int:
+        if self.empty():
+            return None
+        for i in range(len(self.que)-1):
+            self.que.append(self.que.popleft())
+        return self.que.popleft()
+
+    def top(self) -> int:
+        # 写法一：
+        # if self.empty():
+        #     return None
+        # return self.que[-1]
+
+        # 写法二：
+        if self.empty():
+            return None
+        for i in range(len(self.que)-1):
+            self.que.append(self.que.popleft())
+        temp = self.que.popleft()
+        self.que.append(temp)
+        return temp
+
+    def empty(self) -> bool:
+        return not self.que
+```
+
+### 复杂度分析
+
+- 时间复杂度：O（n）
+- 空间复杂度：O（n）
+
+## 20.有效的括号
+
+## 1047. 删除字符串中的所有相邻重复项
+
+## 150. 逆波兰表达式求值
+
+## 239. 滑动窗口最大值
+
+## 347.前 K 个高频元素
+
+‍
