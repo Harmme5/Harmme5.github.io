@@ -3,7 +3,7 @@ title: LeetCode Hot100
 slug: leetcode-hot100-z2vo5oe
 url: /post/leetcode-hot100-z2vo5oe.html
 date: '2026-06-20 20:57:20+08:00'
-lastmod: '2026-08-31 23:28:52+08:00'
+lastmod: '2026-09-01 20:51:48+08:00'
 tags:
   - Leetcode
 categories:
@@ -1830,17 +1830,17 @@ class MyQueue:
 class MyStack:
 
     def __init__(self):
-        self.que = deque()
+        self.que = deque()#调用collections.deque的构造函数，创建一个空的双端队列对象
 
     def push(self, x: int) -> None:
-        self.que.append(x)
+        self.que.append(x)#直接把元素加到队列尾部
 
     def pop(self) -> int:
-        if self.empty():
+        if self.empty():#如果栈是空，直接返回 None，防止空队列调用popleft()抛出异常。
             return None
-        for i in range(len(self.que)-1):
-            self.que.append(self.que.popleft())
-        return self.que.popleft()
+        for i in range(len(self.que)-1):#队列当前有 n 个元素，循环跑 n‑1 次。目的：把前面 n‑1 个元素，从头部拿出来，再追加到队列尾部。
+            self.que.append(self.que.popleft()).#弹出队头并放到尾部
+        return self.que.popleft()#弹出队头3并返回。
 
     def top(self) -> int:
         # 写法一：
@@ -1859,6 +1859,21 @@ class MyStack:
 
     def empty(self) -> bool:
         return not self.que
+```
+
+`return not self.que`，这里not是取反运算符
+
+如果队列为空：self.que → False，not False → True → empty 返回 True，栈为空  
+如果队列有元素：self.que → True，not True → False → empty 返回 False，栈不为空
+
+等价写法：
+
+```python
+def empty(self) -> bool:
+    if len(self.que) == 0:
+        return True
+    else:
+        return False
 ```
 
 ### 复杂度分析
