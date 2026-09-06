@@ -4,13 +4,13 @@
     "name": "Harmme",
     "createdAt": "2023-05-08T01:17:35Z"
   },
-  "generatedAt": "2026-09-05T20:18:33.045Z",
-  "from": "2025-08-31T20:18:33.045Z",
-  "to": "2026-09-05T20:18:33.045Z",
+  "generatedAt": "2026-09-06T20:22:44.769Z",
+  "from": "2025-09-01T20:22:44.769Z",
+  "to": "2026-09-06T20:22:44.769Z",
   "totalContributions": 109,
   "restrictedContributions": 0,
   "totalIncludingPrivate": 109,
-  "daysOnline": 1216,
+  "daysOnline": 1217,
   "lastContributionDate": "2026-09-01",
   "colors": [
     "#ebedf0",
@@ -20,52 +20,6 @@
     "#196127"
   ],
   "weeks": [
-    {
-      "contributionDays": [
-        {
-          "date": "2025-08-31",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 0
-        },
-        {
-          "date": "2025-09-01",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 1
-        },
-        {
-          "date": "2025-09-02",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 2
-        },
-        {
-          "date": "2025-09-03",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 3
-        },
-        {
-          "date": "2025-09-04",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 4
-        },
-        {
-          "date": "2025-09-05",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 5
-        },
-        {
-          "date": "2025-09-06",
-          "count": 0,
-          "color": "#ebedf0",
-          "weekday": 6
-        }
-      ]
-    },
     {
       "contributionDays": [
         {
@@ -2455,6 +2409,16 @@
           "count": 0,
           "color": "#ebedf0",
           "weekday": 6
+        }
+      ]
+    },
+    {
+      "contributionDays": [
+        {
+          "date": "2026-09-06",
+          "count": 0,
+          "color": "#ebedf0",
+          "weekday": 0
         }
       ]
     }
